@@ -276,9 +276,15 @@ export const createSkill = async (payload: { name: string; description: string }
   const response = await http.post(API.admin.skills, payload);
   return response.data;
 };
-
+export const deleteSkill = async (skillId: string) => {
+  const response = await http.delete(`/skills/${skillId}`);
+  return response.data;
+};
 export const fetchJobs = getJobs;
 export const getJobListings = getJobs;
 export const getProposals = getClientProposals;
-
+export const getMyInterviewSessions = async () => {
+  const response = await http.get('/interviews/my/sessions');
+  return response.data;
+};
 export default http;

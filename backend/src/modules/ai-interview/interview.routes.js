@@ -6,10 +6,10 @@ const { upload } = require('../../middleware/uploadMiddleware');
 const {
   getInterviewResult,
   getInterviewSession,
+  getMyInterviewSessions,
   startInterview,
   submitInterviewAnswer,
 } = require('./interview.controller');
-
 router.post('/start', authenticate, checkRole(['Student']), startInterview);
 router.get('/:sessionId', authenticate, checkRole(['Student', 'Admin']), getInterviewSession);
 router.post(
@@ -23,5 +23,5 @@ router.post(
   submitInterviewAnswer
 );
 router.get('/:sessionId/result', authenticate, checkRole(['Student', 'Admin']), getInterviewResult);
-
+router.get('/my/sessions', authenticate, checkRole(['Student']), getMyInterviewSessions);
 module.exports = router;

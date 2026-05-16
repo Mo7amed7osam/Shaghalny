@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const { getSkills } = require('../controllers/skillController');
-
-// Route to get all available skills
+const { getSkills, deleteSkill } = require('../controllers/skillController');
+const { authenticate } = require('../middleware/auth');
+const { checkRole } = require('../middleware/roleCheck');
 router.get('/', getSkills);
-
+router.delete('/:id', authenticate, checkRole(['Admin']), deleteSkill);
 module.exports = router;

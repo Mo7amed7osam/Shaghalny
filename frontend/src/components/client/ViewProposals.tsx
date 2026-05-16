@@ -169,9 +169,9 @@ const ViewProposals: React.FC = () => {
                     <div className="flex flex-wrap gap-2">
                       {(proposal.studentId?.verifiedSkills || []).length ? (
                         proposal.studentId.verifiedSkills.map((verified: any) => (
-                          <Badge key={verified.skill?._id || verified.skill} variant="brand">
-                            {verified.skill?.name || verified.skill}
-                          </Badge>
+  <Badge key={verified.skill?._id || verified.skill} variant="brand">
+    {verified.skill?.name || verified.skill}{verified.score != null ? ` · ${verified.score}` : ''}
+  </Badge>
                         ))
                       ) : (
                         <Badge variant="subtle">None</Badge>

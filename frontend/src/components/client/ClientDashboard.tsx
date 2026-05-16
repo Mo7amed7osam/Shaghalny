@@ -62,8 +62,15 @@ const ClientDashboard: React.FC = () => {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold">Posted jobs</h2>
-            <p className="text-sm text-ink-500 dark:text-ink-300">Keep openings tidy, visible, and easy to review.</p>
+            <div className="flex items-center justify-between gap-4">
+  <div>
+    <h2 className="text-2xl font-semibold">Recent proposals</h2>
+    <p className="text-sm text-ink-500 dark:text-ink-300">Review the latest applicants and move the strongest ones forward.</p>
+  </div>
+  <Button variant="outline" size="sm" onClick={() => navigate('/client/view-proposals')}>
+    View all
+  </Button>
+</div>
           </div>
         </div>
 
