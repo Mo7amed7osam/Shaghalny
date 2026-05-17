@@ -27,7 +27,19 @@ exports.createEvent = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
   try {
-    const updates = { ...req.body, isOnline: req.body.isOnline === 'true' };
+    const updates = {};
+    const allowedFields = ['title', 'description', 'date', 'time', 'location'];
+
+    allowedFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field];
+      }
+    });
+
+    if (Object.prototype.hasOwnProperty.call(req.body, 'isOnline')) {
+      updates.isOnline = req.body.isOnline === 'true';
+    }
+
     if (req.file) updates.imageUrl = `/uploads/events/${req.file.filename}`;
     const event = await Event.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!event) return res.status(404).json({ message: 'Event not found' });
