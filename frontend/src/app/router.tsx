@@ -23,6 +23,9 @@ import ContractDetails from '@/components/contracts/ContractDetails';
 import AIInterviewPage from '@/features/ai-interview/pages/AIInterviewPage';
 import AIInterviewResultPage from '@/features/ai-interview/pages/AIInterviewResultPage';
 import LandingPage from '@/components/marketing/LandingPage';
+import AdminEvents from '@/components/events/AdminEvents';
+import EventDetails from '@/components/events/EventDetails';
+import EventsPage from '@/components/events/EventsPage';
 
 export const AppRouter = () => (
   <BrowserRouter>
@@ -215,6 +218,9 @@ export const AppRouter = () => (
         }
       />
 
+      <Route path="/admin/events" element={<ProtectedRoute roles={['Admin']}><AppShell><AdminEvents /></AppShell></ProtectedRoute>} />
+      <Route path="/events/:id" element={<ProtectedRoute roles={['Student', 'Client', 'Admin']}><AppShell><EventDetails /></AppShell></ProtectedRoute>} />
+      <Route path="/events" element={<ProtectedRoute roles={['Student', 'Admin']}><AppShell><EventsPage /></AppShell></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>

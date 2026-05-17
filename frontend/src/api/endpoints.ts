@@ -58,4 +58,10 @@ export const API = {
     withdrawalApprove: (id: string) => `/admin/payments/withdrawals/${id}/approve`,
     withdrawalDecline: (id: string) => `/admin/payments/withdrawals/${id}/decline`,
   },
+  events: {
+    list: '/events',
+    create: '/events',
+    update: (id: string) => `/events/${id}`,
+    delete: (id: string) => `/events/${id}`,
+  },
 };
