@@ -52,9 +52,22 @@ const getInterviewResult = async (req, res) => {
   }
 };
 
+const getMyInterviewSessions = async (req, res) => {
+  try {
+    const InterviewSession = require('./interview.model');
+    const sessions = await InterviewSession.find({ user: req.user.id })
+      .populate('skillRef', 'name')
+      .sort({ updatedAt: -1 });
+    return res.status(200).json(sessions);
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 module.exports = {
   getInterviewResult,
   getInterviewSession,
+  getMyInterviewSessions,
   startInterview,
   submitInterviewAnswer,
 };

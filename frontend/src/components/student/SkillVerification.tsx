@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Sparkles, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { getSkills } from '@/services/api';
+import { getSkills, getStudentProfile, getMyInterviewSessions } from '@/services/api';
+import useAuth from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,37 @@ import { startInterviewSession } from '@/features/ai-interview/services/intervie
 
 const SkillVerification: React.FC = () => {
   const navigate = useNavigate();
+	const { user } = useAuth();
+const userId = user?._id || user?.id;
+
+const { data: profile } = useQuery({
+  queryKey: ['student', 'profile', userId],
+  queryFn: () => getStudentProfile(userId),
+  enabled: !!userId,
+});
+const { data: mySessions } = useQuery({
+  queryKey: ['my-interview-sessions'],
+  queryFn: getMyInterviewSessions,
+  enabled: !!userId,
+});
+
+const getLatestSessionId = (skillId: string) => {
+  const sessions = (mySessions || []).filter(
+    (s: any) => String(s.skillRef?._id || s.skillRef) === String(skillId) && s.status === 'completed'
+  );
+  return sessions[0]?._id || null;
+};
+
+const verifiedSkillIds = new Set(
+  (profile?.verifiedSkills || []).map((s: any) => String(s.skill?._id || s.skill))
+);
+
+const getVerifiedScore = (skillId: string) => {
+  const found = (profile?.verifiedSkills || []).find(
+    (s: any) => String(s.skill?._id || s.skill) === skillId
+  );
+  return found?.score ?? null;
+};
 
   const { data: skills, isLoading } = useQuery({
     queryKey: ['skills'],
@@ -106,10 +138,30 @@ const SkillVerification: React.FC = () => {
                   </div>
                 </div>
 
-                <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
-                  {isPending ? 'Starting interview…' : 'Start interview'}
-                  {!isPending ? <ArrowRight size={18} /> : null}
-                </Button>
+                {verifiedSkillIds.has(String(skill._id)) ? (
+  <div className="space-y-3">
+    <div className="muted-panel rounded-2xl p-3 text-center">
+      <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+        ✅ Verified · Score: {getVerifiedScore(String(skill._id)) ?? '—'}
+      </p>
+    </div>
+    <Button type="button" variant="outline" className="w-full" size="lg" onClick={() => {
+      const sessionId = getLatestSessionId(String(skill._id));
+      if (sessionId) {
+        navigate(`/student/ai-interview/${sessionId}/result`);
+      } else {
+        navigate('/student/profile');
+      }
+    }}>
+      View Result
+    </Button>
+  </div>
+) : (
+  <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
+    {isPending ? 'Starting interview…' : 'Start interview'}
+    {!isPending ? <ArrowRight size={18} /> : null}
+  </Button>
+)}
               </CardContent>
             </Card>
           ))}

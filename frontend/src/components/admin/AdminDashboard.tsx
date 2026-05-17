@@ -7,6 +7,7 @@ import {
   createSkill,
   deleteAdminJob,
   deleteAdminUser,
+  deleteSkill,
   getAdminJobs,
   getAdminUsers,
   getInterviews,
@@ -82,6 +83,13 @@ const AdminDashboard: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['skills'] });
     },
   });
+const deleteSkillMutation = useMutation({
+  mutationFn: (skillId: string) => deleteSkill(skillId),
+  onSuccess: () => {
+    toast.success('Skill deleted.');
+    queryClient.invalidateQueries({ queryKey: ['skills'] });
+  },
+});
 
   const sortedSkills = useMemo(() => {
     return (skills || []).slice().sort((a: any, b: any) => a.name.localeCompare(b.name));
@@ -172,15 +180,22 @@ const AdminDashboard: React.FC = () => {
               {createSkillMutation.isPending ? 'Adding...' : 'Add skill'}
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {sortedSkills.map((skill: any) => (
-              <Badge key={skill._id} variant="subtle">
-                {skill.name}
-              </Badge>
-            ))}
-          </div>
+         <div className="flex flex-wrap gap-2">
+  {sortedSkills.map((skill: any) => (
+    <div key={skill._id} className="flex items-center gap-1">
+      <Badge variant="subtle">{skill.name}</Badge>
+      <button
+        type="button"
+        onClick={() => deleteSkillMutation.mutate(skill._id)}
+        className="text-xs text-rose-500 hover:text-rose-700"
+        disabled={deleteSkillMutation.isPending}
+      >
+        ✕
+      </button>
+    </div>
+  ))}
+</div>
         </div>
-
         <div className="space-y-5">
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold">Users</h2>

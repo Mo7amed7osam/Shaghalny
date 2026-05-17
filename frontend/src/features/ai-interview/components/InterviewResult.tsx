@@ -1,5 +1,7 @@
 import React from 'react';
-
+import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import jsPDF from 'jspdf';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
@@ -17,13 +19,54 @@ const recommendationVariant = (value: string | null) => {
 };
 
 export const InterviewResult: React.FC<InterviewResultProps> = ({ result }) => {
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SKILL VERIFICATION REPORT', 20, y);
+    y += 15;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Skill: ${result.skill}`, 20, y); y += 8;
+    doc.text(`Status: ${result.status}`, 20, y); y += 8;
+    doc.text(`Final Score: ${result.finalScore ?? 'Pending'}`, 20, y); y += 8;
+    doc.text(`Recommendation: ${result.recommendation || 'Pending'}`, 20, y); y += 8;
+    doc.text(`Admin Review: ${result.reviewStatus}`, 20, y); y += 15;
+
+    result.answers.forEach((answer, index) => {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Q${index + 1}: ${answer.question}`, 20, y, { maxWidth: 170 });
+      y += 12;
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Score: ${answer.score ?? 'Pending'}`, 20, y); y += 8;
+      doc.text(`Recommendation: ${answer.recommendation}`, 20, y); y += 8;
+      doc.text(`Feedback: ${answer.feedback}`, 20, y, { maxWidth: 170 }); y += 12;
+      doc.text(`Strengths: ${answer.strengths.join(', ') || 'None'}`, 20, y, { maxWidth: 170 }); y += 12;
+      doc.text(`Weaknesses: ${answer.weaknesses.join(', ') || 'None'}`, 20, y, { maxWidth: 170 }); y += 15;
+    });
+
+    doc.save(`${result.skill}-verification-report.pdf`);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Interview result"
         title={`${result.skill} verification`}
         description="Your result summary combines the AI evaluation and any manual review outcome."
-        actions={<Badge variant={recommendationVariant(result.recommendation)}>{result.recommendation || 'pending'}</Badge>}
+        actions={
+  <div className="flex items-center gap-3">
+    <Badge variant={recommendationVariant(result.recommendation)}>{result.recommendation || 'pending'}</Badge>
+    <Button type="button" variant="outline" size="sm" onClick={handleDownloadPDF}>
+      <Download size={16} />
+      Download Report
+    </Button>
+  </div>
+}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
