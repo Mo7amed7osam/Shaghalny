@@ -282,3 +282,27 @@ export const getJobListings = getJobs;
 export const getProposals = getClientProposals;
 
 export default http;
+
+export const getEvents = async () => {
+  const response = await http.get(API.events.list);
+  return response.data;
+};
+
+export const createEvent = async (payload: FormData) => {
+  const response = await http.post(API.events.create, payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const updateEvent = async (id: string, payload: FormData) => {
+  const response = await http.put(API.events.update(id), payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const deleteEvent = async (id: string) => {
+  const response = await http.delete(API.events.delete(id));
+  return response.data;
+};

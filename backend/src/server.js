@@ -60,6 +60,8 @@ app.use('/api/students', studentRoutes);
 app.use('/api/proposals', proposalRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use('/api/wallet', walletRoutes);
+const eventRoutes = require('./routes/eventRoutes');
+app.use('/api/events', eventRoutes);
 app.use('/uploads', express.static(getUploadsRoot()));
 app.get('/', (req, res) => {
     console.log("server is working");

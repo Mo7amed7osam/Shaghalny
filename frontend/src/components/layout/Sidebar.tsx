@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   Briefcase,
+  CalendarDays,
   ClipboardList,
   FileBadge,
   Home,
@@ -23,6 +24,7 @@ export const navByRole = {
     { label: 'Wallet', to: '/student/wallet', icon: Wallet },
     { label: 'Skill Verification', to: '/student/skill-verification', icon: FileBadge },
     { label: 'Profile', to: '/student/profile', icon: Home },
+    { label: 'Events', to: '/events', icon: CalendarDays },
   ],
   Client: [
     { label: 'Dashboard', to: '/client/dashboard', icon: LayoutDashboard },
@@ -34,6 +36,7 @@ export const navByRole = {
   Admin: [
     { label: 'Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Payments', to: '/admin/payments', icon: ShieldCheck },
+    { label: 'Events', to: '/admin/events', icon: CalendarDays },
   ],
 };
 
