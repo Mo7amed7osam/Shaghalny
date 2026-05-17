@@ -7,3 +7,5 @@
 ai-interview/interview.db
 ai-interview/interview_log.txt
 ai-interview/state.json
+.DS_Store
+backend/.DS_Store
