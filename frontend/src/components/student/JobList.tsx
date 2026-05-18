@@ -4,6 +4,19 @@ import { Search, SendHorizonal } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { fetchJobs, getStudentProposals, submitProposal } from '@/services/api';
+const improveWithAI = async (jobTitle: string, currentText: string): Promise<string> => {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/ai/improve-text', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ text: currentText, jobTitle })
+  });
+  const data = await response.json();
+  return data.improved || currentText;
+};
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -222,14 +235,26 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                     disabled={hasSubmitted}
                   />
                 </div>
-
-                <Textarea
-                  placeholder="Write a concise cover letter that explains why you fit this role."
-                  value={proposalDetails[jobKey] || ''}
-                  onChange={(e) => setProposalDetails((p) => ({ ...p, [jobKey]: e.target.value }))}
-                  disabled={hasSubmitted}
-                  rows={5}
-                />
+<Textarea
+  placeholder="Write a concise cover letter that explains why you fit this role."
+  value={proposalDetails[jobKey] || ''}
+  onChange={(e) => setProposalDetails((p) => ({ ...p, [jobKey]: e.target.value }))}
+  disabled={hasSubmitted}
+  rows={5}
+/>
+{!hasSubmitted && proposalDetails[jobKey] ? (
+  <Button
+    type="button"
+    variant="outline"
+    size="sm"
+    onClick={async () => {
+      const improved = await improveWithAI(job.title, proposalDetails[jobKey]);
+      setProposalDetails((p) => ({ ...p, [jobKey]: improved }));
+    }}
+  >
+    ✨ Improve with AI
+  </Button>
+) : null}
 
                 <Input
                   placeholder="Portfolio links"

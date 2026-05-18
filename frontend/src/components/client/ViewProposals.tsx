@@ -46,7 +46,26 @@ const ViewProposals: React.FC = () => {
     queryKey: ['client', 'proposals', selectedJob],
     queryFn: () => (selectedJob ? getJobProposals(selectedJob) : getClientProposals()),
   });
+const [matchScores, setMatchScores] = useState<Record<string, number>>({});
 
+const fetchMatchScore = async (proposal: any, job: any) => {
+  if (!job || matchScores[proposal._id] !== undefined) return;
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/ai/match-score', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ proposal, job })
+    });
+    const data = await response.json();
+    setMatchScores(prev => ({ ...prev, [proposal._id]: data.score }));
+  } catch {
+    console.error('Failed to fetch match score');
+  }
+};
   const filteredProposals = useMemo(() => {
     const base = proposals || [];
     return base.filter((proposal: any) => {
@@ -135,6 +154,17 @@ const ViewProposals: React.FC = () => {
                     <div className="space-y-1">
                       <h2 className="text-2xl font-semibold">{proposal.studentId?.name || 'Student'}</h2>
                       <p className="text-sm text-ink-500 dark:text-ink-300">{proposal.studentId?.email || '—'}</p>
+{selectedJob && (() => {
+  const job = (jobs || []).find((j: any) => j._id === selectedJob);
+  if (job) fetchMatchScore(proposal, job);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+        🤖 AI Match: {matchScores[proposal._id] !== undefined ? `${matchScores[proposal._id]}%` : 'Calculating...'}
+      </span>
+    </div>
+  );
+})()}
                     </div>
                     <Badge
                       variant={

@@ -23,10 +23,11 @@ import ContractDetails from '@/components/contracts/ContractDetails';
 import AIInterviewPage from '@/features/ai-interview/pages/AIInterviewPage';
 import AIInterviewResultPage from '@/features/ai-interview/pages/AIInterviewResultPage';
 import LandingPage from '@/components/marketing/LandingPage';
+import CareerRoadmap from '@/components/student/CareerRoadmap';
 import AdminEvents from '@/components/events/AdminEvents';
 import EventDetails from '@/components/events/EventDetails';
 import EventsPage from '@/components/events/EventsPage';
-
+import InterviewHistory from '@/components/student/InterviewHistory';
 export const AppRouter = () => (
   <BrowserRouter>
     <Routes>
@@ -94,6 +95,26 @@ export const AppRouter = () => (
           </ProtectedRoute>
         }
       />
+<Route
+  path="/student/career-roadmap"
+  element={
+    <ProtectedRoute roles={['Student']}>
+      <AppShell>
+        <CareerRoadmap />
+      </AppShell>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/student/interview-history"
+  element={
+    <ProtectedRoute roles={['Student']}>
+      <AppShell>
+        <InterviewHistory />
+      </AppShell>
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/student/wallet"
         element={

@@ -4,9 +4,11 @@ import {
   CalendarDays,
   ClipboardList,
   FileBadge,
+  History,
   Home,
   LayoutDashboard,
   ShieldCheck,
+  Sparkles, 
   Users,
   Wallet,
 } from 'lucide-react';
@@ -24,6 +26,8 @@ export const navByRole = {
     { label: 'Wallet', to: '/student/wallet', icon: Wallet },
     { label: 'Skill Verification', to: '/student/skill-verification', icon: FileBadge },
     { label: 'Profile', to: '/student/profile', icon: Home },
+    { label: 'Career Roadmap', to: '/student/career-roadmap', icon: Sparkles }, 
+    { label: 'Interview History', to: '/student/interview-history', icon: History }, 	
     { label: 'Events', to: '/events', icon: CalendarDays },
   ],
   Client: [
