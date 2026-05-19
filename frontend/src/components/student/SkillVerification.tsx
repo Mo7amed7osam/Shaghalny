@@ -60,6 +60,7 @@ const SkillVerification: React.FC = () => {
   });
 
   const handleStartInterview = async (skill: { _id: string; name: string }) => {
+    if (isPending) return;
     try {
       setStartingSkillId(skill._id);
       const response = await beginInterview({ skill: skill.name, skillId: skill._id });
@@ -176,7 +177,7 @@ const SkillVerification: React.FC = () => {
                     className="w-full"
                     size="lg"
                     onClick={() => handleStartInterview(skill)}
-                    disabled={isPending}
+                    disabled={isPending && startingSkillId === String(skill._id)}
                   >
                     {isPending && startingSkillId === String(skill._id) ? 'Starting interview…' : 'Start interview'}
                     {!(isPending && startingSkillId === String(skill._id)) ? <ArrowRight size={18} /> : null}
