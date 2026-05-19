@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
+import wordmark from '@/assets/shaghalny-wordmark.svg';
 import useAuth from '@/hooks/useAuth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -323,7 +324,7 @@ const LandingPage: React.FC = () => {
         <div className="page-container flex h-16 items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 text-ink-900 no-underline dark:text-ink-dark-text">
             <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-            <span className="text-sm font-semibold">Shaghalny</span>
+            <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
@@ -715,7 +716,8 @@ const LandingPage: React.FC = () => {
         <div className="page-container flex flex-col items-center justify-between gap-4 py-8 text-sm text-ink-400 md:flex-row dark:text-ink-dark-muted">
           <div className="flex items-center gap-2.5">
             <img src={logo} alt="Shaghalny" className="h-6 w-6 rounded object-contain" />
-            <p>© {new Date().getFullYear()} Shaghalny. Verified student talent.</p>
+            <img src={wordmark} alt="Shaghalny" className="h-4 w-auto object-contain opacity-90 dark:brightness-[1.06]" />
+            <p>© {new Date().getFullYear()} Verified student talent.</p>
           </div>
           <div className="flex items-center gap-5">
             <Link to="/login" className="hover:text-ink-600 dark:hover:text-ink-dark-text">

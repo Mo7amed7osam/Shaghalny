@@ -6,6 +6,7 @@ import {
 import { useState } from 'react';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
+import wordmark from '@/assets/shaghalny-wordmark.svg';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import useAuth from '@/hooks/useAuth';
 import { getTheme, setTheme } from '@/lib/theme';
@@ -57,7 +58,7 @@ export const Sidebar = () => {
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-ink-200 px-5 dark:border-ink-dark-border">
         <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-ink-900 dark:text-white">Shaghalny</p>
+          <img src={wordmark} alt="Shaghalny" className="h-5 w-auto max-w-[140px] object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
           <p className="truncate text-[10px] font-medium uppercase tracking-[0.18em] text-brand-500 dark:text-brand-400">
             {user?.role || 'Workspace'}
           </p>

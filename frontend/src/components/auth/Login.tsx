@@ -7,6 +7,7 @@ import { ArrowRight, BadgeCheck, ShieldCheck, Sparkles, Video } from 'lucide-rea
 import { toast } from 'sonner';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
+import wordmark from '@/assets/shaghalny-wordmark.svg';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,7 +57,7 @@ const Login: React.FC = () => {
       <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-brand-700 p-10 lg:flex">
         <Link to="/" className="flex items-center gap-2.5 text-white no-underline">
           <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-          <span className="text-sm font-semibold text-white">Shaghalny</span>
+          <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain brightness-0 invert" />
         </Link>
 
         <div className="space-y-8">
@@ -92,7 +93,7 @@ const Login: React.FC = () => {
           <div className="mb-8 lg:hidden">
             <Link to="/" className="flex items-center gap-2.5 text-ink-900 no-underline dark:text-ink-dark-text">
               <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-              <span className="text-sm font-semibold">Shaghalny</span>
+              <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
             </Link>
           </div>
 

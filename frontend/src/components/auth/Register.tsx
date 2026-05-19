@@ -7,6 +7,7 @@ import { ArrowRight, BriefcaseBusiness, GraduationCap, Shield, Sparkles } from '
 import { toast } from 'sonner';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
+import wordmark from '@/assets/shaghalny-wordmark.svg';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,7 +74,7 @@ const Register: React.FC = () => {
           <div className="mb-8">
             <Link to="/" className="flex items-center gap-2.5 text-ink-900 no-underline dark:text-ink-dark-text">
               <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-              <span className="text-sm font-semibold">Shaghalny</span>
+              <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
             </Link>
           </div>
 
