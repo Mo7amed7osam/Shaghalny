@@ -1,7 +1,19 @@
 import { NavLink } from 'react-router-dom';
 import {
-  Briefcase, CalendarDays, ClipboardList, FileBadge,
-  Home, LayoutDashboard, LogOut, Moon, ShieldCheck, Sun, Users, Wallet,
+  Briefcase,
+  CalendarDays,
+  ClipboardList,
+  FileBadge,
+  History,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  Users,
+  Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -20,6 +32,8 @@ export const navByRole = {
     { label: 'Wallet', to: '/student/wallet', icon: Wallet },
     { label: 'Skill Verification', to: '/student/skill-verification', icon: FileBadge },
     { label: 'Profile', to: '/student/profile', icon: Home },
+    { label: 'Career Roadmap', to: '/student/career-roadmap', icon: Sparkles }, 
+    { label: 'Interview History', to: '/student/interview-history', icon: History }, 	
     { label: 'Events', to: '/events', icon: CalendarDays },
   ],
   Client: [
