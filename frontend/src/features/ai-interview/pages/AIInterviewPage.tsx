@@ -330,6 +330,15 @@ const AIInterviewPage: React.FC = () => {
     return 'Press record when you are ready.';
   }, [callPhase]);
 
+const aiProcessingSteps = useMemo(() => {
+    if (callPhase !== 'processingAnswer') return null;
+    return [
+      '🎙️ Analyzing your answer...',
+      '🧠 Evaluating technical knowledge...',
+      '💬 Assessing communication quality...',
+      '⚡ Generating AI feedback...',
+    ];
+  }, [callPhase]);
   const avatarStatus = useMemo(() => {
     if (callPhase === 'processingAnswer') return 'processing' as const;
     if (callPhase === 'speakingQuestion') return 'speaking' as const;
@@ -531,6 +540,13 @@ const AIInterviewPage: React.FC = () => {
                   {statusError ? (
                     <p className="text-sm text-rose-300">{statusError}</p>
                   ) : null}
+{aiProcessingSteps ? (
+  <div className="space-y-1 text-center">
+    {aiProcessingSteps.map((step, i) => (
+      <p key={i} className="text-xs text-white/60 animate-pulse">{step}</p>
+    ))}
+  </div>
+) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3">

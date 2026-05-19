@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import {
   createSkill,
   deleteAdminJob,
@@ -94,6 +94,15 @@ const deleteSkillMutation = useMutation({
   const sortedSkills = useMemo(() => {
     return (skills || []).slice().sort((a: any, b: any) => a.name.localeCompare(b.name));
   }, [skills]);
+const interviewStats = useMemo(() => [
+    { name: 'Submitted', value: (interviews || []).filter((i: any) => i.reviewStatus === 'pending').length, color: '#f59e0b' },
+    { name: 'Passed', value: (interviews || []).filter((i: any) => i.reviewStatus === 'pass').length, color: '#10b981' },
+    { name: 'Failed', value: (interviews || []).filter((i: any) => i.reviewStatus === 'fail').length, color: '#ef4444' },
+  ], [interviews]);
+
+  const skillsData = useMemo(() => 
+    sortedSkills.slice(0, 6).map((s: any) => ({ name: s.name, value: 1 })),
+  [sortedSkills]);
 
   return (
     <div className="space-y-8">
@@ -102,7 +111,41 @@ const deleteSkillMutation = useMutation({
         title="Platform control center"
         description="Review AI interview outcomes, maintain the skill library, and keep jobs and accounts tidy."
       />
+<div className="grid gap-5 md:grid-cols-2">
+  <div className="glass-panel p-6 space-y-4">
+    <h2 className="text-xl font-semibold">Interview Results</h2>
+    <ResponsiveContainer width="100%" height={200}>
+      <PieChart>
+        <Pie data={interviewStats} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+          {interviewStats.map((entry, index) => (
+            <Cell key={index} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
+    <div className="flex gap-4 justify-center">
+      {interviewStats.map((s) => (
+        <div key={s.name} className="flex items-center gap-1 text-xs">
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: s.color }} />
+          {s.name}: {s.value}
+        </div>
+      ))}
+    </div>
+  </div>
 
+  <div className="glass-panel p-6 space-y-4">
+    <h2 className="text-xl font-semibold">Skills Library</h2>
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={skillsData}>
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+        <YAxis hide />
+        <Tooltip />
+        <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+</div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Interview queue" value={interviewsLoading ? <Skeleton className="h-10 w-24" /> : (interviews || []).length} caption="Items in the selected review state." />
         <StatCard label="Users" value={usersLoading ? <Skeleton className="h-10 w-24" /> : (users || []).length} caption="Accounts currently on the platform." />

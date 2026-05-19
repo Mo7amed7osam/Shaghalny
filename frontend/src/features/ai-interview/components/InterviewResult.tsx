@@ -679,7 +679,44 @@ export const InterviewResult: React.FC<InterviewResultProps> = ({ result }) => {
   </div>
 }
       />
-
+<div className="rounded-3xl border border-brand-200 bg-brand-50/80 p-6 dark:border-brand-400/20 dark:bg-brand-400/10">
+  <div className="flex items-center gap-3 mb-4">
+    <span className="text-2xl">🤖</span>
+    <h2 className="text-xl font-semibold text-brand-700 dark:text-brand-300">AI Insights</h2>
+  </div>
+  <div className="grid gap-4 md:grid-cols-3">
+    <div className="space-y-1">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">Final Score</p>
+      <p className="text-3xl font-bold text-brand-700 dark:text-brand-300">{result.finalScore ?? '—'}</p>
+    </div>
+    <div className="space-y-1">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">Recommendation</p>
+      <p className="text-lg font-semibold capitalize text-brand-700 dark:text-brand-300">{result.recommendation || 'Pending'}</p>
+    </div>
+    <div className="space-y-1">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">Questions Analyzed</p>
+      <p className="text-3xl font-bold text-brand-700 dark:text-brand-300">{result.answers.length}</p>
+    </div>
+  </div>
+  <div className="mt-4 grid gap-3 md:grid-cols-2">
+    <div>
+      <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2">✅ Top Strengths</p>
+      <ul className="space-y-1">
+        {result.answers.flatMap(a => a.strengths).slice(0, 3).map((s, i) => (
+          <li key={i} className="text-xs text-ink-600 dark:text-ink-300">• {s}</li>
+        ))}
+      </ul>
+    </div>
+    <div>
+      <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-2">⚠️ Areas to Improve</p>
+      <ul className="space-y-1">
+        {result.answers.flatMap(a => a.weaknesses).slice(0, 3).map((w, i) => (
+          <li key={i} className="text-xs text-ink-600 dark:text-ink-300">• {w}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>
       <div className="grid gap-4 md:grid-cols-3">
         {[
           ['Status', result.status],
