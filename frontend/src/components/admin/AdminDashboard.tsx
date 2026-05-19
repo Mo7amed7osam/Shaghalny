@@ -63,6 +63,10 @@ const AdminDashboard: React.FC = () => {
     queryKey: ['admin', 'interviews', status],
     queryFn: () => getInterviews(status),
   });
+  const { data: allInterviews, isLoading: allInterviewsLoading } = useQuery({
+    queryKey: ['admin', 'interviews', 'ALL'],
+    queryFn: () => getInterviews(),
+  });
   const { data: users, isLoading: usersLoading } = useQuery({ queryKey: ['admin', 'users'], queryFn: getAdminUsers });
   const { data: jobs, isLoading: jobsLoading } = useQuery({ queryKey: ['admin', 'jobs'], queryFn: getAdminJobs });
   const { data: skills, isLoading: skillsLoading } = useQuery({ queryKey: ['skills'], queryFn: getSkills });
@@ -92,11 +96,12 @@ const AdminDashboard: React.FC = () => {
   const sortedSkills = useMemo(() => {
     return (skills || []).slice().sort((a: any, b: any) => a.name.localeCompare(b.name));
   }, [skills]);
+  const statsSource = allInterviews || [];
   const interviewStats = useMemo(() => [
-    { name: 'Submitted', value: (interviews || []).filter((i: any) => i.reviewStatus === 'pending').length, color: '#f59e0b' },
-    { name: 'Passed', value: (interviews || []).filter((i: any) => i.reviewStatus === 'pass').length, color: '#10b981' },
-    { name: 'Failed', value: (interviews || []).filter((i: any) => i.reviewStatus === 'fail').length, color: '#ef4444' },
-  ], [interviews]);
+    { name: 'Submitted', value: statsSource.filter((i: any) => i.reviewStatus === 'pending').length, color: '#f59e0b' },
+    { name: 'Passed', value: statsSource.filter((i: any) => i.reviewStatus === 'pass').length, color: '#10b981' },
+    { name: 'Failed', value: statsSource.filter((i: any) => i.reviewStatus === 'fail').length, color: '#ef4444' },
+  ], [statsSource]);
 
   const skillsData = useMemo(() =>
     sortedSkills.slice(0, 6).map((s: any) => ({ name: s.name, value: 1 })),
@@ -112,16 +117,20 @@ const AdminDashboard: React.FC = () => {
       <div className="grid gap-5 md:grid-cols-2">
         <div className="glass-panel p-6 space-y-4">
           <h2 className="text-xl font-semibold">Interview Results</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={interviewStats} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
-                {interviewStats.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {allInterviewsLoading ? (
+            <Skeleton className="h-[200px] w-full rounded-xl" />
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={interviewStats} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+                  {interviewStats.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
           <div className="flex gap-4 justify-center">
             {interviewStats.map((s) => (
               <div key={s.name} className="flex items-center gap-1 text-xs">

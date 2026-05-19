@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { getInterviewById, reviewInterview } from '@/services/api';
@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const ReviewInterview: React.FC = () => {
   const { interviewId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [score, setScore] = useState<string>('');
   const [status, setStatus] = useState<string>('pass');
@@ -33,7 +34,11 @@ const ReviewInterview: React.FC = () => {
 
   const reviewMutation = useMutation({
     mutationFn: () => reviewInterview(interviewId as string, { status, score: score === '' ? undefined : Number(score) }),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['admin', 'interviews'] }),
+        queryClient.invalidateQueries({ queryKey: ['admin', 'interview', interviewId] }),
+      ]);
       toast.success('Interview reviewed successfully.');
       navigate('/admin/dashboard');
     },

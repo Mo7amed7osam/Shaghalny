@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import {
@@ -15,6 +15,8 @@ import {
   Zap,
   Clock,
   FileText,
+  Moon,
+  Sun,
   DollarSign,
 } from 'lucide-react';
 
@@ -25,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { getTheme, setTheme } from '@/lib/theme';
 
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
 const EASE_IN_OUT: [number, number, number, number] = [0.77, 0, 0.175, 1];
@@ -307,6 +310,7 @@ const aiPoints = [
 
 const LandingPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const [theme, setThemeState] = useState<'light' | 'dark'>(getTheme());
   const dashboardPath = user ? dashboardPathByRole[user.role as keyof typeof dashboardPathByRole] : null;
   const ctaPath = isAuthenticated && dashboardPath ? dashboardPath : '/register';
   const ctaLabel = isAuthenticated ? 'Go to workspace' : 'Create account';
@@ -315,6 +319,12 @@ const LandingPage: React.FC = () => {
   const featuresSection = useScrollInView('-80px');
   const rolesSection = useScrollInView('-80px');
   const stepsSection = useScrollInView('-80px');
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setThemeState(next);
+    setTheme(next);
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink-dark-bg">
@@ -325,6 +335,9 @@ const LandingPage: React.FC = () => {
             <img src={wordmark} alt="Shaghalny" className="h-8 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
           </Link>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/login">Sign in</Link>
             </Button>
