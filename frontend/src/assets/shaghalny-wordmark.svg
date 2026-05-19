@@ -1,34 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 48" fill="none">
-  <defs>
-    <linearGradient id="wordmark-bg" x1="5" y1="5" x2="43" y2="43" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3B82F6" />
-      <stop offset="0.52" stop-color="#2563EB" />
-      <stop offset="1" stop-color="#0F172A" />
-    </linearGradient>
-    <linearGradient id="wordmark-wave" x1="13" y1="11" x2="37" y2="38" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E0F2FE" />
-      <stop offset="1" stop-color="#FFFFFF" />
-    </linearGradient>
-    <linearGradient id="wordmark-accent" x1="29" y1="15" x2="42" y2="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A5F3FC" />
-      <stop offset="1" stop-color="#60A5FA" />
-    </linearGradient>
-  </defs>
-
-  <rect x="3" y="3" width="42" height="42" rx="14" fill="url(#wordmark-bg)" />
-  <rect x="4.2" y="4.2" width="39.6" height="39.6" rx="12.8" stroke="white" stroke-opacity=".16" stroke-width="1.4" />
-  <path d="M34.2 11.5 37.8 13.4 34.2 15.2 32.3 18.8 30.5 15.2 26.8 13.4 30.5 11.5 32.3 7.8 34.2 11.5Z" fill="url(#wordmark-accent)" />
-  <path d="M29.9 13.2C23.6 13.2 18.9 15.2 15.1 17.8C10.9 20.5 7.8 24.4 2.2 26.3V36.3C8.4 35.1 12.8 32.5 16.7 30.2C20.1 28.2 23.4 26.3 27.4 26.3C32.1 26.3 35.2 28.5 37.5 31.7V42C34.5 38.9 30.7 37.1 25.9 37.1C22.1 37.1 18.8 38.8 15.5 40.9C11.7 43.3 7.3 45.9 2.2 46.7H10.3C15.1 46.3 19 44 22.6 41.8C25.8 39.9 28.7 38.3 32.2 38.3C35.8 38.3 38.6 39.8 41.6 43.2V30.1C39.7 22.6 35.9 13.2 29.9 13.2Z" fill="url(#wordmark-wave)" transform="translate(3 0)" />
-
-  <text
-    x="58"
-    y="30"
-    fill="#162236"
-    font-family="Space Grotesk, Inter, Arial, sans-serif"
-    font-size="22"
-    font-weight="700"
-    letter-spacing=".2"
-  >
-    Shaghalny
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40" fill="none">
+  <rect width="36" height="36" x="0" y="2" rx="9" fill="#2563eb"/>
+  <path d="M9 29 C9 21 27 18 27 10" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="27" cy="10" r="3.8" fill="#60a5fa"/>
+  <text x="46" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" letter-spacing="-0.5" fill="#1e293b">shaghalny</text>
 </svg>

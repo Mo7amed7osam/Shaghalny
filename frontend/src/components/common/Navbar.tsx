@@ -8,7 +8,7 @@ const Navbar: React.FC = () => {
     return (
         <nav className="navbar">
             <div className="navbar-brand">
-                <Link to="/">Shaghalny</Link>
+                <Link to="/">shaghalny</Link>
             </div>
             <div className="navbar-links">
                 <Link to="/jobs">Jobs</Link>
