@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-import logo from '@/assets/shaghalny-logo-premium.svg';
 import wordmark from '@/assets/shaghalny-wordmark.svg';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import useAuth from '@/hooks/useAuth';
@@ -69,10 +68,9 @@ export const Sidebar = () => {
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-ink-200 bg-white dark:border-ink-dark-border dark:bg-ink-dark-surface md:flex">
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-ink-200 px-5 dark:border-ink-dark-border">
-        <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
+      <div className="flex h-16 shrink-0 items-center border-b border-ink-200 px-5 dark:border-ink-dark-border">
         <div className="min-w-0">
-          <img src={wordmark} alt="Shaghalny" className="h-5 w-auto max-w-[140px] object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
+          <img src={wordmark} alt="Shaghalny" className="h-8 w-auto max-w-[160px] object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
           <p className="truncate text-[10px] font-medium uppercase tracking-[0.18em] text-brand-500 dark:text-brand-400">
             {user?.role || 'Workspace'}
           </p>

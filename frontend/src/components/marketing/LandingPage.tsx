@@ -18,7 +18,6 @@ import {
   DollarSign,
 } from 'lucide-react';
 
-import logo from '@/assets/shaghalny-logo-premium.svg';
 import wordmark from '@/assets/shaghalny-wordmark.svg';
 import useAuth from '@/hooks/useAuth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -158,7 +157,7 @@ const ProductPreview: React.FC = () => {
         </div>
       ),
       label: 'AI Verified',
-      accent: 'bg-violet-50 dark:bg-violet-900/15',
+      accent: 'bg-brand-50 dark:bg-brand-900/15',
       dot: 'bg-brand-500',
     },
     {
@@ -187,7 +186,7 @@ const ProductPreview: React.FC = () => {
       {/* Ambient glow behind card */}
       <div
         className="pointer-events-none absolute -inset-6 rounded-3xl opacity-30 blur-2xl dark:opacity-20"
-        style={{ background: 'radial-gradient(circle, #8b5cf640 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, rgb(59 130 246 / 0.25) 0%, transparent 70%)' }}
       />
       <Card className="relative w-full max-w-sm overflow-hidden border-ink-200 bg-white shadow-elevated dark:border-ink-dark-border dark:bg-ink-dark-surface">
         {/* Header */}
@@ -238,7 +237,7 @@ const features = [
     icon: Video,
     title: 'AI verification with Gravis',
     description: 'Students complete structured interviews before proposals move forward. Clients see evidence, not claims.',
-    accent: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
+    accent: 'bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400',
   },
   {
     icon: CreditCard,
@@ -256,7 +255,7 @@ const roles = [
     body: 'Build a verifiable profile, pass a structured AI interview, and apply to jobs with a proposal that stands on evidence.',
     cta: 'Create student account',
     to: '/register',
-    accent: 'from-brand-50 to-violet-50 dark:from-brand-900/20 dark:to-violet-900/20',
+    accent: 'from-brand-50 to-sky-50 dark:from-brand-900/20 dark:to-sky-900/20',
     iconAccent: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
   },
   {
@@ -322,9 +321,8 @@ const LandingPage: React.FC = () => {
       {/* ── Nav ── */}
       <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/95 backdrop-blur-sm dark:border-ink-dark-border dark:bg-ink-dark-bg/95">
         <div className="page-container flex h-16 items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2.5 text-ink-900 no-underline dark:text-ink-dark-text">
-            <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-            <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
+          <Link to="/" className="flex items-center text-ink-900 no-underline dark:text-ink-dark-text">
+            <img src={wordmark} alt="Shaghalny" className="h-8 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
@@ -342,12 +340,12 @@ const LandingPage: React.FC = () => {
         className="relative overflow-hidden text-ink-950 dark:text-white"
         style={{
           background:
-            'radial-gradient(ellipse 80% 60% at 50% -10%, #ede9fe 0%, #f5f3ff 30%, #ffffff 70%)',
+            'radial-gradient(ellipse 80% 60% at 50% -10%, #dbeafe 0%, #eff6ff 30%, #ffffff 70%)',
         }}
       >
         {/* Dark mode gradient */}
         <div className="pointer-events-none absolute inset-0 hidden dark:block"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #4c1d9520 0%, #0b0a14 60%)' }}
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgb(30 58 138 / 0.2) 0%, #0b0a14 60%)' }}
         />
 
         <div className="page-container relative py-20 sm:py-28">
@@ -373,7 +371,7 @@ const LandingPage: React.FC = () => {
                 className="text-balance text-5xl font-semibold leading-tight text-ink-950 dark:text-white sm:text-6xl"
               >
                 Hire verified student talent.{' '}
-                <span className="bg-gradient-to-r from-brand-500 to-violet-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-brand-500 to-sky-500 bg-clip-text text-transparent">
                   Without the trust gap.
                 </span>
               </motion.h1>
@@ -610,7 +608,7 @@ const LandingPage: React.FC = () => {
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, #a78bfa 0%, transparent 50%), radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 40%)',
+            backgroundImage: 'radial-gradient(circle at 20% 50%, rgb(96 165 250 / 0.55) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgb(37 99 235 / 0.45) 0%, transparent 40%)',
           }}
         />
         <div className="page-container relative py-20">
@@ -715,8 +713,7 @@ const LandingPage: React.FC = () => {
       <footer className="border-t border-ink-100 dark:border-ink-dark-border">
         <div className="page-container flex flex-col items-center justify-between gap-4 py-8 text-sm text-ink-400 md:flex-row dark:text-ink-dark-muted">
           <div className="flex items-center gap-2.5">
-            <img src={logo} alt="Shaghalny" className="h-6 w-6 rounded object-contain" />
-            <img src={wordmark} alt="Shaghalny" className="h-4 w-auto object-contain opacity-90 dark:brightness-[1.06]" />
+            <img src={wordmark} alt="Shaghalny" className="h-6 w-auto object-contain opacity-90 dark:brightness-[1.06]" />
             <p>© {new Date().getFullYear()} Verified student talent.</p>
           </div>
           <div className="flex items-center gap-5">

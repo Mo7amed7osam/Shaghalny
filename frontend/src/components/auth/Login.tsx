@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, BadgeCheck, ShieldCheck, Sparkles, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
-import logo from '@/assets/shaghalny-logo-premium.svg';
 import wordmark from '@/assets/shaghalny-wordmark.svg';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -55,9 +54,8 @@ const Login: React.FC = () => {
     <div className="flex min-h-screen bg-ink-50 dark:bg-ink-dark-bg">
       {/* Left: brand panel */}
       <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-brand-700 p-10 lg:flex">
-        <Link to="/" className="flex items-center gap-2.5 text-white no-underline">
-          <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-          <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain brightness-0 invert" />
+        <Link to="/" className="flex items-center text-white no-underline">
+          <img src={wordmark} alt="Shaghalny" className="h-8 w-auto object-contain brightness-0 invert" />
         </Link>
 
         <div className="space-y-8">
@@ -91,9 +89,8 @@ const Login: React.FC = () => {
       <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <Link to="/" className="flex items-center gap-2.5 text-ink-900 no-underline dark:text-ink-dark-text">
-              <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
-              <img src={wordmark} alt="Shaghalny" className="h-5 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
+            <Link to="/" className="flex items-center text-ink-900 no-underline dark:text-ink-dark-text">
+              <img src={wordmark} alt="Shaghalny" className="h-8 w-auto object-contain dark:brightness-[1.08] dark:contrast-[0.98]" />
             </Link>
           </div>
 
