@@ -82,7 +82,7 @@ const StudentContracts: React.FC = () => {
               <Card className="group flex flex-col gap-0 overflow-hidden p-0 transition-all hover:-translate-y-0.5 hover:shadow-card">
                 <div className="flex items-start justify-between gap-3 p-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500 dark:bg-white/8 dark:text-ink-400">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500 dark:bg-white/10 dark:text-ink-400">
                       <FileText size={16} />
                     </div>
                     <div className="min-w-0">

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <defs>
+    <linearGradient id="favicon-bg" x1="14" y1="10" x2="82" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B82F6" />
+      <stop offset="0.52" stop-color="#2563EB" />
+      <stop offset="1" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="favicon-wave" x1="24" y1="21" x2="73" y2="74" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E0F2FE" />
+      <stop offset="1" stop-color="#FFFFFF" />
+    </linearGradient>
+    <linearGradient id="favicon-accent" x1="55" y1="30" x2="78" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A5F3FC" />
+      <stop offset="1" stop-color="#60A5FA" />
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="80" height="80" rx="24" fill="url(#favicon-bg)" />
+  <rect x="11" y="11" width="74" height="74" rx="21" stroke="white" stroke-opacity=".16" />
+  <path d="M66.8 22.5 74 26.2 66.8 29.9 63.1 37.1 59.5 29.9 52.2 26.2 59.5 22.5 63.1 15.3 66.8 22.5Z" fill="url(#favicon-accent)" />
+  <path d="M59.8 24.8C51.2 24.8 44.7 27.5 39.4 31C33.5 34.8 29.1 40.3 21.2 42.8V56.6C29.8 54.9 35.8 51.3 41.1 48.1C45.7 45.3 49.8 43 54.9 43C61.4 43 65.7 46.1 68.8 50.6V64.9C64.9 60.8 59.9 58.5 53.8 58.5C48.6 58.5 44.3 60.8 39.9 63.5C34.7 66.7 29 70.2 21.2 71.2V75H32.3C38.8 74.5 44.1 71.5 49.1 68.5C53.4 65.9 57.4 63.7 62.2 63.7C67 63.7 70.7 65.8 74.8 70.6V49.4C72.4 40.1 67.1 24.8 59.8 24.8Z" fill="url(#favicon-wave)" />
+</svg>

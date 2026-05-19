@@ -130,8 +130,8 @@ const ContractDetails: React.FC = () => {
                     className={[
                       'rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em]',
                       step.active
-                        ? 'bg-brand-50 text-brand-800 dark:bg-brand-400/12 dark:text-brand-100'
-                        : 'bg-ink-100 text-ink-600 dark:bg-white/8 dark:text-ink-200',
+                        ? 'bg-brand-50 text-brand-800 dark:bg-brand-400/10 dark:text-brand-100'
+                        : 'bg-ink-100 text-ink-600 dark:bg-white/10 dark:text-ink-200',
                     ].join(' ')}
                   >
                     {step.label}

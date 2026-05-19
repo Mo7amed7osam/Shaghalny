@@ -136,35 +136,35 @@ const Register: React.FC = () => {
       </div>
 
       {/* Right: feature panel */}
-      <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-ink-950 p-10 lg:flex">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-300">
+      <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-[radial-gradient(circle_at_top,_#eef5ff_0%,_#f6f9ff_45%,_#ffffff_100%)] p-10 text-ink-950 lg:flex dark:bg-ink-950 dark:text-white">
+        <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-500 dark:border-white/20 dark:bg-white/10 dark:text-ink-300">
           <Sparkles size={12} />
           Why Shaghalny
         </div>
 
         <div className="space-y-6">
           <div className="space-y-3">
-            <h2 className="text-balance text-4xl font-semibold text-white">
+            <h2 className="text-balance text-4xl font-semibold text-ink-950 dark:text-white">
               A cleaner path from student potential to paid work.
             </h2>
-            <p className="text-base leading-7 text-ink-200">
+            <p className="text-base leading-7 text-ink-600 dark:text-ink-200">
               Students can prove capability, and clients can hire with clearer signals. No guessing on either side.
             </p>
           </div>
           <div className="space-y-3">
             {roleCards.map((item) => (
-              <div key={item.title} className="flex items-start gap-3 rounded-lg border border-white/15 bg-white/10 px-4 py-3">
-                <item.icon size={16} className="mt-0.5 shrink-0 text-brand-300" />
+              <div key={item.title} className="flex items-start gap-3 rounded-lg border border-ink-200 bg-white/90 px-4 py-3 shadow-soft dark:border-white/15 dark:bg-white/10 dark:shadow-none">
+                <item.icon size={16} className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-300" />
                 <div>
-                  <p className="text-sm font-semibold text-white">{item.title}</p>
-                  <p className="mt-0.5 text-xs leading-5 text-ink-300">{item.body}</p>
+                  <p className="text-sm font-semibold text-ink-950 dark:text-white">{item.title}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-ink-600 dark:text-ink-300">{item.body}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-xs text-ink-400">© {new Date().getFullYear()} Shaghalny</p>
+        <p className="text-xs text-ink-500 dark:text-ink-400">© {new Date().getFullYear()} Shaghalny</p>
       </div>
     </div>
   );

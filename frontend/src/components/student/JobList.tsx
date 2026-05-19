@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Briefcase, Building2, Clock, DollarSign, Search, SendHorizonal, X,
+  Briefcase, Building2, Clock, DollarSign, Search, SendHorizonal, ShieldAlert, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { fetchJobs, getStudentProposals, submitProposal } from '@/services/api';
+import { fetchJobs, getStudentProfile, getStudentProposals, submitProposal } from '@/services/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -70,10 +70,21 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     enabled: !!userId,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ['student', 'profile', userId],
+    queryFn: () => getStudentProfile(userId),
+    enabled: !!userId,
+  });
+
   const submittedJobIds = useMemo(() => {
     const ids = (proposals || []).map((p: any) => p.jobId?._id || p.jobId);
     return new Set(ids);
   }, [proposals]);
+
+  const verifiedSkillIds = useMemo(
+    () => new Set((profile?.verifiedSkills || []).map((item: any) => String(item.skill?._id || item.skill))),
+    [profile]
+  );
 
   const proposalMutation = useMutation({
     mutationFn: ({ jobId, details, proposedBudget }: { jobId: string; details: string; proposedBudget?: number }) =>
@@ -99,11 +110,21 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
   const activeJob = filteredJobs.find((j: any) => (j._id || j.id) === activeJobId);
 
+  const getMissingVerifiedSkills = (job: any) =>
+    (job?.requiredSkills || []).filter((skill: any) => !verifiedSkillIds.has(String(skill?._id || skill)));
+
   const handleSubmit = async () => {
     if (!activeJobId) return;
     if (submittedJobIds.has(activeJobId)) {
       toast.error('Already applied to this job.');
       return;
+    }
+    if (activeJob) {
+      const missingSkills = getMissingVerifiedSkills(activeJob);
+      if (missingSkills.length > 0) {
+        toast.error(`Verify required skills first: ${missingSkills.map((skill: any) => skill.name || skill).join(', ')}`);
+        return;
+      }
     }
     const draft = getDraft(activeJobId);
     if (!draft.details.trim()) {
@@ -185,6 +206,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
               const hasSubmitted = submittedJobIds.has(jobKey);
               const skills = job.requiredSkills || [];
               const draft = getDraft(jobKey);
+              const missingSkills = getMissingVerifiedSkills(job);
+              const canApply = missingSkills.length === 0;
 
               return (
                 <motion.div key={jobKey} variants={fadeUp} layout>
@@ -257,14 +280,24 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           <p className="text-sm font-medium text-accent-700 dark:text-accent-300">Application submitted — awaiting review</p>
                         </div>
                       ) : (
-                        <Button
-                          className="w-full"
-                          onClick={() => setActiveJobId(jobKey)}
-                          disabled={isFetching}
-                        >
-                          <SendHorizonal size={15} />
-                          Apply for this role
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            className="w-full"
+                            onClick={() => setActiveJobId(jobKey)}
+                            disabled={isFetching || !canApply}
+                          >
+                            <SendHorizonal size={15} />
+                            Apply for this role
+                          </Button>
+                          {!canApply && (
+                            <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-700/30 dark:bg-amber-900/10">
+                              <ShieldAlert size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-300" />
+                              <p className="text-sm text-amber-700 dark:text-amber-200">
+                                Verify these skills first: {missingSkills.map((skill: any) => skill.name || skill).join(', ')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </Card>
@@ -286,7 +319,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
           </SheetHeader>
 
           {activeJob && (
-            <div className="flex flex-wrap gap-3 rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm dark:border-ink-dark-border dark:bg-white/4">
+            <div className="flex flex-wrap gap-3 rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm dark:border-ink-dark-border dark:bg-white/5">
               {(activeJob.budgetMin !== undefined || activeJob.budgetMax !== undefined) && (
                 <span className="flex items-center gap-1.5 text-ink-600 dark:text-ink-300">
                   <DollarSign size={13} /> {activeJob.budgetMin ?? '—'} – {activeJob.budgetMax ?? '—'}
@@ -297,6 +330,14 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                   <Clock size={13} /> {activeJob.duration}
                 </span>
               )}
+            </div>
+          )}
+
+          {activeJob && getMissingVerifiedSkills(activeJob).length > 0 && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-700/30 dark:bg-amber-900/10 dark:text-amber-200">
+              You cannot apply until these required skills are verified:
+              {' '}
+              {getMissingVerifiedSkills(activeJob).map((skill: any) => skill.name || skill).join(', ')}
             </div>
           )}
 

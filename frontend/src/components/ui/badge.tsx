@@ -10,7 +10,7 @@ const badgeVariants = cva(
         default:
           'border-ink-200 bg-ink-100 text-ink-700 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-300',
         subtle:
-          'border-ink-200 bg-ink-100 text-ink-600 dark:border-ink-dark-border dark:bg-white/8 dark:text-ink-400',
+          'border-ink-200 bg-ink-100 text-ink-600 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-400',
         success:
           'border-accent-200 bg-accent-50 text-accent-800 dark:border-accent-700/40 dark:bg-accent-900/30 dark:text-accent-300',
         warning:

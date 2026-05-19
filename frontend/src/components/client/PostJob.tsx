@@ -144,7 +144,7 @@ const PostJob: React.FC = () => {
                             'rounded-full border px-4 py-2 text-sm font-semibold transition',
                             active
                               ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200'
-                              : 'border-ink-300 bg-white/92 text-ink-700 hover:border-ink-400 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-white/8 dark:text-ink-200 dark:hover:bg-white/12',
+                              : 'border-ink-300 bg-white/90 text-ink-700 hover:border-ink-400 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-200 dark:hover:bg-white/15',
                           ].join(' ')}
                         >
                           {skill.name}
@@ -185,7 +185,7 @@ const PostJob: React.FC = () => {
                 <BriefcaseBusiness size={20} />
               </div>
               <h2 className="text-2xl font-semibold text-white">What strong job posts do well</h2>
-              <ul className="space-y-3 text-sm leading-6 text-white/84">
+              <ul className="space-y-3 text-sm leading-6 text-white/85">
                 <li>Explain the goal, not just the task list.</li>
                 <li>Set a clear budget range and timeline up front.</li>
                 <li>Ask for the skills that actually determine success.</li>

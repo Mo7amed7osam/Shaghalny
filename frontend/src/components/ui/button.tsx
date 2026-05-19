@@ -16,9 +16,9 @@ export const buttonVariants = cva(
         soft:
           'bg-brand-50 text-brand-700 border border-brand-200 hover:bg-brand-100 hover:border-brand-300 dark:bg-brand-900/30 dark:text-brand-300 dark:border-brand-800 dark:hover:bg-brand-900/50',
         outline:
-          'border border-ink-200 bg-white text-ink-700 shadow-soft hover:border-ink-300 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface dark:text-ink-300 dark:hover:bg-white/8',
+          'border border-ink-200 bg-white text-ink-700 shadow-soft hover:border-ink-300 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface dark:text-ink-300 dark:hover:bg-white/10',
         ghost:
-          'bg-transparent text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-white/8 dark:hover:text-ink-dark-text',
+          'bg-transparent text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-white/10 dark:hover:text-ink-dark-text',
         danger:
           'bg-rose-600 text-white shadow-soft hover:bg-rose-700',
         success:

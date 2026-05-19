@@ -1,19 +1,33 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useInView, useReducedMotion } from 'framer-motion';
 import {
   ArrowRight,
   BadgeCheck,
   BriefcaseBusiness,
+  CheckCircle2,
   CreditCard,
   GraduationCap,
   ShieldCheck,
   Sparkles,
+  Star,
   Video,
+  Zap,
+  Clock,
+  FileText,
+  DollarSign,
 } from 'lucide-react';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
 import useAuth from '@/hooks/useAuth';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+
+const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
+const EASE_IN_OUT: [number, number, number, number] = [0.77, 0, 0.175, 1];
 
 const dashboardPathByRole = {
   Student: '/student/dashboard',
@@ -21,21 +35,215 @@ const dashboardPathByRole = {
   Admin: '/admin/dashboard',
 } as const;
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: EASE_OUT, delay },
+  }),
+};
+
+const fadeIn = {
+  hidden: { opacity: 0, scale: 0.97 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.45, ease: EASE_OUT, delay },
+  }),
+};
+
+function useScrollInView(margin = '-60px') {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: margin as Parameters<typeof useInView>[1]['margin'] });
+  return { ref, inView };
+}
+
+// ── Product Preview Component ─────────────────────────────────────────────────
+
+const ProductPreview: React.FC = () => {
+  const shouldReduce = useReducedMotion();
+
+  const items = [
+    {
+      id: 'profile',
+      delay: 0.05,
+      content: (
+        <div className="flex items-start gap-3">
+          <Avatar className="h-9 w-9 shrink-0">
+            <AvatarFallback className="text-xs font-bold">SK</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Sara Khalil</span>
+              <Badge variant="success" className="text-[10px]">
+                <BadgeCheck size={9} />
+                Verified
+              </Badge>
+            </div>
+            <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-dark-muted">React Developer · Score 94/100</p>
+          </div>
+          <div className="flex items-center gap-0.5 text-amber-500">
+            <Star size={11} className="fill-amber-400" />
+            <span className="text-[11px] font-semibold text-ink-700 dark:text-ink-300">4.9</span>
+          </div>
+        </div>
+      ),
+      label: 'Student Profile',
+      accent: 'bg-brand-50 dark:bg-brand-900/20',
+      dot: 'bg-brand-400',
+    },
+    {
+      id: 'job',
+      delay: 0.12,
+      content: (
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text leading-snug">
+            Build e-commerce landing page
+          </p>
+          <div className="flex items-center gap-3 text-xs text-ink-500 dark:text-ink-dark-muted">
+            <span className="flex items-center gap-1"><DollarSign size={10} />$300 budget</span>
+            <span className="flex items-center gap-1"><Clock size={10} />Posted 2h ago</span>
+          </div>
+          <Badge variant="brand" className="text-[10px]">React · Tailwind · TypeScript</Badge>
+        </div>
+      ),
+      label: 'Job Post',
+      accent: 'bg-ink-50 dark:bg-ink-dark-surface',
+      dot: 'bg-ink-300 dark:bg-ink-600',
+    },
+    {
+      id: 'proposal',
+      delay: 0.19,
+      content: (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Proposal received</p>
+            <Badge variant="warning" className="text-[10px]">New</Badge>
+          </div>
+          <p className="text-xs text-ink-500 dark:text-ink-dark-muted leading-relaxed">
+            "I can deliver in 5 days with full responsive design." — Sara K.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-accent-600 dark:text-accent-400">$280</span>
+            <span className="text-xs text-ink-400">· 5 day delivery</span>
+          </div>
+        </div>
+      ),
+      label: 'Proposal',
+      accent: 'bg-amber-50 dark:bg-amber-900/10',
+      dot: 'bg-amber-400',
+    },
+    {
+      id: 'ai',
+      delay: 0.26,
+      content: (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Zap size={13} className="text-brand-500" />
+            <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Gravis AI — Interview Complete</p>
+          </div>
+          <div className="flex gap-2">
+            {[
+              { skill: 'React', score: 94 },
+              { skill: 'CSS', score: 88 },
+            ].map((s) => (
+              <div key={s.skill} className="flex-1 rounded-lg bg-brand-50 px-2 py-1.5 dark:bg-brand-900/20">
+                <p className="text-[10px] font-semibold text-brand-600 dark:text-brand-300">{s.skill}</p>
+                <p className="text-sm font-bold text-brand-700 dark:text-brand-200">{s.score}<span className="text-[10px] font-normal text-brand-500">/100</span></p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+      label: 'AI Verified',
+      accent: 'bg-violet-50 dark:bg-violet-900/15',
+      dot: 'bg-brand-500',
+    },
+    {
+      id: 'contract',
+      delay: 0.33,
+      content: (
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-100 dark:bg-accent-900/30">
+            <CheckCircle2 size={16} className="text-accent-600 dark:text-accent-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Contract Active</p>
+            <p className="text-xs text-ink-500 dark:text-ink-dark-muted">$280 in escrow · Day 2 of 5</p>
+          </div>
+          <Badge variant="success" className="text-[10px] shrink-0">Live</Badge>
+        </div>
+      ),
+      label: 'Contract',
+      accent: 'bg-accent-50 dark:bg-accent-900/10',
+      dot: 'bg-accent-500',
+    },
+  ];
+
+  return (
+    <div className="relative">
+      {/* Ambient glow behind card */}
+      <div
+        className="pointer-events-none absolute -inset-6 rounded-3xl opacity-30 blur-2xl dark:opacity-20"
+        style={{ background: 'radial-gradient(circle, #8b5cf640 0%, transparent 70%)' }}
+      />
+      <Card className="relative w-full max-w-sm overflow-hidden border-ink-200 bg-white shadow-elevated dark:border-ink-dark-border dark:bg-ink-dark-surface">
+        {/* Header */}
+        <div className="flex items-center gap-2 border-b border-ink-100 px-4 py-3 dark:border-ink-dark-border">
+          <div className="flex gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-accent-400" />
+          </div>
+          <span className="mx-auto text-xs font-medium text-ink-400 dark:text-ink-dark-muted">shaghalny.app</span>
+        </div>
+
+        {/* Workflow items */}
+        <div className="divide-y divide-ink-100 dark:divide-ink-dark-border">
+          {items.map((item) => (
+            <motion.div
+              key={item.id}
+              initial={shouldReduce ? false : { opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, ease: EASE_OUT, delay: item.delay }}
+              className={`px-4 py-3 ${item.accent}`}
+            >
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400 dark:text-ink-dark-muted">
+                  {item.label}
+                </span>
+              </div>
+              {item.content}
+            </motion.div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// ── Feature cards data ─────────────────────────────────────────────────────────
+
 const features = [
   {
     icon: GraduationCap,
     title: 'Built for student talent',
     description: 'A marketplace where early-career work gets structure: verified profiles, clear proposals, and contracts that hold.',
+    accent: 'bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400',
   },
   {
     icon: Video,
     title: 'AI verification with Gravis',
     description: 'Students complete structured interviews before proposals move forward. Clients see evidence, not claims.',
+    accent: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
   },
   {
     icon: CreditCard,
     title: 'End-to-end workflow',
     description: 'Jobs, proposals, contracts, and wallet top-ups stay connected. Nothing lives in a separate tool.',
+    accent: 'bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400',
   },
 ];
 
@@ -47,6 +255,8 @@ const roles = [
     body: 'Build a verifiable profile, pass a structured AI interview, and apply to jobs with a proposal that stands on evidence.',
     cta: 'Create student account',
     to: '/register',
+    accent: 'from-brand-50 to-violet-50 dark:from-brand-900/20 dark:to-violet-900/20',
+    iconAccent: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
   },
   {
     icon: BriefcaseBusiness,
@@ -55,21 +265,56 @@ const roles = [
     body: 'Post roles, review proposals ranked by verified skill scores, and move straight to contracts without the usual back-and-forth.',
     cta: 'Post your first job',
     to: '/register',
+    accent: 'from-accent-50 to-emerald-50 dark:from-accent-900/20 dark:to-emerald-900/20',
+    iconAccent: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300',
   },
 ];
 
 const steps = [
-  { n: '01', title: 'Create a profile', body: 'Students list their skills, experience, and portfolio. Clients set up their hiring workspace.' },
-  { n: '02', title: 'Verify capability', body: 'Gravis runs a structured AI interview. Scores are attached to the profile before any proposal is sent.' },
-  { n: '03', title: 'Review and shortlist', body: 'Clients compare budgets, verified skill data, and proposal history in one view.' },
-  { n: '04', title: 'Close confidently', body: 'Contracts and wallet flows carry the deal through delivery without leaving the platform.' },
+  {
+    n: '01',
+    title: 'Create a profile',
+    body: 'Students list their skills, experience, and portfolio. Clients set up their hiring workspace.',
+    icon: FileText,
+  },
+  {
+    n: '02',
+    title: 'Verify capability',
+    body: 'Gravis runs a structured AI interview. Scores are attached to the profile before any proposal is sent.',
+    icon: BadgeCheck,
+  },
+  {
+    n: '03',
+    title: 'Review and shortlist',
+    body: 'Clients compare budgets, verified skill data, and proposal history in one view.',
+    icon: Star,
+  },
+  {
+    n: '04',
+    title: 'Close confidently',
+    body: 'Contracts and wallet flows carry the deal through delivery without leaving the platform.',
+    icon: CheckCircle2,
+  },
 ];
+
+const aiPoints = [
+  'Structured question sets per skill',
+  'Scores attached to the profile',
+  'Visible before clients review proposals',
+];
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 
 const LandingPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const dashboardPath = user ? dashboardPathByRole[user.role as keyof typeof dashboardPathByRole] : null;
   const ctaPath = isAuthenticated && dashboardPath ? dashboardPath : '/register';
   const ctaLabel = isAuthenticated ? 'Go to workspace' : 'Create account';
+  const shouldReduce = useReducedMotion();
+
+  const featuresSection = useScrollInView('-80px');
+  const rolesSection = useScrollInView('-80px');
+  const stepsSection = useScrollInView('-80px');
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink-dark-bg">
@@ -92,146 +337,284 @@ const LandingPage: React.FC = () => {
       </header>
 
       {/* ── Hero ── */}
-      <section className="bg-ink-950 text-white">
-        <div className="page-container py-24 sm:py-32">
-          <div className="mx-auto max-w-3xl space-y-8 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-200">
-              <Sparkles size={12} />
-              Student freelancing marketplace
-            </div>
-            <h1 className="text-balance text-5xl font-semibold leading-tight text-white sm:text-6xl">
-              Hire verified student talent.<br />
-              <span className="text-brand-400">Without the trust gap.</span>
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-7 text-brand-100">
-              Shaghalny connects clients with early-career freelancers who have completed structured AI interviews. Real verification, clean workflows, one platform.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Button asChild size="xl">
-                <Link to={ctaPath}>
-                  {ctaLabel}
-                  <ArrowRight size={18} />
-                </Link>
-              </Button>
-              <Link
-                to="/login"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 text-base font-semibold text-white transition-all duration-150 hover:bg-white/20 hover:border-white/40 active:scale-[0.98]"
-              >
-                Sign in
-              </Link>
-            </div>
-          </div>
+      <section
+        className="relative overflow-hidden text-ink-950 dark:text-white"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 60% at 50% -10%, #ede9fe 0%, #f5f3ff 30%, #ffffff 70%)',
+        }}
+      >
+        {/* Dark mode gradient */}
+        <div className="pointer-events-none absolute inset-0 hidden dark:block"
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, #4c1d9520 0%, #0b0a14 60%)' }}
+        />
 
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/20 bg-white/20">
-            {[
-              { label: 'Verification', value: 'AI-backed' },
-              { label: 'Workflow', value: 'End-to-end' },
-              { label: 'Audience', value: 'Students first' },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-1 bg-ink-950 px-6 py-5 text-center">
-                <p className="text-lg font-semibold text-white">{stat.value}</p>
-                <p className="text-xs uppercase tracking-[0.14em] text-white/75">{stat.label}</p>
-              </div>
-            ))}
+        <div className="page-container relative py-20 sm:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+            {/* Left: text */}
+            <div className="mx-auto max-w-2xl space-y-7 text-center lg:mx-0 lg:text-left">
+              <motion.div
+                custom={0}
+                variants={fadeIn}
+                initial="hidden"
+                animate="visible"
+                className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 dark:border-white/20 dark:bg-white/10 dark:text-brand-200"
+              >
+                <Sparkles size={12} />
+                Student freelancing marketplace
+              </motion.div>
+
+              <motion.h1
+                custom={0.1}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className="text-balance text-5xl font-semibold leading-tight text-ink-950 dark:text-white sm:text-6xl"
+              >
+                Hire verified student talent.{' '}
+                <span className="bg-gradient-to-r from-brand-500 to-violet-500 bg-clip-text text-transparent">
+                  Without the trust gap.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                custom={0.2}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className="max-w-xl text-lg leading-7 text-ink-600 dark:text-ink-300 lg:max-w-none"
+              >
+                Shaghalny connects clients with early-career freelancers who have completed structured AI interviews.
+                Real verification, clean workflows, one platform.
+              </motion.p>
+
+              <motion.div
+                custom={0.3}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+              >
+                <motion.div whileTap={shouldReduce ? {} : { scale: 0.97 }} transition={{ duration: 0.1 }}>
+                  <Button asChild size="xl">
+                    <Link to={ctaPath}>
+                      {ctaLabel}
+                      <ArrowRight size={18} />
+                    </Link>
+                  </Button>
+                </motion.div>
+                <motion.div whileTap={shouldReduce ? {} : { scale: 0.97 }} transition={{ duration: 0.1 }}>
+                  <Link
+                    to="/login"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-ink-200 bg-white px-6 text-base font-semibold text-ink-900 transition-colors duration-150 hover:border-brand-300 hover:bg-brand-50 active:scale-[0.97] dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/20"
+                  >
+                    Sign in
+                  </Link>
+                </motion.div>
+              </motion.div>
+
+              {/* Mini trust stats */}
+              <motion.div
+                custom={0.4}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-wrap items-center justify-center gap-6 pt-2 lg:justify-start"
+              >
+                {[
+                  { icon: BadgeCheck, label: 'AI-verified profiles' },
+                  { icon: ShieldCheck, label: 'Structured contracts' },
+                  { icon: Zap, label: 'One platform, end-to-end' },
+                ].map(({ icon: Icon, label }) => (
+                  <span key={label} className="flex items-center gap-1.5 text-sm text-ink-500 dark:text-ink-400">
+                    <Icon size={15} className="text-brand-500" />
+                    {label}
+                  </span>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Right: product preview */}
+            <motion.div
+              initial={shouldReduce ? false : { opacity: 0, x: 32 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.35 }}
+              className="mx-auto lg:mx-0"
+            >
+              <ProductPreview />
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* ── Features ── */}
-      <section className="bg-ink-50 dark:bg-ink-dark-surface">
+      <section ref={featuresSection.ref} className="bg-ink-50 dark:bg-ink-dark-surface">
         <div className="page-container py-20">
-          <div className="mb-12 text-center">
+          <motion.div
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            animate={featuresSection.inView ? 'visible' : 'hidden'}
+            className="mb-12 text-center"
+          >
             <p className="page-eyebrow mb-3">Platform</p>
             <h2 className="text-3xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-4xl">
               What makes Shaghalny different
             </h2>
-          </div>
+          </motion.div>
+
           <div className="grid gap-6 md:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-xl border border-ink-200 bg-white p-6 dark:border-ink-dark-border dark:bg-ink-dark-bg">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                variants={fadeIn}
+                custom={i * 0.08}
+                initial="hidden"
+                animate={featuresSection.inView ? 'visible' : 'hidden'}
+                whileHover={shouldReduce ? {} : { y: -4, transition: { duration: 0.2, ease: EASE_OUT } }}
+                className="group cursor-default rounded-xl border border-ink-200 bg-white p-6 shadow-soft transition-shadow duration-200 hover:shadow-card dark:border-ink-dark-border dark:bg-ink-dark-bg"
+              >
+                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${f.accent}`}>
                   <f.icon size={20} />
                 </div>
                 <h3 className="mb-2 text-base font-semibold text-ink-900 dark:text-ink-dark-text">{f.title}</h3>
                 <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">{f.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── Roles ── */}
-      <section className="bg-white dark:bg-ink-dark-bg">
+      <section ref={rolesSection.ref} className="bg-white dark:bg-ink-dark-bg">
         <div className="page-container py-20">
-          <div className="mb-12 text-center">
+          <motion.div
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            animate={rolesSection.inView ? 'visible' : 'hidden'}
+            className="mb-12 text-center"
+          >
             <p className="page-eyebrow mb-3">For every role</p>
             <h2 className="text-3xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-4xl">
               One platform, two sides of hiring
             </h2>
-          </div>
+          </motion.div>
+
           <div className="grid gap-6 lg:grid-cols-2">
-            {roles.map((role) => (
-              <div key={role.label} className="flex flex-col justify-between gap-8 rounded-xl border border-ink-200 p-8 dark:border-ink-dark-border">
+            {roles.map((role, i) => (
+              <motion.div
+                key={role.label}
+                variants={fadeIn}
+                custom={i * 0.1}
+                initial="hidden"
+                animate={rolesSection.inView ? 'visible' : 'hidden'}
+                whileHover={shouldReduce ? {} : { y: -4, transition: { duration: 0.2, ease: EASE_OUT } }}
+                className={`flex flex-col justify-between gap-8 rounded-xl border border-ink-200 bg-gradient-to-br p-8 transition-shadow duration-200 hover:shadow-card dark:border-ink-dark-border ${role.accent}`}
+              >
                 <div className="space-y-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${role.iconAccent}`}>
                     <role.icon size={20} />
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">{role.label}</p>
-                    <h3 className="mb-3 text-2xl font-semibold text-ink-900 dark:text-ink-dark-text">{role.heading}</h3>
-                    <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">{role.body}</p>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">
+                      {role.label}
+                    </p>
+                    <h3 className="mb-3 text-2xl font-semibold text-ink-900 dark:text-ink-dark-text">
+                      {role.heading}
+                    </h3>
+                    <p className="text-sm leading-6 text-ink-600 dark:text-ink-dark-muted">{role.body}</p>
                   </div>
                 </div>
-                <Button asChild variant="outline" size="sm" className="w-fit">
+                <Button asChild variant="outline" size="sm" className="w-fit bg-white/80 dark:bg-ink-dark-bg/60">
                   <Link to={role.to}>{role.cta}</Link>
                 </Button>
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          <div className="mt-6 rounded-xl border border-ink-200 p-8 dark:border-ink-dark-border">
+          <motion.div
+            variants={fadeIn}
+            custom={0.2}
+            initial="hidden"
+            animate={rolesSection.inView ? 'visible' : 'hidden'}
+            className="mt-6 rounded-xl border border-ink-200 p-8 dark:border-ink-dark-border"
+          >
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-600 dark:bg-accent-900/30 dark:text-accent-400">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">Admins</p>
-                <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">Manage the whole marketplace from one control center.</h3>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">
+                  Admins
+                </p>
+                <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">
+                  Manage the whole marketplace from one control center.
+                </h3>
                 <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
                   Review payment approvals, manage events, and oversee verification status without switching tools.
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ── How it works ── */}
-      <section className="border-y border-ink-100 bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface">
+      <section
+        ref={stepsSection.ref}
+        className="border-y border-ink-100 bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface"
+      >
         <div className="page-container py-20">
-          <div className="mb-12">
+          <motion.div
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            animate={stepsSection.inView ? 'visible' : 'hidden'}
+            className="mb-12"
+          >
             <p className="page-eyebrow mb-3">How it works</p>
             <h2 className="text-3xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-4xl">
               Structured hiring, start to finish.
             </h2>
-          </div>
-          <div className="grid gap-px overflow-hidden rounded-xl border border-ink-200 bg-ink-200 sm:grid-cols-2 lg:grid-cols-4 dark:border-ink-dark-border dark:bg-ink-dark-border">
-            {steps.map((step) => (
-              <div key={step.n} className="space-y-3 bg-white p-6 dark:bg-ink-dark-bg">
-                <p className="text-2xl font-semibold text-brand-200 dark:text-brand-800">{step.n}</p>
-                <h3 className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">{step.title}</h3>
+          </motion.div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.n}
+                variants={fadeIn}
+                custom={i * 0.08}
+                initial="hidden"
+                animate={stepsSection.inView ? 'visible' : 'hidden'}
+                className="rounded-xl border border-ink-200 bg-white p-6 dark:border-ink-dark-border dark:bg-ink-dark-bg"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-3xl font-bold text-brand-200 dark:text-brand-800">{step.n}</p>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-50 text-ink-400 dark:bg-ink-dark-surface dark:text-ink-500">
+                    <step.icon size={15} />
+                  </div>
+                </div>
+                <h3 className="mb-2 text-sm font-semibold text-ink-900 dark:text-ink-dark-text">{step.title}</h3>
                 <p className="text-sm leading-5 text-ink-500 dark:text-ink-dark-muted">{step.body}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── AI Section ── */}
-      <section className="bg-brand-700 text-white">
-        <div className="page-container py-20">
-          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="space-y-5">
+      <section className="relative overflow-hidden bg-brand-700 text-white">
+        {/* Subtle pattern overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 20% 50%, #a78bfa 0%, transparent 50%), radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 40%)',
+          }}
+        />
+        <div className="page-container relative py-20">
+          <div className="grid gap-12 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
                 <BadgeCheck size={12} />
                 Gravis AI verification
@@ -240,24 +623,58 @@ const LandingPage: React.FC = () => {
                 Skills that are proven, not promised.
               </h2>
               <p className="max-w-xl text-base leading-7 text-brand-100">
-                Every student on Shaghalny has completed a structured AI interview with Gravis before their proposals reach clients. No unverified claims, no noise in your candidate shortlist.
+                Every student on Shaghalny has completed a structured AI interview with Gravis before their proposals
+                reach clients. No unverified claims, no noise in your candidate shortlist.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2">
-                {[
-                  'Structured question sets per skill',
-                  'Scores attached to the profile',
-                  'Visible before clients review proposals',
-                ].map((point) => (
-                  <div key={point} className="flex items-center gap-2 text-sm text-white">
-                    <BadgeCheck size={14} className="shrink-0 text-brand-200" />
+              <div className="flex flex-col gap-3 pt-1">
+                {aiPoints.map((point, i) => (
+                  <div key={point} className="flex items-center gap-3 text-sm text-white">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
+                      <CheckCircle2 size={12} className="text-brand-100" />
+                    </div>
                     {point}
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* AI score card */}
             <div className="hidden lg:block">
-              <div className="rounded-xl border border-white/15 bg-white/10 p-6">
-                <Video size={48} className="text-brand-200" />
+              <div className="w-64 rounded-2xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+                    <Zap size={16} className="text-brand-100" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-brand-100">Gravis Score</p>
+                    <p className="text-[10px] text-brand-200">AI-powered assessment</p>
+                  </div>
+                </div>
+                <Separator className="mb-4 bg-white/20" />
+                {[
+                  { skill: 'React.js', score: 94, bar: 94 },
+                  { skill: 'TypeScript', score: 88, bar: 88 },
+                  { skill: 'CSS / Tailwind', score: 91, bar: 91 },
+                ].map((s) => (
+                  <div key={s.skill} className="mb-3 last:mb-0">
+                    <div className="mb-1 flex items-center justify-between text-xs">
+                      <span className="text-brand-100">{s.skill}</span>
+                      <span className="font-bold text-white">{s.score}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${s.bar}%` }}
+                        transition={{ duration: 0.8, ease: EASE_IN_OUT, delay: 0.6 + s.bar * 0.002 }}
+                        className="h-full rounded-full bg-white"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <div className="mt-4 flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2">
+                  <BadgeCheck size={14} className="text-accent-300" />
+                  <span className="text-xs font-semibold text-white">Verified — Ready to hire</span>
+                </div>
               </div>
             </div>
           </div>
@@ -277,12 +694,14 @@ const LandingPage: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link to={ctaPath}>
-                  {ctaLabel}
-                  <ArrowRight size={18} />
-                </Link>
-              </Button>
+              <motion.div whileTap={shouldReduce ? {} : { scale: 0.97 }} transition={{ duration: 0.1 }}>
+                <Button asChild size="lg">
+                  <Link to={ctaPath}>
+                    {ctaLabel}
+                    <ArrowRight size={18} />
+                  </Link>
+                </Button>
+              </motion.div>
               <Button asChild variant="outline" size="lg">
                 <Link to="/login">Sign in</Link>
               </Button>
@@ -299,8 +718,12 @@ const LandingPage: React.FC = () => {
             <p>© {new Date().getFullYear()} Shaghalny. Verified student talent.</p>
           </div>
           <div className="flex items-center gap-5">
-            <Link to="/login" className="hover:text-ink-600 dark:hover:text-ink-dark-text">Sign in</Link>
-            <Link to="/register" className="hover:text-ink-600 dark:hover:text-ink-dark-text">Create account</Link>
+            <Link to="/login" className="hover:text-ink-600 dark:hover:text-ink-dark-text">
+              Sign in
+            </Link>
+            <Link to="/register" className="hover:text-ink-600 dark:hover:text-ink-dark-text">
+              Create account
+            </Link>
           </div>
         </div>
       </footer>

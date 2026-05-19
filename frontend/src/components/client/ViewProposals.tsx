@@ -164,11 +164,11 @@ const ViewProposals: React.FC = () => {
                   <CardContent className="space-y-4 px-5 py-4">
                     {/* Job + budget */}
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/4">
+                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Job</p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || '—'}</p>
                       </div>
-                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/4">
+                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Proposed budget</p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">
                           {proposal.proposedBudget ? `$${proposal.proposedBudget}` : 'Not specified'}
@@ -192,7 +192,7 @@ const ViewProposals: React.FC = () => {
 
                     {/* Cover letter */}
                     {proposal.details && (
-                      <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/4 dark:text-ink-300">
+                      <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-300">
                         <p className="line-clamp-4">{proposal.details}</p>
                       </div>
                     )}

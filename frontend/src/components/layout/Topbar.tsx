@@ -70,7 +70,7 @@ export const Topbar = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-sm transition-colors hover:bg-ink-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-ink-dark-border dark:bg-ink-dark-surface dark:hover:bg-white/8">
+              <button className="flex items-center gap-2.5 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-sm transition-colors hover:bg-ink-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-ink-dark-border dark:bg-ink-dark-surface dark:hover:bg-white/10">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-[10px]">{getInitials(user?.name)}</AvatarFallback>
                 </Avatar>

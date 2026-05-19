@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Job = require('../models/Job');
 const Proposal = require('../models/Proposal');
+const { studentHasRequiredVerifiedSkills } = require('../utils/proposalEligibility');
 
 // Fetch student profile by ID
 const getStudentProfile = async (req, res) => {
@@ -179,6 +180,16 @@ const submitProposal = async (req, res) => {
         const existing = await Proposal.findOne({ jobId, studentId: req.user?.id });
         if (existing) {
             return res.status(400).json({ message: 'You already submitted a proposal for this job.' });
+        }
+
+        const student = await User.findById(req.user?.id).select('verifiedSkills');
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        if (!studentHasRequiredVerifiedSkills(student, job)) {
+            return res.status(403).json({
+                message: 'You can only apply to jobs when all required skills are verified on your profile.',
+            });
         }
 
         const parsedBudget = proposedBudget !== undefined ? Number(proposedBudget) : undefined;

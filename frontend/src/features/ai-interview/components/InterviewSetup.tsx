@@ -114,7 +114,7 @@ export const InterviewSetup: React.FC<InterviewSetupProps> = ({
                 return (
                   <div key={step.key} className="muted-panel flex flex-col gap-4 rounded-3xl p-5 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100 text-brand-700 dark:bg-brand-400/12 dark:text-brand-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100 text-brand-700 dark:bg-brand-400/10 dark:text-brand-100">
                         <step.icon size={20} />
                       </div>
                       <div className="space-y-1">
@@ -134,7 +134,7 @@ export const InterviewSetup: React.FC<InterviewSetupProps> = ({
               })}
             </div>
 
-            <div className="rounded-3xl border border-ink-200 bg-ink-50/90 p-5 dark:border-white/10 dark:bg-white/6">
+            <div className="rounded-3xl border border-ink-200 bg-ink-50/90 p-5 dark:border-white/10 dark:bg-white/5">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-ink-900 dark:text-white">Microphone activity</p>

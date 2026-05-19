@@ -62,7 +62,7 @@ const StatItem: React.FC<{
 }> = ({ icon, label, value, sub, accent }) => (
   <motion.div variants={fadeUp}>
     <Card className={`flex flex-col gap-3 ${accent ? 'border-brand-200 bg-brand-50 dark:border-brand-700/40 dark:bg-brand-900/20' : ''}`}>
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent ? 'bg-brand-100 text-brand-600 dark:bg-brand-800/50 dark:text-brand-300' : 'bg-ink-100 text-ink-500 dark:bg-white/8 dark:text-ink-400'}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent ? 'bg-brand-100 text-brand-600 dark:bg-brand-800/50 dark:text-brand-300' : 'bg-ink-100 text-ink-500 dark:bg-white/10 dark:text-ink-400'}`}>
         {icon}
       </div>
       <div>
@@ -215,7 +215,7 @@ const StudentDashboard: React.FC = () => {
                   onClick={() => navigate(action.path)}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-900 dark:text-ink-300 dark:hover:bg-white/5 dark:hover:text-white"
                 >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-ink-100 text-ink-500 dark:bg-white/8 dark:text-ink-400">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-ink-100 text-ink-500 dark:bg-white/10 dark:text-ink-400">
                     {action.icon}
                   </span>
                   {action.label}

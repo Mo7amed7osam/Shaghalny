@@ -50,7 +50,7 @@ function getInitials(name?: string) {
 const StatItem: React.FC<{ icon: React.ReactNode; label: string; value: React.ReactNode; sub?: string; accent?: boolean }> = ({ icon, label, value, sub, accent }) => (
   <motion.div variants={fadeUp}>
     <Card className={`flex flex-col gap-3 ${accent ? 'border-brand-200 bg-brand-50 dark:border-brand-700/40 dark:bg-brand-900/20' : ''}`}>
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent ? 'bg-brand-100 text-brand-600 dark:bg-brand-800/50 dark:text-brand-300' : 'bg-ink-100 text-ink-500 dark:bg-white/8 dark:text-ink-400'}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${accent ? 'bg-brand-100 text-brand-600 dark:bg-brand-800/50 dark:text-brand-300' : 'bg-ink-100 text-ink-500 dark:bg-white/10 dark:text-ink-400'}`}>
         {icon}
       </div>
       <div>

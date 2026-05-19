@@ -97,12 +97,12 @@ const getVerifiedScore = (skillId: string) => {
               Icon: Sparkles,
             },
           ].map(({ title, body, Icon }) => (
-            <div key={title} className="rounded-xl border border-white/12 bg-white/10 p-6">
+            <div key={title} className="rounded-xl border border-white/15 bg-white/10 p-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
                 <Icon size={20} />
               </div>
               <p className="mt-5 text-xl font-semibold text-white">{title}</p>
-              <p className="mt-2 text-sm leading-6 text-white/84">{body}</p>
+              <p className="mt-2 text-sm leading-6 text-white/85">{body}</p>
             </div>
           ))}
         </CardContent>

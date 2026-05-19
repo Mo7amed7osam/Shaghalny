@@ -30,7 +30,7 @@ export const AIInterviewerAvatar: React.FC<AIInterviewerAvatarProps> = ({
   return (
     <div className="relative flex flex-col items-center justify-center text-center text-white">
       <div className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto h-56 w-56 -translate-y-1/2 rounded-full bg-brand-500/14 blur-3xl" />
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto h-72 w-72 -translate-y-1/2 rounded-full bg-accent-400/8 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 mx-auto h-72 w-72 -translate-y-1/2 rounded-full bg-accent-400/10 blur-3xl" />
 
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative flex h-48 w-48 items-center justify-center">

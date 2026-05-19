@@ -19,7 +19,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     className={cn(
       'flex cursor-default select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none',
       'text-ink-700 focus:bg-ink-100 data-[state=open]:bg-ink-100',
-      'dark:text-ink-300 dark:focus:bg-white/8 dark:data-[state=open]:bg-white/8',
+      'dark:text-ink-300 dark:focus:bg-white/10 dark:data-[state=open]:bg-white/10',
       inset && 'pl-8',
       className
     )}
@@ -85,7 +85,7 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none transition-colors',
-      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/8',
+      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/10',
       destructive && 'text-rose-600 focus:bg-rose-50 dark:text-rose-400 dark:focus:bg-rose-500/10',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
@@ -104,7 +104,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2 text-sm outline-none transition-colors',
-      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/8',
+      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/10',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
@@ -129,7 +129,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2 text-sm outline-none transition-colors',
-      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/8',
+      'text-ink-700 focus:bg-ink-100 dark:text-ink-300 dark:focus:bg-white/10',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
