@@ -1,23 +1,40 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { CheckCircle, DollarSign, ExternalLink, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
-  acceptProposal,
-  getClientJobs,
-  getClientProposals,
-  getJobProposals,
-  getSkills,
+  acceptProposal, getClientJobs, getClientProposals, getJobProposals, getSkills,
 } from '@/services/api';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] } },
+};
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
+
+function getInitials(name?: string) {
+  if (!name) return '?';
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+const statusVariant: Record<string, 'success' | 'brand' | 'danger' | 'warning'> = {
+  accepted: 'success',
+  shortlisted: 'brand',
+  rejected: 'danger',
+};
 
 const ViewProposals: React.FC = () => {
   const queryClient = useQueryClient();
@@ -28,19 +45,10 @@ const ViewProposals: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState<string>('');
   const [budgetDrafts, setBudgetDrafts] = useState<Record<string, string>>({});
 
-  const { data: jobs, isLoading: jobsLoading } = useQuery({
-    queryKey: ['client', 'jobs'],
-    queryFn: getClientJobs,
-  });
+  const { data: jobs, isLoading: jobsLoading } = useQuery({ queryKey: ['client', 'jobs'], queryFn: getClientJobs });
+  const { data: skills, isLoading: skillsLoading } = useQuery({ queryKey: ['skills'], queryFn: getSkills });
 
-  useEffect(() => {
-    setSelectedJob(searchParams.get('jobId') || '');
-  }, [searchParams]);
-
-  const { data: skills, isLoading: skillsLoading } = useQuery({
-    queryKey: ['skills'],
-    queryFn: getSkills,
-  });
+  useEffect(() => { setSelectedJob(searchParams.get('jobId') || ''); }, [searchParams]);
 
   const { data: proposals, isLoading: proposalsLoading } = useQuery({
     queryKey: ['client', 'proposals', selectedJob],
@@ -49,9 +57,9 @@ const ViewProposals: React.FC = () => {
 
   const filteredProposals = useMemo(() => {
     const base = proposals || [];
-    return base.filter((proposal: any) => {
+    return base.filter((p: any) => {
       if (!selectedSkill) return true;
-      return proposal.studentId?.verifiedSkills?.some((verified: any) => (verified.skill?._id || verified.skill) === selectedSkill);
+      return p.studentId?.verifiedSkills?.some((v: any) => (v.skill?._id || v.skill) === selectedSkill);
     });
   }, [proposals, selectedSkill]);
 
@@ -61,9 +69,7 @@ const ViewProposals: React.FC = () => {
       toast.success('Proposal accepted. Escrow funded.');
       queryClient.invalidateQueries({ queryKey: ['client', 'proposals'] });
       queryClient.invalidateQueries({ queryKey: ['client', 'jobs'] });
-      if (data?.contract?._id) {
-        navigate(`/contracts/${data.contract._id}`);
-      }
+      if (data?.contract?._id) navigate(`/contracts/${data.contract._id}`);
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to accept proposal.');
@@ -71,166 +77,190 @@ const ViewProposals: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Client workspace"
-        title="Review proposals"
-        description="Compare skills, pricing, and fit clearly before you move the right student into contract."
-      />
+    <motion.div className="space-y-8" initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}>
+      <motion.div variants={fadeUp}>
+        <PageHeader
+          eyebrow="Client workspace"
+          title="Review proposals"
+          description="Compare applicants and move the right student into contract."
+        />
+      </motion.div>
 
-      <Card>
-        <CardContent className="grid gap-4 p-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Job</label>
-            {jobsLoading ? (
-              <Skeleton className="h-11 w-full rounded-lg" />
-            ) : (
-              <Select value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
-                <option value="">All jobs</option>
-                {(jobs || []).map((job: any) => (
-                  <option key={job._id} value={job._id}>
-                    {job.title}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </div>
+      {/* Filters */}
+      <motion.div variants={fadeUp}>
+        <Card>
+          <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by job</label>
+              {jobsLoading ? (
+                <Skeleton className="h-9 w-full rounded-lg" />
+              ) : (
+                <Select value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
+                  <option value="">All jobs</option>
+                  {(jobs || []).map((job: any) => (
+                    <option key={job._id} value={job._id}>{job.title}</option>
+                  ))}
+                </Select>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by verified skill</label>
+              {skillsLoading ? (
+                <Skeleton className="h-9 w-full rounded-lg" />
+              ) : (
+                <Select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
+                  <option value="">All skills</option>
+                  {(skills || []).map((skill: any) => (
+                    <option key={skill._id} value={skill._id}>{skill.name}</option>
+                  ))}
+                </Select>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Verified skill</label>
-            {skillsLoading ? (
-              <Skeleton className="h-11 w-full rounded-lg" />
-            ) : (
-              <Select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
-                <option value="">All skills</option>
-                {(skills || []).map((skill: any) => (
-                  <option key={skill._id} value={skill._id}>
-                    {skill.name}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* Proposals grid */}
       {proposalsLoading ? (
         <div className="grid gap-4 xl:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-[24rem] w-full rounded-xl" />
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-72 w-full rounded-xl" />)}
         </div>
       ) : filteredProposals.length === 0 ? (
-        <EmptyState title="No proposals match the current filters" description="Change the selected job or skill to reveal more applicants." />
+        <EmptyState title="No proposals match" description="Change the job or skill filter to reveal more applicants." />
       ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <motion.div className="grid gap-4 xl:grid-cols-2" variants={stagger} initial="hidden" animate="visible">
           {filteredProposals.map((proposal: any) => {
             const statusValue = proposal.status || 'submitted';
             const displayStatus = statusValue === 'pending' ? 'submitted' : statusValue;
+            const isAccepted = statusValue === 'accepted';
 
             return (
-              <Card key={proposal._id} className="overflow-hidden p-0">
-                <CardContent className="space-y-5 p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <h2 className="text-2xl font-semibold">{proposal.studentId?.name || 'Student'}</h2>
-                      <p className="text-sm text-ink-500 dark:text-ink-300">{proposal.studentId?.email || '—'}</p>
+              <motion.div key={proposal._id} variants={fadeUp}>
+                <Card className={`overflow-hidden p-0 transition-all duration-200 ${isAccepted ? 'border-accent-200 dark:border-accent-700/40' : 'hover:-translate-y-0.5 hover:shadow-card'}`}>
+                  {isAccepted && (
+                    <div className="flex items-center gap-2 border-b border-accent-200 bg-accent-50 px-5 py-2.5 dark:border-accent-700/30 dark:bg-accent-900/15">
+                      <CheckCircle size={14} className="text-accent-600 dark:text-accent-400" />
+                      <span className="text-xs font-semibold text-accent-700 dark:text-accent-300">Accepted — contract created</span>
                     </div>
-                    <Badge
-                      variant={
-                        statusValue === 'accepted'
-                          ? 'success'
-                          : statusValue === 'rejected'
-                            ? 'danger'
-                            : statusValue === 'shortlisted'
-                              ? 'brand'
-                              : 'warning'
-                      }
-                    >
-                      {displayStatus}
-                    </Badge>
-                  </div>
+                  )}
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="muted-panel rounded-lg p-3">
-                      <p className="label-muted">Job</p>
-                      <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || 'Job'}</p>
+                  <CardHeader className="gap-0 space-y-0 px-5 pb-3 pt-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 shrink-0">
+                          <AvatarFallback>{getInitials(proposal.studentId?.name)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-bold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
+                          <p className="text-xs text-ink-500 dark:text-ink-400">{proposal.studentId?.email || '—'}</p>
+                        </div>
+                      </div>
+                      <Badge variant={statusVariant[statusValue] ?? 'warning'}>{displayStatus}</Badge>
                     </div>
-                    <div className="muted-panel rounded-lg p-3">
-                      <p className="label-muted">Proposed budget</p>
-                      <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">
-                        {proposal.proposedBudget ? `$${proposal.proposedBudget}` : 'Not specified'}
-                      </p>
+                  </CardHeader>
+
+                  <Separator />
+
+                  <CardContent className="space-y-4 px-5 py-4">
+                    {/* Job + budget */}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Job</p>
+                        <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || '—'}</p>
+                      </div>
+                      <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Proposed budget</p>
+                        <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">
+                          {proposal.proposedBudget ? `$${proposal.proposedBudget}` : 'Not specified'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-ink-900 dark:text-white">Verified skills</p>
-                    <div className="flex flex-wrap gap-2">
-                      {(proposal.studentId?.verifiedSkills || []).length ? (
-                        proposal.studentId.verifiedSkills.map((verified: any) => (
-  <Badge key={verified.skill?._id || verified.skill} variant="brand">
-    {verified.skill?.name || verified.skill}{verified.score != null ? ` · ${verified.score}` : ''}
-  </Badge>
-                        ))
-                      ) : (
-                        <Badge variant="subtle">None</Badge>
-                      )}
-                    </div>
-                  </div>
+                    {/* Verified skills */}
+                    {(proposal.studentId?.verifiedSkills || []).length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Verified skills</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {proposal.studentId.verifiedSkills.map((v: any) => (
+                            <Badge key={v.skill?._id || v.skill} variant="brand">
+                              {v.skill?.name || v.skill}{v.score != null ? ` · ${v.score}` : ''}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                  {proposal.details ? (
-                    <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
-                      {proposal.details}
-                    </div>
-                  ) : null}
+                    {/* Cover letter */}
+                    {proposal.details && (
+                      <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/4 dark:text-ink-300">
+                        <p className="line-clamp-4">{proposal.details}</p>
+                      </div>
+                    )}
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="Agreed budget"
-                      value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
-                      onChange={(e) => setBudgetDrafts((prev) => ({ ...prev, [proposal._id]: e.target.value }))}
-                      disabled={acceptMutation.isPending}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        proposal.studentId?._id ? navigate(`/students/${proposal.studentId._id}?jobId=${proposal.jobId?._id}`) : null
-                      }
-                    >
-                      View profile
-                    </Button>
-                  </div>
+                    {/* Actions */}
+                    {!isAccepted && (
+                      <div className="space-y-3">
+                        <Separator />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Agreed budget</label>
+                            <Input
+                              type="number"
+                              min={0}
+                              placeholder={proposal.proposedBudget ? String(proposal.proposedBudget) : 'Enter amount'}
+                              value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
+                              onChange={(e) => setBudgetDrafts((p) => ({ ...p, [proposal._id]: e.target.value }))}
+                              disabled={acceptMutation.isPending}
+                            />
+                          </div>
+                          <div className="flex items-end">
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => proposal.studentId?._id ? navigate(`/students/${proposal.studentId._id}?jobId=${proposal.jobId?._id}`) : null}
+                            >
+                              <User size={13} />
+                              View profile
+                            </Button>
+                          </div>
+                        </div>
+                        <Button
+                          className="w-full"
+                          disabled={acceptMutation.isPending}
+                          onClick={() => {
+                            const draft = budgetDrafts[proposal._id];
+                            const value = draft ? Number(draft) : proposal.proposedBudget;
+                            if (!Number.isFinite(value) || value <= 0) {
+                              toast.error('Enter a valid agreed budget.');
+                              return;
+                            }
+                            acceptMutation.mutate({ proposalId: proposal._id, agreedBudget: value });
+                          }}
+                        >
+                          <DollarSign size={14} />
+                          {acceptMutation.isPending ? 'Funding escrow...' : 'Accept and fund escrow'}
+                        </Button>
+                      </div>
+                    )}
 
-                  {statusValue !== 'accepted' ? (
-                    <Button
-                      disabled={acceptMutation.isPending}
-                      onClick={() => {
-                        const draft = budgetDrafts[proposal._id];
-                        const value = draft ? Number(draft) : proposal.proposedBudget;
-                        if (!Number.isFinite(value) || value <= 0) {
-                          toast.error('Enter a valid agreed budget.');
-                          return;
-                        }
-                        acceptMutation.mutate({
-                          proposalId: proposal._id,
-                          agreedBudget: value,
-                        });
-                      }}
-                      className="w-full"
-                    >
-                      {acceptMutation.isPending ? 'Funding escrow…' : 'Accept proposal and fund escrow'}
-                    </Button>
-                  ) : null}
-                </CardContent>
-              </Card>
+                    {isAccepted && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => navigate('/client/contracts')}
+                      >
+                        <ExternalLink size={13} />
+                        View contract
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

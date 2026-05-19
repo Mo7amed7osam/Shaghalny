@@ -76,7 +76,7 @@
   }
 
   .muted-panel {
-    @apply rounded-lg border border-ink-200 bg-ink-50 dark:border-ink-dark-border dark:bg-white/5;
+    @apply rounded-lg border border-ink-200 bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface;
   }
 
   /* KPI card — clean stats surface */

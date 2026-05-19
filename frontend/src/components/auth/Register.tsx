@@ -137,7 +137,7 @@ const Register: React.FC = () => {
 
       {/* Right: feature panel */}
       <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-ink-950 p-10 lg:flex">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/50">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-300">
           <Sparkles size={12} />
           Why Shaghalny
         </div>
@@ -147,24 +147,24 @@ const Register: React.FC = () => {
             <h2 className="text-balance text-4xl font-semibold text-white">
               A cleaner path from student potential to paid work.
             </h2>
-            <p className="text-base leading-7 text-white/56">
+            <p className="text-base leading-7 text-ink-200">
               Students can prove capability, and clients can hire with clearer signals. No guessing on either side.
             </p>
           </div>
           <div className="space-y-3">
             {roleCards.map((item) => (
-              <div key={item.title} className="flex items-start gap-3 rounded-lg border border-white/8 bg-white/5 px-4 py-3">
+              <div key={item.title} className="flex items-start gap-3 rounded-lg border border-white/15 bg-white/10 px-4 py-3">
                 <item.icon size={16} className="mt-0.5 shrink-0 text-brand-300" />
                 <div>
                   <p className="text-sm font-semibold text-white">{item.title}</p>
-                  <p className="mt-0.5 text-xs leading-5 text-white/55">{item.body}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-ink-300">{item.body}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-xs text-white/24">© {new Date().getFullYear()} Shaghalny</p>
+        <p className="text-xs text-ink-400">© {new Date().getFullYear()} Shaghalny</p>
       </div>
     </div>
   );

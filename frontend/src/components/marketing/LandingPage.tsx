@@ -95,7 +95,7 @@ const LandingPage: React.FC = () => {
       <section className="bg-ink-950 text-white">
         <div className="page-container py-24 sm:py-32">
           <div className="mx-auto max-w-3xl space-y-8 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-200">
               <Sparkles size={12} />
               Student freelancing marketplace
             </div>
@@ -103,7 +103,7 @@ const LandingPage: React.FC = () => {
               Hire verified student talent.<br />
               <span className="text-brand-400">Without the trust gap.</span>
             </h1>
-            <p className="mx-auto max-w-2xl text-lg leading-7 text-white/64">
+            <p className="mx-auto max-w-2xl text-lg leading-7 text-brand-100">
               Shaghalny connects clients with early-career freelancers who have completed structured AI interviews. Real verification, clean workflows, one platform.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -113,13 +113,16 @@ const LandingPage: React.FC = () => {
                   <ArrowRight size={18} />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="border-white/15 bg-white/8 text-white hover:bg-white/12 hover:border-white/25 dark:border-white/15 dark:bg-white/8 dark:text-white dark:hover:bg-white/12">
-                <Link to="/login">Sign in</Link>
-              </Button>
+              <Link
+                to="/login"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-6 text-base font-semibold text-white transition-all duration-150 hover:bg-white/20 hover:border-white/40 active:scale-[0.98]"
+              >
+                Sign in
+              </Link>
             </div>
           </div>
 
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10">
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/20 bg-white/20">
             {[
               { label: 'Verification', value: 'AI-backed' },
               { label: 'Workflow', value: 'End-to-end' },
@@ -127,7 +130,7 @@ const LandingPage: React.FC = () => {
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-1 bg-ink-950 px-6 py-5 text-center">
                 <p className="text-lg font-semibold text-white">{stat.value}</p>
-                <p className="text-xs uppercase tracking-[0.14em] text-white/44">{stat.label}</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-white/75">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -229,14 +232,14 @@ const LandingPage: React.FC = () => {
         <div className="page-container py-20">
           <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="space-y-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
                 <BadgeCheck size={12} />
                 Gravis AI verification
               </div>
               <h2 className="text-3xl font-semibold text-white sm:text-4xl">
                 Skills that are proven, not promised.
               </h2>
-              <p className="max-w-xl text-base leading-7 text-white/70">
+              <p className="max-w-xl text-base leading-7 text-brand-100">
                 Every student on Shaghalny has completed a structured AI interview with Gravis before their proposals reach clients. No unverified claims, no noise in your candidate shortlist.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
@@ -245,7 +248,7 @@ const LandingPage: React.FC = () => {
                   'Scores attached to the profile',
                   'Visible before clients review proposals',
                 ].map((point) => (
-                  <div key={point} className="flex items-center gap-2 text-sm text-white/80">
+                  <div key={point} className="flex items-center gap-2 text-sm text-white">
                     <BadgeCheck size={14} className="shrink-0 text-brand-200" />
                     {point}
                   </div>

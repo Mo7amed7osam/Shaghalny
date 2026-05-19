@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck, Sparkles, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -66,15 +67,18 @@ const getVerifiedScore = (skillId: string) => {
     }
   };
 
+  const fadeUp = { hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] } } };
+  const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
+
   return (
-    <div className="space-y-10">
-      <PageHeader
+    <motion.div className="space-y-10" initial="hidden" animate="visible" variants={stagger}>
+      <motion.div variants={fadeUp}><PageHeader
         eyebrow="Mandatory verification"
         title="Skill verification interviews"
         description="Complete short AI-guided interviews to validate your strongest skills and improve hiring confidence for clients."
-      />
+      /></motion.div>
 
-      <section className="feature-highlight text-white">
+      <motion.div variants={fadeUp}><section className="feature-highlight text-white">
         <CardContent className="relative grid gap-5 p-8 md:grid-cols-3 lg:p-10">
           {[
             {
@@ -102,7 +106,7 @@ const getVerifiedScore = (skillId: string) => {
             </div>
           ))}
         </CardContent>
-      </section>
+      </section></motion.div>
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -113,9 +117,10 @@ const getVerifiedScore = (skillId: string) => {
       ) : (skills || []).length === 0 ? (
         <EmptyState title="No skills available" description="Verification tracks will appear here once the skill library is ready." />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <motion.div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3" variants={stagger} initial="hidden" animate="visible">
           {(skills || []).map((skill: any) => (
-            <Card key={skill._id} className="interactive-card overflow-hidden p-0">
+            <motion.div key={skill._id} variants={fadeUp}>
+            <Card className="interactive-card overflow-hidden p-0">
               <CardHeader className="space-y-4 p-6">
                 <div className="flex items-start justify-between gap-3">
                   <CardTitle className="text-2xl">{skill.name}</CardTitle>
@@ -170,10 +175,11 @@ const getVerifiedScore = (skillId: string) => {
                 )}
               </CardContent>
             </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

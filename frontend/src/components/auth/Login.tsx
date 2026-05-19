@@ -61,29 +61,29 @@ const Login: React.FC = () => {
 
         <div className="space-y-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
               <Sparkles size={12} />
               Student marketplace
             </div>
             <h1 className="text-balance text-4xl font-semibold text-white">
               Freelancing infrastructure built for students.
             </h1>
-            <p className="text-base leading-7 text-white/64">
+            <p className="text-base leading-7 text-brand-100">
               Manage proposals, verified interviews, contracts, and hiring workflows from one workspace.
             </p>
           </div>
 
           <div className="space-y-3">
             {highlights.map((item) => (
-              <div key={item.text} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/8 px-4 py-3">
+              <div key={item.text} className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/15 px-4 py-3">
                 <item.icon size={16} className="shrink-0 text-brand-200" />
-                <p className="text-sm text-white/80">{item.text}</p>
+                <p className="text-sm text-white">{item.text}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-xs text-white/32">© {new Date().getFullYear()} Shaghalny</p>
+        <p className="text-xs text-brand-200">© {new Date().getFullYear()} Shaghalny</p>
       </div>
 
       {/* Right: form */}
