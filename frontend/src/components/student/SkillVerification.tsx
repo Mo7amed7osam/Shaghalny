@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -17,44 +17,43 @@ import { startInterviewSession } from '@/features/ai-interview/services/intervie
 
 const SkillVerification: React.FC = () => {
   const navigate = useNavigate();
-	const { user } = useAuth();
-const userId = user?._id || user?.id;
+  const { user } = useAuth();
+  const [startingSkillId, setStartingSkillId] = useState<string | null>(null);
+  const userId = user?._id || user?.id;
 
-const { data: profile } = useQuery({
-  queryKey: ['student', 'profile', userId],
-  queryFn: () => getStudentProfile(userId),
-  enabled: !!userId,
-});
-const { data: mySessions } = useQuery({
-  queryKey: ['my-interview-sessions'],
-  queryFn: getMyInterviewSessions,
-  enabled: !!userId,
-});
+  const { data: profile } = useQuery({
+    queryKey: ['student', 'profile', userId],
+    queryFn: () => getStudentProfile(userId),
+    enabled: !!userId,
+  });
+  const { data: mySessions } = useQuery({
+    queryKey: ['my-interview-sessions'],
+    queryFn: getMyInterviewSessions,
+    enabled: !!userId,
+  });
 
-const getLatestSessionId = (skillId: string) => {
-  const sessions = (mySessions || []).filter(
-    (s: any) => String(s.skillRef?._id || s.skillRef) === String(skillId) && s.status === 'completed'
+  const getLatestSessionId = (skillId: string) => {
+    const sessions = (mySessions || []).filter(
+      (s: any) => String(s.skillRef?._id || s.skillRef) === String(skillId) && s.status === 'completed'
+    );
+    return sessions[0]?._id || null;
+  };
+
+  const verifiedSkillIds = new Set(
+    (profile?.verifiedSkills || []).map((s: any) => String(s.skill?._id || s.skill))
   );
-  return sessions[0]?._id || null;
-};
 
-const verifiedSkillIds = new Set(
-  (profile?.verifiedSkills || []).map((s: any) => String(s.skill?._id || s.skill))
-);
-
-const getVerifiedScore = (skillId: string) => {
-  const found = (profile?.verifiedSkills || []).find(
-    (s: any) => String(s.skill?._id || s.skill) === skillId
-  );
-  return found?.score ?? null;
-};
+  const getVerifiedScore = (skillId: string) => {
+    const found = (profile?.verifiedSkills || []).find(
+      (s: any) => String(s.skill?._id || s.skill) === skillId
+    );
+    return found?.score ?? null;
+  };
 
   const { data: skills, isLoading } = useQuery({
     queryKey: ['skills'],
     queryFn: getSkills,
   });
-
-  const [startingSkillId, setStartingSkillId] = React.useState<string | null>(null);
 
   const { mutateAsync: beginInterview, isPending } = useMutation({
     mutationFn: (payload: { skill: string; skillId: string }) => startInterviewSession(payload),
@@ -172,9 +171,15 @@ const getVerifiedScore = (skillId: string) => {
                     </Button>
                   </div>
                 ) : (
-                  <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
-                    {isPending && startingSkillId === skill._id ? 'Starting interview…' : 'Start interview'}
-                    {!(isPending && startingSkillId === skill._id) ? <ArrowRight size={18} /> : null}
+                  <Button
+                    type="button"
+                    className="w-full"
+                    size="lg"
+                    onClick={() => handleStartInterview(skill)}
+                    disabled={isPending}
+                  >
+                    {isPending && startingSkillId === String(skill._id) ? 'Starting interview…' : 'Start interview'}
+                    {!(isPending && startingSkillId === String(skill._id)) ? <ArrowRight size={18} /> : null}
                   </Button>
                 )}
               </CardContent>
