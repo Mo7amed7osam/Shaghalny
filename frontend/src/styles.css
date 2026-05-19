@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,24 +7,14 @@
 @layer base {
   :root {
     color-scheme: light;
-    --page-gradient:
-      radial-gradient(circle at top left, rgba(59, 130, 246, 0.1), transparent 24%),
-      radial-gradient(circle at top right, rgba(6, 182, 212, 0.07), transparent 20%),
-      linear-gradient(180deg, #f9fbfe 0%, #f5f8fc 44%, #edf3fa 100%);
-    --surface-border: rgba(115, 133, 156, 0.28);
   }
 
   .dark {
     color-scheme: dark;
-    --page-gradient:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.1), transparent 24%),
-      radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 20%),
-      linear-gradient(180deg, #08111f 0%, #0b1424 56%, #0f1b2d 100%);
-    --surface-border: rgba(159, 177, 201, 0.24);
   }
 
   * {
-    @apply border-ink-200;
+    @apply border-ink-200 dark:border-ink-dark-border;
   }
 
   html {
@@ -32,47 +22,36 @@
   }
 
   body {
-    @apply min-h-screen bg-ink-50 text-ink-900 antialiased;
-    font-family: 'Manrope', 'Segoe UI', sans-serif;
-    background-image: var(--page-gradient);
+    @apply min-h-screen bg-ink-50 text-ink-900 antialiased dark:bg-ink-dark-bg dark:text-ink-dark-text;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  .dark body {
-    @apply text-ink-dark-text;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: 'Poppins', 'Manrope', sans-serif;
-    @apply tracking-tight text-ink-900 dark:text-white;
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight text-ink-900 dark:text-ink-dark-text;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   p {
-    @apply leading-7 text-ink-600 dark:text-ink-200;
+    @apply leading-7 text-ink-600 dark:text-ink-400;
   }
 
   a {
-    @apply text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200;
+    @apply text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300;
   }
 
-  button,
-  [role='button'] {
+  button, [role='button'] {
     @apply cursor-pointer;
   }
 
   ::selection {
-    @apply bg-brand-200 text-brand-900;
+    @apply bg-brand-100 text-brand-900;
   }
 }
 
 @layer components {
+  /* Page shell — clean slate background */
   .page-shell {
-    @apply min-h-screen;
-    background-image: var(--page-gradient);
+    @apply min-h-screen bg-ink-50 dark:bg-ink-dark-bg;
   }
 
   .page-container {
@@ -80,80 +59,55 @@
   }
 
   .page-copy {
-    @apply max-w-3xl text-base text-ink-600 dark:text-ink-200;
+    @apply max-w-2xl text-base text-ink-600 dark:text-ink-400;
   }
 
   .page-eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[0.26em] text-brand-700 dark:text-brand-300;
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-400;
   }
 
+  /* Panel — clean white card, no glass */
   .glass-panel {
-    @apply rounded-3xl border shadow-soft backdrop-blur-xl;
-    border-color: var(--surface-border);
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-
-  .dark .glass-panel {
-    background-color: rgba(15, 29, 51, 0.88);
+    @apply rounded-xl border border-ink-200 bg-white shadow-soft dark:border-ink-dark-border dark:bg-ink-dark-surface;
   }
 
   .card-surface {
-    @apply rounded-3xl border shadow-card;
-    border-color: rgba(115, 133, 156, 0.34);
-    background-color: rgba(255, 255, 255, 0.98);
-  }
-
-  .dark .card-surface {
-    border-color: rgba(159, 177, 201, 0.22);
-    background-color: rgba(18, 34, 58, 0.96);
+    @apply rounded-xl border border-ink-200 bg-white shadow-soft dark:border-ink-dark-border dark:bg-ink-dark-surface;
   }
 
   .muted-panel {
-    @apply rounded-2xl border border-ink-200 shadow-soft backdrop-blur-sm dark:border-ink-dark-border;
-    background-color: rgba(248, 250, 252, 0.96);
+    @apply rounded-lg border border-ink-200 bg-ink-50 dark:border-ink-dark-border dark:bg-white/5;
   }
 
-  .dark .muted-panel {
-    background-color: rgba(12, 25, 45, 0.86);
-  }
-
+  /* KPI card — clean stats surface */
   .kpi-card {
-    @apply glass-panel relative overflow-hidden p-6;
+    @apply relative overflow-hidden rounded-xl border border-ink-200 bg-white p-6 shadow-soft dark:border-ink-dark-border dark:bg-ink-dark-surface;
   }
 
-  .kpi-card::before {
-    content: '';
-    @apply pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-accent-400 to-brand-300;
-  }
-
+  /* Feature highlight — solid violet hero surface */
   .feature-highlight {
-    @apply relative overflow-hidden rounded-[2rem] border shadow-glass;
-    border-color: rgba(148, 163, 184, 0.22);
-    background-image:
-      radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 32%),
-      radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.14), transparent 28%),
-      linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #155e75 100%);
+    @apply relative overflow-hidden rounded-2xl bg-brand-700 text-white;
   }
 
   .feature-highlight::after {
     content: '';
     @apply pointer-events-none absolute inset-0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.08) 0%, transparent 60%);
   }
 
+  /* Interactive card hover */
   .interactive-card {
     @apply transition-all duration-200;
   }
 
   .interactive-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 34px 78px -36px rgba(15, 23, 42, 0.34), 0 18px 32px -24px rgba(37, 99, 235, 0.2);
-    border-color: rgba(59, 130, 246, 0.34);
+    @apply -translate-y-0.5;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 4px 10px -3px rgba(0,0,0,0.07);
+    border-color: rgba(109, 40, 217, 0.25);
   }
 
   .dark .interactive-card:hover {
-    box-shadow: 0 34px 78px -36px rgba(2, 8, 23, 0.62), 0 18px 36px -24px rgba(34, 211, 238, 0.2);
-    border-color: rgba(96, 165, 250, 0.28);
+    border-color: rgba(167, 139, 250, 0.3);
   }
 }
 
@@ -162,20 +116,16 @@
     text-wrap: balance;
   }
 
-  .surface-ring {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
-  }
-
   .text-ui-primary {
-    @apply text-ink-900 dark:text-white;
+    @apply text-ink-900 dark:text-ink-dark-text;
   }
 
   .text-ui-secondary {
-    @apply text-ink-600 dark:text-ink-200;
+    @apply text-ink-600 dark:text-ink-400;
   }
 
   .text-ui-muted {
-    @apply text-ink-500 dark:text-ink-300;
+    @apply text-ink-500 dark:text-ink-dark-muted;
   }
 
   .text-ui-disabled {
@@ -183,14 +133,12 @@
   }
 
   .label-muted {
-    @apply text-xs font-semibold uppercase tracking-[0.18em] text-ink-500 dark:text-ink-300;
+    @apply text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

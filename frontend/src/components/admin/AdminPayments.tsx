@@ -120,7 +120,7 @@ const AdminPayments: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           {loading ? (
-            <Skeleton className="h-44 w-full rounded-3xl" />
+            <Skeleton className="h-44 w-full rounded-xl" />
           ) : items.length === 0 ? (
             <EmptyState title="No requests found" description="There are no payment requests for the current tab and status filter." />
           ) : (
@@ -179,6 +179,7 @@ const AdminPayments: React.FC = () => {
                             <Button
                               size="sm"
                               variant="ghost"
+                              className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-400/10"
                               onClick={() =>
                                 activeTab === 'topups'
                                   ? declineTopupMutation.mutate({ id: item._id, reason: declineReasons[item._id] })

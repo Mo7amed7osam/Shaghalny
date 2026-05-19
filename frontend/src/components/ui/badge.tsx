@@ -3,22 +3,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-soft backdrop-blur-sm transition',
+  'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition',
   {
     variants: {
       variant: {
         default:
-          'border-ink-300 bg-white/96 text-ink-800 shadow-soft dark:border-ink-dark-border dark:bg-[#12233d] dark:text-ink-100',
+          'border-ink-200 bg-ink-100 text-ink-700 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-300',
         subtle:
-          'border-ink-200 bg-ink-100 text-ink-800 dark:border-brand-300/18 dark:bg-[#142742] dark:text-ink-50',
+          'border-ink-200 bg-ink-100 text-ink-600 dark:border-ink-dark-border dark:bg-white/8 dark:text-ink-400',
         success:
-          'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500/28 dark:bg-emerald-500/16 dark:text-emerald-50',
+          'border-accent-200 bg-accent-50 text-accent-800 dark:border-accent-700/40 dark:bg-accent-900/30 dark:text-accent-300',
         warning:
-          'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/28 dark:bg-amber-500/16 dark:text-amber-50',
+          'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-700/40 dark:bg-amber-900/30 dark:text-amber-300',
         danger:
-          'border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-500/28 dark:bg-rose-500/16 dark:text-rose-50',
+          'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-700/40 dark:bg-rose-900/30 dark:text-rose-300',
         brand:
-          'border-brand-500/55 bg-gradient-to-r from-brand-700 via-brand-600 to-accent-600 text-white dark:border-brand-300/35 dark:from-brand-600 dark:via-brand-500 dark:to-accent-500 dark:text-white',
+          'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-700/40 dark:bg-brand-900/30 dark:text-brand-300',
       },
     },
     defaultVariants: {
@@ -32,8 +32,5 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {}
 
 export const Badge = ({ className, variant, ...props }: BadgeProps) => (
-  <span
-    className={cn(badgeVariants({ variant }), className)}
-    {...props}
-  />
+  <span className={cn(badgeVariants({ variant }), className)} {...props} />
 );

@@ -5,15 +5,8 @@ export const Table = ({
   className,
   ...props
 }: React.TableHTMLAttributes<HTMLTableElement>) => (
-  <div
-    className={cn(
-      'w-full overflow-x-auto rounded-3xl border bg-white/96 shadow-card backdrop-blur-xl dark:border-[#334866] dark:bg-[#0f1d33]'
-    )}
-  >
-    <table
-      className={cn('min-w-full border-collapse text-sm', className)}
-      {...props}
-    />
+  <div className="w-full overflow-x-auto rounded-xl border border-ink-200 bg-white dark:border-ink-dark-border dark:bg-ink-dark-surface">
+    <table className={cn('min-w-full border-collapse text-sm', className)} {...props} />
   </div>
 );
 
@@ -23,8 +16,7 @@ export const TableHead = ({
 }: React.HTMLAttributes<HTMLTableSectionElement>) => (
   <thead
     className={cn(
-      'text-left text-xs uppercase tracking-[0.18em] text-ink-600 dark:text-ink-200',
-      'bg-ink-100/90 dark:bg-[#142742]',
+      'text-left text-xs uppercase tracking-[0.14em] text-ink-500 bg-ink-50 dark:bg-white/5 dark:text-ink-dark-muted',
       className
     )}
     {...props}
@@ -36,10 +28,7 @@ export const TableBody = ({
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) => (
   <tbody
-    className={cn(
-      'divide-y divide-ink-200 dark:divide-[#253854]',
-      className
-    )}
+    className={cn('divide-y divide-ink-100 dark:divide-ink-dark-border', className)}
     {...props}
   />
 );
@@ -49,10 +38,7 @@ export const TableRow = ({
   ...props
 }: React.HTMLAttributes<HTMLTableRowElement>) => (
   <tr
-    className={cn(
-      'transition-colors hover:bg-brand-50/80 dark:hover:bg-[#152a46]',
-      className
-    )}
+    className={cn('transition-colors hover:bg-ink-50 dark:hover:bg-white/5', className)}
     {...props}
   />
 );
@@ -62,10 +48,7 @@ export const TableHeaderCell = ({
   ...props
 }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
   <th
-    className={cn(
-      'px-5 py-4 font-semibold text-ink-700 dark:text-ink-100',
-      className
-    )}
+    className={cn('px-5 py-3.5 font-semibold text-ink-600 dark:text-ink-dark-muted', className)}
     {...props}
   />
 );
@@ -75,10 +58,7 @@ export const TableCell = ({
   ...props
 }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
   <td
-    className={cn(
-      'px-5 py-4 align-top text-ink-800 dark:text-ink-100',
-      className
-    )}
+    className={cn('px-5 py-4 align-top text-ink-800 dark:text-ink-dark-text', className)}
     {...props}
   />
 );

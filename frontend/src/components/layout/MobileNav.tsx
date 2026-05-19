@@ -15,11 +15,11 @@ export const MobileNav = () => {
 
   return (
     <nav
-      className="fixed bottom-3 left-3 right-3 z-30 rounded-[1.75rem] border border-ink-200 bg-white/95 p-2 shadow-card backdrop-blur-xl dark:border-ink-dark-border dark:bg-ink-dark-surface/92 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-30 border-t border-ink-200 bg-white px-2 pb-safe dark:border-ink-dark-border dark:bg-ink-dark-surface md:hidden"
       aria-label="Primary"
     >
-      <div className="grid grid-cols-3 gap-2">
-        {items.slice(0, 6).map((item) => {
+      <div className="grid grid-cols-4 gap-1 py-1.5">
+        {items.slice(0, 4).map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -27,13 +27,14 @@ export const MobileNav = () => {
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  'group flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-center text-[11px] font-semibold leading-tight transition-all duration-200',
-                  'text-ink-700 hover:bg-brand-50 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-white/8 dark:hover:text-white',
-                  isActive && 'bg-gradient-to-r from-brand-600 via-brand-500 to-accent-500 text-white shadow-soft hover:text-white'
+                  'flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center text-[10px] font-medium transition-colors',
+                  isActive
+                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400'
+                    : 'text-ink-500 hover:text-ink-900 dark:text-ink-dark-muted dark:hover:text-ink-dark-text'
                 )
               }
             >
-              <Icon size={18} className="transition-transform group-hover:-translate-y-0.5" />
+              <Icon size={18} />
               <span className="line-clamp-1">{item.label}</span>
             </NavLink>
           );

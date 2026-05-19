@@ -90,7 +90,7 @@ const StudentDashboard: React.FC = () => {
         </div>
 
         {proposalsLoading ? (
-          <Skeleton className="h-44 w-full rounded-3xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
         ) : proposalList.length === 0 ? (
           <EmptyState
             title="No proposals yet"

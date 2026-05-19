@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 
 import logo from '@/assets/shaghalny-logo-premium.svg';
-import { Badge } from '@/components/ui/badge';
 import useAuth from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -41,9 +40,9 @@ export const navByRole = {
 };
 
 const roleLabel = {
-  Student: 'Student workspace',
-  Client: 'Client workspace',
-  Admin: 'Admin control',
+  Student: 'Student',
+  Client: 'Client',
+  Admin: 'Admin',
 };
 
 export const Sidebar = () => {
@@ -51,24 +50,22 @@ export const Sidebar = () => {
   const items = user ? navByRole[user.role] || [] : [];
 
   return (
-    <aside className="fixed inset-y-4 left-4 hidden w-72 md:block">
-      <div className="glass-panel flex h-full flex-col px-5 py-5">
-        <div className="flex items-center gap-3 rounded-2xl border border-ink-200 bg-white/92 p-3 dark:border-white/10 dark:bg-white/8">
-          <img src={logo} alt="Shaghalny" className="h-12 w-12 rounded-2xl object-contain" />
-          <div className="min-w-0">
-            <p className="truncate text-lg font-semibold text-ink-900 dark:text-white">Shaghalny</p>
-            <p className="truncate text-xs uppercase tracking-[0.18em] text-ink-500 dark:text-ink-300">
-              {user ? roleLabel[user.role as keyof typeof roleLabel] : 'Workspace'}
-            </p>
-          </div>
+    <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-ink-200 bg-white dark:border-ink-dark-border dark:bg-ink-dark-surface md:flex md:flex-col">
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-ink-200 px-5 dark:border-ink-dark-border">
+        <img src={logo} alt="Shaghalny" className="h-8 w-8 rounded-lg object-contain" />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Shaghalny</p>
+          <p className="truncate text-[10px] uppercase tracking-[0.18em] text-ink-400 dark:text-ink-dark-muted">
+            {user ? roleLabel[user.role as keyof typeof roleLabel] : 'Workspace'}
+          </p>
         </div>
+      </div>
 
-        <div className="mt-8 flex items-center justify-between px-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-500 dark:text-ink-300">Navigation</p>
-          {user ? <Badge variant="brand">{user.role}</Badge> : null}
-        </div>
-
-        <nav className="mt-4 flex-1 space-y-1.5">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400 dark:text-ink-dark-muted">
+          Menu
+        </p>
+        <div className="space-y-0.5">
           {items.map((item) => {
             const Icon = item.icon;
             return (
@@ -77,39 +74,26 @@ export const Sidebar = () => {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    'group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200',
-                    'text-ink-700 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-200 dark:hover:bg-white/8 dark:hover:text-white',
-                    isActive &&
-                    'bg-gradient-to-r from-brand-600 via-brand-500 to-accent-500 text-white shadow-soft hover:text-white dark:text-white'
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-brand-600 text-white'
+                      : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-dark-muted dark:hover:bg-white/8 dark:hover:text-ink-dark-text'
                   )
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    <span
-                      className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-2xl transition-colors',
-                        isActive
-                          ? 'bg-white/15 text-white'
-                          : 'bg-brand-100 text-brand-700 dark:bg-white/10 dark:text-brand-100'
-                      )}
-                    >
-                      <Icon size={18} />
-                    </span>
-                    <span className="truncate">{item.label}</span>
-                  </>
-                )}
+                <Icon size={16} className="shrink-0" />
+                <span className="truncate">{item.label}</span>
               </NavLink>
             );
           })}
-        </nav>
-
-        <div className="mt-6 rounded-2xl bg-ink-900 px-4 py-4 text-white dark:bg-[#07101d]">
-          <p className="text-sm font-semibold text-white">Verified work wins faster.</p>
-          <p className="mt-2 text-xs leading-5 text-white/82">
-            Keep your profile, proposals, and interview status polished and up to date.
-          </p>
         </div>
+      </nav>
+
+      <div className="shrink-0 border-t border-ink-100 px-5 py-4 dark:border-ink-dark-border">
+        <p className="text-xs font-medium text-ink-900 dark:text-ink-dark-text">Verified work wins.</p>
+        <p className="mt-1 text-xs text-ink-400 dark:text-ink-dark-muted">
+          Keep your profile and interview status up to date.
+        </p>
       </div>
     </aside>
   );

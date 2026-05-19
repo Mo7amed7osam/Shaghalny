@@ -18,23 +18,23 @@ const EventsPage: React.FC = () => {
 
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-80 w-full rounded-3xl" />)}
+          {[1,2,3].map(i => <Skeleton key={i} className="h-80 w-full rounded-xl" />)}
         </div>
       ) : events.length === 0 ? (
         <EmptyState title="No upcoming events" description="Check back soon for new events and opportunities." />
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {events.map((ev: any) => (
-            <button key={ev._id} onClick={() => navigate(`/events/${ev._id}`)} className="group glass-panel overflow-hidden rounded-3xl text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+            <button key={ev._id} type="button" onClick={() => navigate(`/events/${ev._id}`)} className="group glass-panel overflow-hidden rounded-xl text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1" aria-label={`View event: ${ev.title}`}>
               <div className="relative w-full overflow-hidden">
                 {ev.imageUrl ? (
-                  <img src={ev.imageUrl} alt={ev.title} className="w-full object-contain bg-black" />
+                  <img src={ev.imageUrl} alt={ev.title} className="w-full bg-black object-contain" />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-brand-500/30 to-accent-500/30 flex items-center justify-center">
+                  <div className="flex h-48 w-full items-center justify-center bg-brand-50 dark:bg-brand-900/20">
                     <Calendar size={48} className="text-brand-400" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-black/40" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-white">
                   {ev.isOnline ? <Wifi size={13} /> : <MapPin size={13} />}
                   {ev.isOnline ? 'Online' : ev.location}

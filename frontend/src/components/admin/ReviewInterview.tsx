@@ -48,7 +48,7 @@ const ReviewInterview: React.FC = () => {
   };
 
   if (isLoading) {
-    return <Skeleton className="h-80 w-full rounded-3xl" />;
+    return <Skeleton className="h-80 w-full rounded-xl" />;
   }
 
   if (isError || !interview) {
@@ -100,12 +100,12 @@ const ReviewInterview: React.FC = () => {
 
               <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-4">
-                  <div className="overflow-hidden rounded-3xl border border-ink-200 bg-black dark:border-white/10">
+                  <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
                     <video className="aspect-video w-full object-cover" controls src={toAbsoluteUrl(response.screenVideoUrl || response.videoUrl)} />
                   </div>
 
                   {response.cameraVideoUrl ? (
-                    <div className="overflow-hidden rounded-3xl border border-ink-200 bg-black dark:border-white/10">
+                    <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
                       <video className="aspect-video w-full object-cover" controls src={toAbsoluteUrl(response.cameraVideoUrl)} />
                     </div>
                   ) : null}
@@ -113,11 +113,11 @@ const ReviewInterview: React.FC = () => {
 
                 <div className="space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="muted-panel rounded-2xl p-4">
+                    <div className="muted-panel rounded-lg p-4">
                       <p className="label-muted">AI score</p>
                       <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">{response.score ?? 'Pending manual review'}</p>
                     </div>
-                    <div className="muted-panel rounded-2xl p-4">
+                    <div className="muted-panel rounded-lg p-4">
                       <p className="label-muted">AI recommendation</p>
                       <div className="mt-2">
                         <Badge variant={response.recommendation === 'pass' ? 'success' : response.recommendation === 'fail' ? 'danger' : 'warning'}>
@@ -127,7 +127,7 @@ const ReviewInterview: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
+                  <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
                     {response.feedback}
                   </div>
 
@@ -152,13 +152,13 @@ const ReviewInterview: React.FC = () => {
 
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-ink-900 dark:text-white">Transcript</p>
-                    <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
+                    <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
                       {response.transcript || 'Transcript unavailable. Manual review required.'}
                     </div>
                   </div>
 
                   {response.processingError ? (
-                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
+                    <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200">
                       {response.processingError}
                     </div>
                   ) : null}

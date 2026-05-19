@@ -16,7 +16,7 @@ const EventDetails: React.FC = () => {
 
   if (isLoading) return (
     <div className="space-y-6">
-      <Skeleton className="h-72 w-full rounded-3xl" />
+      <Skeleton className="h-72 w-full rounded-xl" />
       <Skeleton className="h-8 w-64" />
       <Skeleton className="h-24 w-full" />
     </div>
@@ -31,15 +31,15 @@ const EventDetails: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <button onClick={() => navigate('/events')} className="flex items-center gap-2 text-sm text-ink-500 hover:text-ink-900 dark:hover:text-white transition-colors">
+      <Button variant="ghost" size="sm" onClick={() => navigate('/events')} className="gap-1.5">
         <ArrowLeft size={16} /> Back to Events
-      </button>
+      </Button>
 
-      <div className="glass-panel overflow-hidden rounded-3xl">
+      <div className="glass-panel overflow-hidden rounded-xl">
         {event.imageUrl ? (
           <img src={event.imageUrl} alt={event.title} className="h-72 w-full object-contain bg-black" />
         ) : (
-          <div className="h-72 w-full bg-gradient-to-br from-brand-500/30 to-accent-500/30 flex items-center justify-center">
+          <div className="flex h-72 w-full items-center justify-center bg-brand-50 dark:bg-brand-900/20">
             <Calendar size={64} className="text-brand-400" />
           </div>
         )}
@@ -50,7 +50,7 @@ const EventDetails: React.FC = () => {
             <h1 className="text-3xl font-semibold">{event.title}</h1>
           </div>
 
-          <div className="flex flex-wrap gap-5 rounded-2xl border border-ink-200 dark:border-ink-700 p-5">
+          <div className="flex flex-wrap gap-5 rounded-lg border border-ink-200 dark:border-ink-700 p-5">
             <div className="flex items-center gap-2 text-sm">
               <Calendar size={16} className="text-brand-500" />
               <span className="font-medium">{new Date(event.date).toLocaleDateString('en-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
@@ -75,7 +75,7 @@ const EventDetails: React.FC = () => {
               <h2 className="text-xl font-semibold">Agenda</h2>
               <div className="space-y-2">
                 {event.agenda.map((item: any, i: number) => (
-                  <div key={i} className="flex gap-4 rounded-2xl border border-ink-200 dark:border-ink-700 p-4">
+                  <div key={i} className="flex gap-4 rounded-lg border border-ink-200 dark:border-ink-700 p-4">
                     <span className="shrink-0 text-sm font-semibold text-brand-500">{item.time}</span>
                     <div>
                       <p className="text-sm font-semibold">{item.title}</p>

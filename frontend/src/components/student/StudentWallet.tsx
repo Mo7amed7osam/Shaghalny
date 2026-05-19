@@ -148,7 +148,7 @@ const StudentWallet: React.FC = () => {
         </div>
 
         {withdrawalsLoading ? (
-          <Skeleton className="h-40 w-full rounded-3xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
         ) : (withdrawals || []).length === 0 ? (
           <EmptyState title="No withdrawal requests yet" description="Your withdrawal history will appear here after you submit the first payout request." />
         ) : (

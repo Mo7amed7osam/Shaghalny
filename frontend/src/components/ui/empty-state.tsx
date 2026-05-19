@@ -26,15 +26,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <Card className={cn('border-dashed', className)}>
       <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700 dark:bg-brand-400/12 dark:text-brand-100">
-          <Icon size={24} />
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+          <Icon size={22} />
         </div>
-        <div className="space-y-2">
-          <h3 className="text-xl font-semibold">{title}</h3>
-          <p className="mx-auto max-w-xl text-sm text-ink-600 dark:text-ink-200">{description}</p>
+        <div className="space-y-1.5">
+          <h3 className="text-base font-semibold text-ink-900 dark:text-ink-dark-text">{title}</h3>
+          <p className="mx-auto max-w-sm text-sm text-ink-500 dark:text-ink-dark-muted">{description}</p>
         </div>
         {actionLabel && onAction ? (
-          <Button variant="outline" onClick={onAction}>
+          <Button variant="outline" size="sm" onClick={onAction}>
             {actionLabel}
           </Button>
         ) : null}

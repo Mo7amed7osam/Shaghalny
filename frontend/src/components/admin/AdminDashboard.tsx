@@ -126,7 +126,7 @@ const deleteSkillMutation = useMutation({
         </div>
 
         {interviewsLoading ? (
-          <Skeleton className="h-44 w-full rounded-3xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
         ) : (interviews || []).length === 0 ? (
           <EmptyState title="No interviews found" description="Try another filter to review a different slice of the interview queue." />
         ) : (
@@ -180,27 +180,33 @@ const deleteSkillMutation = useMutation({
               {createSkillMutation.isPending ? 'Adding...' : 'Add skill'}
             </Button>
           </div>
-         <div className="flex flex-wrap gap-2">
-  {sortedSkills.map((skill: any) => (
-    <div key={skill._id} className="flex items-center gap-1">
-      <Badge variant="subtle">{skill.name}</Badge>
-      <button
-        type="button"
-        onClick={() => deleteSkillMutation.mutate(skill._id)}
-        className="text-xs text-rose-500 hover:text-rose-700"
-        disabled={deleteSkillMutation.isPending}
-      >
-        ✕
-      </button>
-    </div>
-  ))}
-</div>
+        <div className="flex flex-wrap gap-2">
+          {sortedSkills.map((skill: any) => (
+            <div key={skill._id} className="flex items-center gap-1.5">
+              <Badge variant="subtle">{skill.name}</Badge>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-rose-500 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-400/10 dark:hover:text-rose-300"
+                onClick={() => {
+                  if (window.confirm(`Remove skill "${skill.name}"?`)) {
+                    deleteSkillMutation.mutate(skill._id);
+                  }
+                }}
+                disabled={deleteSkillMutation.isPending}
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
         </div>
         <div className="space-y-5">
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold">Users</h2>
             {usersLoading ? (
-              <Skeleton className="h-44 w-full rounded-3xl" />
+              <Skeleton className="h-44 w-full rounded-xl" />
             ) : (
               <Table>
                 <TableHead>
@@ -218,7 +224,16 @@ const deleteSkillMutation = useMutation({
                       <TableCell><Badge variant="subtle">{user.role}</Badge></TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => deleteUserMutation.mutate(user._id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-400/10"
+                          onClick={() => {
+                            if (window.confirm(`Delete user "${user.name}"? This cannot be undone.`)) {
+                              deleteUserMutation.mutate(user._id);
+                            }
+                          }}
+                        >
                           Delete
                         </Button>
                       </TableCell>
@@ -232,7 +247,7 @@ const deleteSkillMutation = useMutation({
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold">Jobs</h2>
             {jobsLoading ? (
-              <Skeleton className="h-44 w-full rounded-3xl" />
+              <Skeleton className="h-44 w-full rounded-xl" />
             ) : (
               <Table>
                 <TableHead>
@@ -250,7 +265,16 @@ const deleteSkillMutation = useMutation({
                       <TableCell><Badge variant="subtle">{job.status}</Badge></TableCell>
                       <TableCell>{job.employer?.name}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => deleteJobMutation.mutate(job._id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-400/10"
+                          onClick={() => {
+                            if (window.confirm(`Delete job "${job.title}"? This cannot be undone.`)) {
+                              deleteJobMutation.mutate(job._id);
+                            }
+                          }}
+                        >
                           Delete
                         </Button>
                       </TableCell>

@@ -83,7 +83,7 @@ const ViewProposals: React.FC = () => {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Job</label>
             {jobsLoading ? (
-              <Skeleton className="h-11 w-full rounded-2xl" />
+              <Skeleton className="h-11 w-full rounded-lg" />
             ) : (
               <Select value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
                 <option value="">All jobs</option>
@@ -99,7 +99,7 @@ const ViewProposals: React.FC = () => {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Verified skill</label>
             {skillsLoading ? (
-              <Skeleton className="h-11 w-full rounded-2xl" />
+              <Skeleton className="h-11 w-full rounded-lg" />
             ) : (
               <Select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
                 <option value="">All skills</option>
@@ -117,7 +117,7 @@ const ViewProposals: React.FC = () => {
       {proposalsLoading ? (
         <div className="grid gap-4 xl:grid-cols-2">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-[24rem] w-full rounded-3xl" />
+            <Skeleton key={index} className="h-[24rem] w-full rounded-xl" />
           ))}
         </div>
       ) : filteredProposals.length === 0 ? (
@@ -152,11 +152,11 @@ const ViewProposals: React.FC = () => {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="muted-panel rounded-2xl p-3">
+                    <div className="muted-panel rounded-lg p-3">
                       <p className="label-muted">Job</p>
                       <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || 'Job'}</p>
                     </div>
-                    <div className="muted-panel rounded-2xl p-3">
+                    <div className="muted-panel rounded-lg p-3">
                       <p className="label-muted">Proposed budget</p>
                       <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">
                         {proposal.proposedBudget ? `$${proposal.proposedBudget}` : 'Not specified'}
@@ -180,7 +180,7 @@ const ViewProposals: React.FC = () => {
                   </div>
 
                   {proposal.details ? (
-                    <div className="rounded-2xl border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
+                    <div className="rounded-lg border border-dashed border-ink-200 bg-ink-50/80 p-4 text-sm text-ink-700 dark:border-white/10 dark:bg-white/5 dark:text-ink-200">
                       {proposal.details}
                     </div>
                   ) : null}

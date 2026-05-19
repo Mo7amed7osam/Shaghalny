@@ -18,9 +18,9 @@ export const Topbar = () => {
   const [theme, setThemeState] = useState<'light' | 'dark'>(getTheme());
 
   const roleCopy = useMemo(() => {
-    if (user?.role === 'Admin') return 'Admin workspace';
-    if (user?.role === 'Client') return 'Client workspace';
-    return 'Student workspace';
+    if (user?.role === 'Admin') return 'Admin';
+    if (user?.role === 'Client') return 'Client';
+    return 'Student';
   }, [user?.role]);
 
   const toggleTheme = () => {
@@ -30,36 +30,36 @@ export const Topbar = () => {
   };
 
   return (
-    <header className="page-container pt-4">
-      <div className="glass-panel flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-ink-600 dark:text-ink-200">{greetingLabel()}</p>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold">{user?.name || 'Workspace'}</h1>
-            {user?.role ? <Badge variant="brand">{roleCopy}</Badge> : null}
+    <header className="flex h-16 shrink-0 items-center border-b border-ink-200 bg-white px-6 dark:border-ink-dark-border dark:bg-ink-dark-surface">
+      <div className="flex flex-1 items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-xs text-ink-400 dark:text-ink-dark-muted">{greetingLabel()}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">{user?.name || 'Workspace'}</p>
+              {user?.role ? <Badge variant="brand">{roleCopy}</Badge> : null}
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="flex min-h-11 w-full items-center gap-3 rounded-2xl border border-ink-200 bg-white/95 px-4 text-sm text-ink-600 shadow-soft focus-within:border-brand-300 focus-within:ring-4 focus-within:ring-brand-100 dark:border-ink-dark-border dark:bg-ink-dark-surface/88 dark:text-ink-200 dark:focus-within:ring-brand-400/15 sm:w-72">
-            <Search size={16} className="text-ink-500 dark:text-ink-300" />
+        <div className="flex items-center gap-3">
+          <label className="hidden h-9 items-center gap-2 rounded-lg border border-ink-200 bg-ink-50 px-3 text-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100 sm:flex dark:border-ink-dark-border dark:bg-white/5 dark:focus-within:border-brand-500 dark:focus-within:ring-brand-500/20">
+            <Search size={14} className="shrink-0 text-ink-400 dark:text-ink-dark-muted" />
             <input
               type="text"
-              placeholder="Search jobs, skills, candidates"
-              className="w-full bg-transparent text-sm text-ink-800 outline-none placeholder:text-ink-500 dark:text-ink-100 dark:placeholder:text-ink-dark-muted"
+              placeholder="Search..."
+              className="w-44 bg-transparent text-sm text-ink-800 outline-none placeholder:text-ink-400 dark:text-ink-dark-text dark:placeholder:text-ink-dark-muted"
             />
           </label>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </Button>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </Button>
 
-            <Button variant="outline" onClick={logout}>
-              <LogOut size={16} />
-              Logout
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={logout}>
+            <LogOut size={14} />
+            Sign out
+          </Button>
         </div>
       </div>
     </header>

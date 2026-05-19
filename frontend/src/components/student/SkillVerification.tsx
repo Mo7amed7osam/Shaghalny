@@ -93,8 +93,8 @@ const getVerifiedScore = (skillId: string) => {
               Icon: Sparkles,
             },
           ].map(({ title, body, Icon }) => (
-            <div key={title} className="rounded-3xl border border-white/16 bg-white/14 p-6 shadow-soft backdrop-blur-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/18">
+            <div key={title} className="rounded-xl border border-white/12 bg-white/10 p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/15">
                 <Icon size={20} />
               </div>
               <p className="mt-5 text-xl font-semibold text-white">{title}</p>
@@ -107,7 +107,7 @@ const getVerifiedScore = (skillId: string) => {
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-72 w-full rounded-3xl" />
+            <Skeleton key={i} className="h-72 w-full rounded-xl" />
           ))}
         </div>
       ) : (skills || []).length === 0 ? (
@@ -128,40 +128,46 @@ const getVerifiedScore = (skillId: string) => {
 
               <CardContent className="space-y-5 p-6 pt-0">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="muted-panel rounded-2xl p-3">
+                  <div className="muted-panel rounded-lg p-3">
                     <p className="label-muted">Interview mode</p>
                     <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">Live with Gravis</p>
                   </div>
-                  <div className="muted-panel rounded-2xl p-3">
+                  <div className="muted-panel rounded-lg p-3">
                     <p className="label-muted">Outcome</p>
                     <p className="mt-2 text-sm font-semibold text-ink-900 dark:text-white">Verified skill badge</p>
                   </div>
                 </div>
 
                 {verifiedSkillIds.has(String(skill._id)) ? (
-  <div className="space-y-3">
-    <div className="muted-panel rounded-2xl p-3 text-center">
-      <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-        ✅ Verified · Score: {getVerifiedScore(String(skill._id)) ?? '—'}
-      </p>
-    </div>
-    <Button type="button" variant="outline" className="w-full" size="lg" onClick={() => {
-      const sessionId = getLatestSessionId(String(skill._id));
-      if (sessionId) {
-        navigate(`/student/ai-interview/${sessionId}/result`);
-      } else {
-        navigate('/student/profile');
-      }
-    }}>
-      View Result
-    </Button>
-  </div>
-) : (
-  <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
-    {isPending ? 'Starting interview…' : 'Start interview'}
-    {!isPending ? <ArrowRight size={18} /> : null}
-  </Button>
-)}
+                  <div className="space-y-3">
+                    <div className="muted-panel rounded-lg p-3 text-center">
+                      <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                        Verified — Score: {getVerifiedScore(String(skill._id)) ?? '—'}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      size="lg"
+                      onClick={() => {
+                        const sessionId = getLatestSessionId(String(skill._id));
+                        if (sessionId) {
+                          navigate(`/student/ai-interview/${sessionId}/result`);
+                        } else {
+                          navigate('/student/profile');
+                        }
+                      }}
+                    >
+                      View result
+                    </Button>
+                  </div>
+                ) : (
+                  <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
+                    {isPending ? 'Starting interview…' : 'Start interview'}
+                    {!isPending ? <ArrowRight size={18} /> : null}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}

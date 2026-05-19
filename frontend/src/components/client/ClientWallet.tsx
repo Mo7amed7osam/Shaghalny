@@ -144,7 +144,7 @@ const ClientWallet: React.FC = () => {
         </div>
 
         {topupsLoading ? (
-          <Skeleton className="h-40 w-full rounded-3xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
         ) : (topups || []).length === 0 ? (
           <EmptyState title="No top-up requests yet" description="Your funding history will appear here after the first top-up submission." />
         ) : (

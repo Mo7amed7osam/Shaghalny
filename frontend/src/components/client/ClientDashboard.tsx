@@ -62,20 +62,16 @@ const ClientDashboard: React.FC = () => {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="flex items-center justify-between gap-4">
-  <div>
-    <h2 className="text-2xl font-semibold">Recent proposals</h2>
-    <p className="text-sm text-ink-500 dark:text-ink-300">Review the latest applicants and move the strongest ones forward.</p>
-  </div>
-  <Button variant="outline" size="sm" onClick={() => navigate('/client/view-proposals')}>
-    View all
-  </Button>
-</div>
+            <h2 className="text-2xl font-semibold">Open jobs</h2>
+            <p className="text-sm text-ink-500 dark:text-ink-300">Your active listings and their current proposal activity.</p>
           </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/client/post-job')}>
+            Post a job
+          </Button>
         </div>
 
         {jobsLoading ? (
-          <Skeleton className="h-44 w-full rounded-3xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
         ) : (jobs || []).length === 0 ? (
           <EmptyState
             title="No jobs posted yet"
@@ -124,13 +120,18 @@ const ClientDashboard: React.FC = () => {
       </section>
 
       <section className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Recent proposals</h2>
-          <p className="text-sm text-ink-500 dark:text-ink-300">Review the latest applicants and move the strongest ones forward.</p>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Recent proposals</h2>
+            <p className="text-sm text-ink-500 dark:text-ink-300">Review the latest applicants and move the strongest ones forward.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/client/view-proposals')}>
+            View all
+          </Button>
         </div>
 
         {proposalsLoading ? (
-          <Skeleton className="h-44 w-full rounded-3xl" />
+          <Skeleton className="h-44 w-full rounded-xl" />
         ) : (proposals || []).length === 0 ? (
           <EmptyState title="No proposals yet" description="Once students apply, their proposals will appear here with status and skill context." />
         ) : (

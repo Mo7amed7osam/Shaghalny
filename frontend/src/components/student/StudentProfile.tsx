@@ -87,7 +87,7 @@ const StudentProfile: React.FC = () => {
     },
   });
 
-  if (!user || isLoading) return <Skeleton className="h-80 w-full rounded-3xl" />;
+  if (!user || isLoading) return <Skeleton className="h-80 w-full rounded-xl" />;
   if (isError || !profile) return <EmptyState title="Unable to load profile" description="Refresh the page and try again. Your profile data could not be loaded." />;
 
   const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
@@ -107,7 +107,7 @@ const StudentProfile: React.FC = () => {
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <div className="glass-panel space-y-6 p-6">
           <div className="flex items-center gap-4">
-            <div className="h-24 w-24 overflow-hidden rounded-3xl border border-ink-200 bg-ink-50 dark:border-white/10 dark:bg-white/6">
+            <div className="h-24 w-24 overflow-hidden rounded-xl border border-ink-200 bg-ink-50 dark:border-white/10 dark:bg-white/6">
               {photoUrl ? (
                 <img src={photoUrl} alt={profile.name} className="h-full w-full object-cover" />
               ) : (
@@ -128,7 +128,7 @@ const StudentProfile: React.FC = () => {
           </div>
 
           <div className="grid gap-3">
-            <div className="muted-panel rounded-2xl p-4">
+            <div className="muted-panel rounded-lg p-4">
               <p className="label-muted">Verified skills</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {profile.verifiedSkills?.length ? (
@@ -143,7 +143,7 @@ const StudentProfile: React.FC = () => {
               </div>
             </div>
 
-            <div className="muted-panel rounded-2xl p-4">
+            <div className="muted-panel rounded-lg p-4">
               <p className="label-muted">Curriculum vitae</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 {cvUrl ? (
@@ -174,11 +174,6 @@ const StudentProfile: React.FC = () => {
               <Label>University</Label>
               <Input value={formValues.university} onChange={(e) => setFormValues((p) => ({ ...p, university: e.target.value }))} />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Profile photo URL</Label>
-            <Input value={formValues.profilePhotoUrl} onChange={(e) => setFormValues((p) => ({ ...p, profilePhotoUrl: e.target.value }))} />
           </div>
 
           <div className="space-y-2">

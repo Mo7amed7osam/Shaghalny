@@ -20,7 +20,7 @@ const StudentPublicProfile: React.FC = () => {
     enabled: !!id,
   });
 
-  if (isLoading) return <Skeleton className="h-80 w-full rounded-3xl" />;
+  if (isLoading) return <Skeleton className="h-80 w-full rounded-xl" />;
   if (isError || !profile) return <EmptyState title="Unable to load student profile" description="This profile could not be loaded right now." />;
 
   const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
@@ -40,7 +40,7 @@ const StudentPublicProfile: React.FC = () => {
         <Card>
           <CardContent className="space-y-5 p-6">
             <div className="flex items-center gap-4">
-              <div className="h-24 w-24 overflow-hidden rounded-3xl border border-ink-200 bg-ink-50 dark:border-white/10 dark:bg-white/5">
+              <div className="h-24 w-24 overflow-hidden rounded-xl border border-ink-200 bg-ink-50 dark:border-white/10 dark:bg-white/5">
                 {photoUrl ? (
                   <img src={photoUrl} alt={`${profile.name} profile`} className="h-full w-full object-cover" />
                 ) : (
@@ -53,7 +53,7 @@ const StudentPublicProfile: React.FC = () => {
               </div>
             </div>
 
-            <div className="muted-panel rounded-2xl p-4">
+            <div className="muted-panel rounded-lg p-4">
               <p className="text-sm font-semibold text-ink-900 dark:text-white">Portfolio</p>
               {(profile.portfolioLinks || []).length ? (
                 <ul className="mt-3 space-y-2 text-sm">
@@ -94,7 +94,7 @@ const StudentPublicProfile: React.FC = () => {
               {(profile.reviews || []).length ? (
                 <div className="mt-4 space-y-4">
                   {(profile.reviews || []).map((review: any, index: number) => (
-                    <div key={`${review.clientName}-${index}`} className="muted-panel rounded-2xl p-4">
+                    <div key={`${review.clientName}-${index}`} className="muted-panel rounded-lg p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
                           <p className="text-sm font-semibold text-ink-900 dark:text-white">{review.clientName}</p>
@@ -119,7 +119,7 @@ const StudentPublicProfile: React.FC = () => {
                 {(profile.proposalHistory || []).length ? (
                   <div className="mt-4 space-y-4">
                     {(profile.proposalHistory || []).map((proposal: any) => (
-                      <div key={proposal._id} className="muted-panel rounded-2xl p-4">
+                      <div key={proposal._id} className="muted-panel rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <Badge variant="subtle">{proposal.status}</Badge>
                           {proposal.createdAt ? <span className="text-xs text-ink-400 dark:text-ink-300">{new Date(proposal.createdAt).toLocaleDateString()}</span> : null}

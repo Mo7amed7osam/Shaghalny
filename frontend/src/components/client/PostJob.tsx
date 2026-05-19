@@ -128,7 +128,7 @@ const PostJob: React.FC = () => {
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Required skills</label>
                 {isLoading ? (
-                  <Skeleton className="h-24 w-full rounded-3xl" />
+                  <Skeleton className="h-24 w-full rounded-xl" />
                 ) : (skills || []).length === 0 ? (
                   <p className="text-sm text-ink-500 dark:text-ink-300">No skills available. Contact admin to add skills.</p>
                 ) : (
@@ -179,9 +179,9 @@ const PostJob: React.FC = () => {
         </Card>
 
         <div className="space-y-5">
-          <Card className="overflow-hidden bg-ink-950 p-0 text-white dark:bg-[#07101d]">
+          <Card className="overflow-hidden bg-ink-950 p-0 text-white dark:bg-ink-950">
             <CardContent className="space-y-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10">
                 <BriefcaseBusiness size={20} />
               </div>
               <h2 className="text-2xl font-semibold text-white">What strong job posts do well</h2>
@@ -195,7 +195,7 @@ const PostJob: React.FC = () => {
 
           <Card>
             <CardContent className="space-y-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-400/10 dark:text-brand-200">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-400/10 dark:text-brand-200">
                 <Wallet size={20} />
               </div>
               <h2 className="text-2xl font-semibold">Before you publish</h2>

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 
 const emptyForm = { title: '', description: '', date: '', time: '', location: '', isOnline: false, image: null as File | null };
 
@@ -75,7 +76,7 @@ const AdminEvents: React.FC = () => {
         <div className="glass-panel space-y-4 p-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{editingId ? 'Edit Event' : 'New Event'}</h3>
-            <button onClick={resetForm}><X size={18} /></button>
+            <Button variant="ghost" size="icon" onClick={resetForm} aria-label="Close form"><X size={18} /></Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input placeholder="Title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
@@ -83,10 +84,11 @@ const AdminEvents: React.FC = () => {
             <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
             <Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
           </div>
-          <textarea
-            className="w-full rounded-xl border border-ink-200 bg-transparent p-3 text-sm dark:border-ink-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
-            rows={3} placeholder="Description *"
-            value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+          <Textarea
+            rows={3}
+            placeholder="Description *"
+            value={form.description}
+            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -108,13 +110,13 @@ const AdminEvents: React.FC = () => {
       )}
 
       {isLoading ? (
-        <Skeleton className="h-44 w-full rounded-3xl" />
+        <Skeleton className="h-44 w-full rounded-xl" />
       ) : events.length === 0 ? (
         <EmptyState title="No events yet" description="Add your first event using the button above." />
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {events.map((ev: any) => (
-            <div key={ev._id} className="glass-panel overflow-hidden rounded-3xl">
+            <div key={ev._id} className="glass-panel overflow-hidden rounded-xl">
               {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} className="w-full object-contain bg-black" />}
               <div className="space-y-2 p-5">
                 <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">{ev.isOnline ? 'Online' : ev.location}</p>
@@ -123,7 +125,18 @@ const AdminEvents: React.FC = () => {
                 <p className="text-sm text-ink-400">{new Date(ev.date).toLocaleDateString('en-EG', { day: 'numeric', month: 'long', year: 'numeric' })} · {ev.time}</p>
                 <div className="flex gap-2 pt-2">
                   <Button size="sm" variant="ghost" onClick={() => handleEdit(ev)}><Pencil size={14} className="mr-1" /> Edit</Button>
-                  <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(ev._id)}><Trash2 size={14} className="mr-1" /> Delete</Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-400/10"
+                    onClick={() => {
+                      if (window.confirm(`Delete event "${ev.title}"?`)) {
+                        deleteMutation.mutate(ev._id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={14} className="mr-1" /> Delete
+                  </Button>
                 </div>
               </div>
             </div>

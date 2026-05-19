@@ -34,7 +34,7 @@ const ClientContracts: React.FC = () => {
       />
 
       {isLoading ? (
-        <Skeleton className="h-44 w-full rounded-3xl" />
+        <Skeleton className="h-44 w-full rounded-xl" />
       ) : (contracts || []).length === 0 ? (
         <EmptyState title="No contracts yet" description="Accepted student proposals will appear here as contracts once the hiring flow moves forward." />
       ) : (

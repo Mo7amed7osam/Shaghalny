@@ -87,7 +87,7 @@ const ContractDetails: React.FC = () => {
     },
   });
 
-  if (isLoading) return <Skeleton className="h-80 w-full rounded-3xl" />;
+  if (isLoading) return <Skeleton className="h-80 w-full rounded-xl" />;
   if (isError || !data?.contract) return <EmptyState title="Unable to load contract" description="The contract could not be loaded right now." />;
 
   const { contract, submissions } = data;
@@ -117,11 +117,11 @@ const ContractDetails: React.FC = () => {
       <Card>
         <CardContent className="space-y-5 p-6">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="muted-panel rounded-2xl p-4">
+            <div className="muted-panel rounded-lg p-4">
               <p className="label-muted">Agreed budget</p>
               <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">${contract.agreedBudget}</p>
             </div>
-            <div className="muted-panel rounded-2xl p-4 md:col-span-2">
+            <div className="muted-panel rounded-lg p-4 md:col-span-2">
               <p className="label-muted">Progress</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {steps.map((step) => (
@@ -149,7 +149,7 @@ const ContractDetails: React.FC = () => {
           {(submissions || []).length ? (
             <div className="space-y-4">
               {(submissions || []).map((submission: any) => (
-                <div key={submission._id} className="muted-panel rounded-2xl p-4">
+                <div key={submission._id} className="muted-panel rounded-lg p-4">
                   <p className="text-sm text-ink-700 dark:text-ink-200">{submission.message}</p>
                   {(submission.links || []).length ? (
                     <div className="mt-3 space-y-1 text-sm">
@@ -225,23 +225,29 @@ const ContractDetails: React.FC = () => {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                placeholder="Rating (1-5)"
-                type="number"
-                min={1}
-                max={5}
-                value={reviewRating}
-                onChange={(e) => setReviewRating(e.target.value)}
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Rating (1–5)</label>
+                <Input
+                  placeholder="e.g. 4"
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={reviewRating}
+                  onChange={(e) => setReviewRating(e.target.value)}
+                  disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Feedback</label>
+              <Textarea
+                rows={3}
+                placeholder="Share your honest feedback about the student's work and professionalism."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
                 disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed}
               />
             </div>
-            <Textarea
-              rows={3}
-              placeholder="Share your feedback"
-              value={reviewComment}
-              onChange={(e) => setReviewComment(e.target.value)}
-              disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed}
-            />
             <Button
               type="button"
               variant="outline"
