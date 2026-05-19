@@ -109,7 +109,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
       <motion.div variants={fadeUp}>
         <Card>
           <CardContent className="grid gap-4 p-5 md:grid-cols-2">
-            <div className="space-y-1.5">
+            <div className="mt-4 space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by job</label>
               {jobsLoading ? (
                 <Skeleton className="h-9 w-full rounded-lg" />

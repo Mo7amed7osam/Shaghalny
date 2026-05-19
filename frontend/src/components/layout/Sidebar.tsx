@@ -16,6 +16,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 import wordmark from '@/assets/shaghalny-wordmark.svg';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -54,6 +55,30 @@ function getInitials(name?: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1  ,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -8 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 280,
+      damping: 24,
+    },
+  },
+};
+
 export const Sidebar = () => {
   const { user, logout } = useAuth();
   const [theme, setThemeState] = useState<'light' | 'dark'>(getTheme());
@@ -78,7 +103,12 @@ export const Sidebar = () => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <motion.nav
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex-1 overflow-y-auto px-3 py-4"
+      >
         <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-400 dark:text-ink-dark-muted">
           Navigation
         </p>
@@ -86,35 +116,36 @@ export const Sidebar = () => {
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  cn(
-                    'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
-                    isActive
-                      ? 'bg-brand-600 text-white shadow-sm'
-                      : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-white/10 dark:hover:text-white'
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <Icon
-                      size={16}
-                      className={cn(
-                        'shrink-0 transition-transform duration-150',
-                        isActive ? 'text-white' : 'text-ink-400 group-hover:text-ink-700 dark:text-ink-500 dark:group-hover:text-white'
-                      )}
-                    />
-                    <span className="truncate">{item.label}</span>
-                  </>
-                )}
-              </NavLink>
+              <motion.div key={item.to} variants={itemVariants}>
+                <NavLink
+                  to={item.to}
+                  className={({ isActive }) =>
+                    cn(
+                      'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
+                      isActive
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-white/10 dark:hover:text-white'
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        size={16}
+                        className={cn(
+                          'shrink-0 transition-transform duration-150',
+                          isActive ? 'text-white' : 'text-ink-400 group-hover:text-ink-700 dark:text-ink-500 dark:group-hover:text-white'
+                        )}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              </motion.div>
             );
           })}
         </div>
-      </nav>
+      </motion.nav>
 
       {/* User footer */}
       <div className="shrink-0 border-t border-ink-100 p-3 dark:border-ink-dark-border">

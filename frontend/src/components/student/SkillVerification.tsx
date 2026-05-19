@@ -54,16 +54,20 @@ const getVerifiedScore = (skillId: string) => {
     queryFn: getSkills,
   });
 
+  const [startingSkillId, setStartingSkillId] = React.useState<string | null>(null);
+
   const { mutateAsync: beginInterview, isPending } = useMutation({
     mutationFn: (payload: { skill: string; skillId: string }) => startInterviewSession(payload),
   });
 
   const handleStartInterview = async (skill: { _id: string; name: string }) => {
     try {
+      setStartingSkillId(skill._id);
       const response = await beginInterview({ skill: skill.name, skillId: skill._id });
       navigate(`/student/ai-interview/${response.sessionId}`);
     } catch {
       toast.error('Failed to start interview. Please try again.');
+      setStartingSkillId(null);
     }
   };
 
@@ -169,8 +173,8 @@ const getVerifiedScore = (skillId: string) => {
                   </div>
                 ) : (
                   <Button type="button" className="w-full" size="lg" onClick={() => handleStartInterview(skill)} disabled={isPending}>
-                    {isPending ? 'Starting interview…' : 'Start interview'}
-                    {!isPending ? <ArrowRight size={18} /> : null}
+                    {isPending && startingSkillId === skill._id ? 'Starting interview…' : 'Start interview'}
+                    {!(isPending && startingSkillId === skill._id) ? <ArrowRight size={18} /> : null}
                   </Button>
                 )}
               </CardContent>
