@@ -154,7 +154,7 @@ const SkillVerification: React.FC = () => {
                         Verified — Score: {getVerifiedScore(String(skill._id)) ?? '—'}
                       </p>
                     </div>
-                    <Button
+                   <Button
                       type="button"
                       variant="outline"
                       className="w-full"

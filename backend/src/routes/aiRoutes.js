@@ -1,54 +1,60 @@
-const router = require('express').Router();
-const axios = require('axios');
-const { authenticate } = require('../middleware/auth');
+const router = require("express").Router();
+const axios = require("axios");
+const { authenticate } = require("../middleware/auth");
 
-router.post('/improve-text', authenticate, async (req, res) => {
+router.post("/improve-text", authenticate, async (req, res) => {
   try {
     const { text, jobTitle } = req.body;
     if (!text) {
-      return res.status(400).json({ message: 'Text is required' });
+      return res.status(400).json({ message: "Text is required" });
     }
 
     const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
+      "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-haiku',
+        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
         max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: `Improve this cover letter for a "${jobTitle}" job. Make it professional, concise, and compelling. Return only the improved text, nothing else:\n\n${text}`
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `Improve this cover letter for a "${jobTitle}" job. Make it professional, concise, and compelling. Return only the improved text, nothing else:\n\n${text}`,
+          },
+        ],
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         timeout: 30000,
-      }
+      },
     );
 
-    const improved = response.data?.choices?.[0]?.message?.content?.trim() || text;
+    const improved =
+      response.data?.choices?.[0]?.message?.content?.trim() || text;
     return res.status(200).json({ improved });
   } catch (error) {
-    return res.status(500).json({ message: 'AI improvement failed', error: error.message });
+    return res
+      .status(500)
+      .json({ message: "AI improvement failed", error: error.message });
   }
 });
-router.post('/career-roadmap', authenticate, async (req, res) => {
+router.post("/career-roadmap", authenticate, async (req, res) => {
   try {
     const { goal } = req.body;
     if (!goal) {
-      return res.status(400).json({ message: 'Goal is required' });
+      return res.status(400).json({ message: "Goal is required" });
     }
 
     const response = await axios.post(
-      'https://openrouter.ai/api/v1/chat/completions',
+      "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-haiku',
+        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
         max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: `You are a career advisor for Egyptian university students who want to work as freelancers.
+        messages: [
+          {
+            role: "user",
+            content: `You are a career advisor for Egyptian university students who want to work as freelancers.
           
 The student's goal: "${goal}"
 
@@ -58,47 +64,70 @@ Generate a clear, structured career roadmap including:
 3. Recommended Projects to build
 4. Tips for getting first freelance job
 
-Keep it practical, motivating, and suitable for a university student. Use simple English.`
-        }],
+Keep it practical, motivating, and suitable for a university student. Use simple English.`,
+          },
+        ],
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         timeout: 45000,
-      }
+      },
     );
 
-    const roadmap = response.data?.choices?.[0]?.message?.content?.trim() || '';
+    const roadmap = response.data?.choices?.[0]?.message?.content?.trim() || "";
     return res.status(200).json({ roadmap });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to generate roadmap', error: error.message });
+    console.error(
+      "CAREER ROADMAP ERROR:",
+      error.response?.data || error.message,
+    );
+    return res
+      .status(500)
+      .json({ message: "Failed to generate roadmap", error: error.message });
   }
 });
-router.post('/match-score', authenticate, async (req, res) => {
+router.post("/match-score", authenticate, async (req, res) => {
   try {
     const { proposal, job } = req.body;
-    
-    const requiredSkills = (job?.requiredSkills || []).map((s) => s._id || s);
-    const verifiedSkills = (proposal?.studentId?.verifiedSkills || []).map((s) => s.skill?._id || s.skill);
-    
-    const skillsMatch = requiredSkills.length > 0
-      ? (verifiedSkills.filter((s) => requiredSkills.includes(s)).length / requiredSkills.length) * 40
-      : 0;
+    const reqSkills = (job?.requiredSkills || []).map((s) => s._id || s);
+    const verSkills = (proposal?.studentId?.verifiedSkills || []).map(
+      (s) => s.skill?._id || s.skill,
+    );
 
-    const interviewScore = (proposal?.studentId?.verifiedSkills || []).reduce((acc, s) => 
-      acc + (s.score || 0), 0) / Math.max((proposal?.studentId?.verifiedSkills || []).length, 1);
+    const skillsMatch =
+      reqSkills.length > 0
+        ? (verSkills.filter((s) => reqSkills.includes(s)).length /
+            reqSkills.length) *
+          40
+        : 0;
+
+    const interviewScore =
+      (proposal?.studentId?.verifiedSkills || []).reduce(
+        (acc, s) => acc + (s.score || 0),
+        0,
+      ) / Math.max((proposal?.studentId?.verifiedSkills || []).length, 1);
     const normalizedInterviewScore = (interviewScore / 100) * 30;
 
     const proposalScore = proposal?.details?.length > 100 ? 20 : 10;
-    const portfolioScore = (proposal?.studentId?.portfolioLinks?.length > 0) ? 10 : 0;
+    const portfolioScore =
+      proposal?.studentId?.portfolioLinks?.length > 0 ? 10 : 0;
 
-    const score = Math.min(Math.round(skillsMatch + normalizedInterviewScore + proposalScore + portfolioScore), 100);
-    
+    const score = Math.min(
+      Math.round(
+        skillsMatch + normalizedInterviewScore + proposalScore + portfolioScore,
+      ),
+      100,
+    );
+
     return res.status(200).json({ score });
   } catch (error) {
-    return res.status(500).json({ message: 'Failed to calculate match score', error: error.message });
+    return res.status(500).json({
+      message: "Failed to calculate match score",
+      error: error.message,
+    });
   }
 });
 module.exports = router;

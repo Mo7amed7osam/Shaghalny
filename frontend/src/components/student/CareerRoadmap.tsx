@@ -44,30 +44,71 @@ const CareerRoadmap: React.FC = () => {
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Input
               placeholder="e.g. I want to become a Backend Developer"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               disabled={isLoading}
             />
-            <Button onClick={generateRoadmap} disabled={isLoading || !goal.trim()}>
-              <Sparkles size={16} />
+            
+            <Button
+  onClick={generateRoadmap}
+  disabled={isLoading || !goal.trim()}
+  className="min-w-[140px]"
+>
+              <Sparkles size={16} className={isLoading ? 'animate-pulse' : ''} />
               {isLoading ? 'Generating...' : 'Generate'}
             </Button>
           </div>
         </CardContent>
       </Card>
+{isLoading && (
+  <Card>
+    <CardContent className="p-6">
+      <div className="space-y-3 animate-pulse">
+        <div className="h-4 w-1/3 rounded bg-muted"></div>
+        <div className="h-3 w-full rounded bg-muted"></div>
+        <div className="h-3 w-5/6 rounded bg-muted"></div>
+        <div className="h-3 w-2/3 rounded bg-muted"></div>
+      </div>
+    </CardContent>
+  </Card>
+)}
 
-      {roadmap && (
-        <Card>
-          <CardContent className="p-6">
-            <pre className="whitespace-pre-wrap text-sm text-ink-700 dark:text-ink-200 font-sans leading-7">
-              {roadmap}
-            </pre>
+{!isLoading && roadmap && (
+  <div className="space-y-6">
+    {roadmap.split(/\d+\.\s+/).filter(Boolean).map((section, index) => {
+      const lines = section.split('\n').filter(Boolean);
+      const title = lines[0];
+      const content = lines.slice(1);
+
+      return (
+        <Card key={index} className="border shadow-sm">
+          <CardContent className="p-6 space-y-4">
+            <h2 className="text-xl font-bold text-primary">
+              {title}
+            </h2>
+
+            <div className="space-y-2">
+              {content.map((line, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 text-sm leading-6 text-ink-700 dark:text-ink-200"
+                >
+                  <span className="mt-1 text-primary">•</span>
+                  <p className="break-words">
+  {line.replace(/^- /, '')}
+</p>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      )}
+      );
+    })}
+  </div>
+)}
     </div>
   );
 };
