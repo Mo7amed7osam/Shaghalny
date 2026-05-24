@@ -2,6 +2,12 @@ const router = require("express").Router();
 const axios = require("axios");
 const { authenticate } = require("../middleware/auth");
 
+const stripDecorativeCharacters = (text = "") =>
+  text
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "")
+    .replace(/[^\S\r\n]+$/gm, "")
+    .trim();
+
 router.post("/improve-text", authenticate, async (req, res) => {
   try {
     const { text, jobTitle } = req.body;
@@ -58,13 +64,20 @@ router.post("/career-roadmap", authenticate, async (req, res) => {
           
 The student's goal: "${goal}"
 
-Generate a clear, structured career roadmap including:
+Generate a clear, structured career roadmap including exactly these sections:
 1. Required Skills (list them)
 2. Step-by-step Learning Path (3-6 months plan)
 3. Recommended Projects to build
 4. Tips for getting first freelance job
 
-Keep it practical, motivating, and suitable for a university student. Use simple English.`,
+Rules:
+- Use simple English.
+- Return plain text only.
+- Do not use emojis.
+- Do not add a title before section 1.
+- Do not use markdown bold, decorative symbols, or introductory sentences.
+- Start directly with: "1. Required Skills"
+- Keep the output practical, short, and suitable for a university student.`,
           },
         ],
       },
@@ -77,7 +90,9 @@ Keep it practical, motivating, and suitable for a university student. Use simple
       },
     );
 
-    const roadmap = response.data?.choices?.[0]?.message?.content?.trim() || "";
+    const roadmap = stripDecorativeCharacters(
+      response.data?.choices?.[0]?.message?.content?.trim() || "",
+    );
     return res.status(200).json({ roadmap });
   } catch (error) {
     console.error(
