@@ -39,6 +39,15 @@ const cleanLine = (line: string) =>
     .replace(/^\d+\.\s*/, '')
     .trim();
 
+const isDecorativeLine = (line: string) => {
+  const stripped = line
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, '')
+    .replace(/[^\p{L}\p{N}]+/gu, '')
+    .trim();
+
+  return stripped.length === 0;
+};
+
 const parseBlocks = (body: string): RoadmapBlock[] => {
   const lines = body
     .split('\n')
@@ -92,12 +101,21 @@ const parseRoadmap = (roadmap: string): RoadmapContent | null => {
     const firstSectionIndex = normalized.search(/\n?\d+\.\s+/);
     const intro = normalized.slice(0, firstSectionIndex).trim();
     if (intro) {
-      heroTitle = intro.split('\n')[0].trim();
+      const introLines = intro
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const meaningfulIntro = introLines.find((line) => !isDecorativeLine(line));
+
+      if (meaningfulIntro) {
+        heroTitle = meaningfulIntro;
+      }
     }
   } else {
     const lines = normalized.split('\n').filter(Boolean);
     if (lines.length > 0) {
-      heroTitle = lines[0];
+      const meaningfulLine = lines.find((line) => !isDecorativeLine(line.trim()));
+      heroTitle = meaningfulLine || heroTitle;
       body = lines.slice(1).join('\n').trim();
     }
   }
@@ -116,7 +134,7 @@ const parseRoadmap = (roadmap: string): RoadmapContent | null => {
         ];
 
   return {
-    heroTitle,
+    heroTitle: isDecorativeLine(heroTitle) ? 'Your personalized career roadmap' : heroTitle,
     sections,
   };
 };
