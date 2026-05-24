@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   BookOpen,
   BriefcaseBusiness,
+  CheckCircle2,
   Compass,
   Lightbulb,
   Rocket,
@@ -48,6 +49,16 @@ const isDecorativeLine = (line: string) => {
   return stripped.length === 0;
 };
 
+const isHeadingLine = (line: string) => {
+  if (!line || line.length > 90) return false;
+
+  if (/:\s*$/.test(line)) return true;
+  if (/^[A-Z0-9\s/&()+-]+:\s*.+$/.test(line)) return true;
+  if (/^(bonus|note|focus|optional)\s*:/i.test(line)) return true;
+
+  return false;
+};
+
 const parseBlocks = (body: string): RoadmapBlock[] => {
   const lines = body
     .split('\n')
@@ -62,12 +73,12 @@ const parseBlocks = (body: string): RoadmapBlock[] => {
       continue;
     }
 
-    if (/:$/.test(line) && line.length < 90) {
+    if (isHeadingLine(line)) {
       if (current && (current.heading || current.items.length > 0)) {
         blocks.push(current);
       }
       current = {
-        heading: line.replace(/:$/, ''),
+        heading: line.replace(/:\s*$/, ''),
         items: [],
       };
       continue;
@@ -381,11 +392,22 @@ const CareerRoadmap: React.FC = () => {
                             {block.items.map((item, itemIndex) => (
                               <div
                                 key={`${section.title}-${blockIndex}-${itemIndex}`}
-                                className="muted-panel flex items-start gap-3 rounded-2xl px-4 py-3"
+                                className={
+                                  block.heading
+                                    ? 'flex items-start gap-3 rounded-xl border border-ink-200/80 bg-white px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface'
+                                    : 'muted-panel flex items-start gap-3 rounded-2xl px-4 py-3'
+                                }
                               >
-                                <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
-                                  {itemIndex + 1}
-                                </div>
+                                {block.heading ? (
+                                  <CheckCircle2
+                                    size={18}
+                                    className="mt-1 shrink-0 text-brand-500 dark:text-brand-300"
+                                  />
+                                ) : (
+                                  <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+                                    {itemIndex + 1}
+                                  </div>
+                                )}
                                 <p className="text-sm leading-6 text-ink-700 dark:text-ink-300">{item}</p>
                               </div>
                             ))}
