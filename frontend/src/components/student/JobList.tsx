@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Briefcase, Building2, Clock, DollarSign, Search, SendHorizonal, ShieldAlert, Sparkles, X,
+  Briefcase, Building2, CheckCircle2, Clock, DollarSign, RotateCcw, Search, SendHorizonal, ShieldAlert, Sparkles, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,6 +30,8 @@ interface ProposalDraft {
   timeline: string;
   portfolio: string;
   budget: string;
+  lastManualDetails?: string;
+  aiEnhanced?: boolean;
 }
 
 const emptyDraft = (): ProposalDraft => ({ details: '', timeline: '', portfolio: '', budget: '' });
@@ -110,7 +112,15 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
         toast.error('Could not improve the cover letter.');
         return;
       }
-      setDraftField(activeJobId, 'details', improved);
+      setDrafts((prev) => ({
+        ...prev,
+        [activeJobId]: {
+          ...getDraft(activeJobId),
+          lastManualDetails: getDraft(activeJobId).details,
+          details: improved,
+          aiEnhanced: true,
+        },
+      }));
       toast.success('Cover letter improved.');
     },
     onError: (error: any) => {
@@ -127,6 +137,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
   };
 
   const activeJob = filteredJobs.find((j: any) => (j._id || j.id) === activeJobId);
+  const activeDraft = activeJobId ? getDraft(activeJobId) : emptyDraft();
+  const coverLetterLength = activeDraft.details.trim().length;
 
   const getMissingVerifiedSkills = (job: any) =>
     (job?.requiredSkills || []).filter((skill: any) => !verifiedSkillIds.has(String(skill?._id || skill)));
@@ -362,43 +374,94 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
           <Separator />
 
           <div className="flex flex-1 flex-col gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
-                Cover letter <span className="text-rose-500">*</span>
-              </label>
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs text-ink-500 dark:text-ink-dark-muted">
-                  Write your draft first, then let AI tighten the language.
-                </p>
-                <Button
-                  type="button"
-                  variant="soft"
-                  size="sm"
-                  disabled={
-                    proposalMutation.isPending ||
-                    improveLetterMutation.isPending ||
-                    !(activeJobId ? getDraft(activeJobId).details.trim() : '')
-                  }
-                  onClick={() => {
-                    if (!activeJobId) return;
-                    improveLetterMutation.mutate({
-                      text: getDraft(activeJobId).details,
-                      jobTitle: activeJob?.title,
-                    });
-                  }}
-                  className="shrink-0"
-                >
-                  <Sparkles size={14} className={improveLetterMutation.isPending ? 'animate-pulse' : ''} />
-                  {improveLetterMutation.isPending ? 'Improving...' : 'Improve with AI'}
-                </Button>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
+                    Cover letter <span className="text-rose-500">*</span>
+                  </label>
+                  <p className="text-xs leading-5 text-ink-500 dark:text-ink-dark-muted">
+                    Explain why you fit this role, what you will deliver, and why this job matters to you.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {activeDraft.aiEnhanced && activeDraft.lastManualDetails ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={proposalMutation.isPending || improveLetterMutation.isPending}
+                      onClick={() => {
+                        if (!activeJobId || !activeDraft.lastManualDetails) return;
+                        setDrafts((prev) => ({
+                          ...prev,
+                          [activeJobId]: {
+                            ...getDraft(activeJobId),
+                            details: activeDraft.lastManualDetails || '',
+                            aiEnhanced: false,
+                          },
+                        }));
+                        toast.success('Restored your original draft.');
+                      }}
+                    >
+                      <RotateCcw size={14} />
+                      Undo
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="soft"
+                    size="sm"
+                    disabled={
+                      proposalMutation.isPending ||
+                      improveLetterMutation.isPending ||
+                      !activeDraft.details.trim()
+                    }
+                    onClick={() => {
+                      if (!activeJobId) return;
+                      improveLetterMutation.mutate({
+                        text: activeDraft.details,
+                        jobTitle: activeJob?.title,
+                      });
+                    }}
+                    className="shrink-0"
+                  >
+                    <Sparkles size={14} className={improveLetterMutation.isPending ? 'animate-pulse' : ''} />
+                    {improveLetterMutation.isPending ? 'Improving...' : 'Polish with AI'}
+                  </Button>
+                </div>
               </div>
+
+              <div className="rounded-xl border border-ink-200 bg-ink-50/80 px-3 py-2.5 dark:border-ink-dark-border dark:bg-white/5">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="font-medium text-ink-600 dark:text-ink-300">
+                    {coverLetterLength === 0
+                      ? 'Start with 2-4 lines, then use AI to refine tone and clarity.'
+                      : coverLetterLength < 120
+                        ? 'Add a bit more detail before submitting. Mention skills, delivery, and fit.'
+                        : 'Good length. You can submit as is or let AI make it sharper.'}
+                  </span>
+                  {activeDraft.aiEnhanced ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent-50 px-2 py-0.5 text-accent-700 dark:bg-accent-900/20 dark:text-accent-300">
+                      <CheckCircle2 size={12} />
+                      AI-enhanced
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+
               <Textarea
                 placeholder="Explain why you are a strong fit. Mention relevant experience, what you will deliver, and why this role interests you."
                 rows={6}
-                value={activeJobId ? getDraft(activeJobId).details : ''}
+                value={activeDraft.details}
                 onChange={(e) => activeJobId && setDraftField(activeJobId, 'details', e.target.value)}
                 disabled={proposalMutation.isPending || improveLetterMutation.isPending}
+                className="min-h-[180px] rounded-xl"
               />
+              <div className="flex items-center justify-between gap-3 text-xs text-ink-500 dark:text-ink-dark-muted">
+                <span>Keep it specific to this job. Avoid generic statements.</span>
+                <span>{coverLetterLength} chars</span>
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
