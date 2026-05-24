@@ -24,6 +24,213 @@
   <script>
     window.chtlConfig = { chatbotId: "3978252132" };
   </script>
+  <script>
+    (() => {
+      const launcherId = 'chtl-chat-icon-container';
+      const iframeId = 'chtl-chat-iframe';
+      const storageKey = 'chatling-launcher-position-v1';
+      const edgePadding = 16;
+      const chatGap = 16;
+      const mobileDragBreakpoint = 767;
+
+      const isMobileDragViewport = () => window.innerWidth <= mobileDragBreakpoint;
+      const isMobileChatLayout = () => window.innerWidth <= 640;
+
+      const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+      const getSavedPosition = () => {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      };
+
+      const savePosition = (position) => {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(position));
+        } catch {
+          // ignore storage failures
+        }
+      };
+
+      const applyLauncherPosition = (launcher, position) => {
+        launcher.style.left = `${position.x}px`;
+        launcher.style.top = `${position.y}px`;
+        launcher.style.right = 'auto';
+        launcher.style.bottom = 'auto';
+      };
+
+      const clampLauncherPosition = (launcher, position) => {
+        const rect = launcher.getBoundingClientRect();
+        return {
+          x: clamp(position.x, edgePadding, Math.max(edgePadding, window.innerWidth - rect.width - edgePadding)),
+          y: clamp(position.y, edgePadding, Math.max(edgePadding, window.innerHeight - rect.height - edgePadding)),
+        };
+      };
+
+      const syncChatWindowPosition = () => {
+        if (!isMobileDragViewport()) return;
+        if (isMobileChatLayout()) return;
+
+        const launcher = document.getElementById(launcherId);
+        const iframe = document.getElementById(iframeId);
+
+        if (!launcher || !iframe) return;
+
+        const launcherRect = launcher.getBoundingClientRect();
+        const iframeRect = iframe.getBoundingClientRect();
+        const iframeWidth = iframeRect.width || Math.min(420, window.innerWidth - edgePadding * 2);
+        const iframeHeight = iframeRect.height || Math.min(window.innerHeight * 0.8, 700);
+
+        let left = launcherRect.right - iframeWidth;
+        left = clamp(left, edgePadding, Math.max(edgePadding, window.innerWidth - iframeWidth - edgePadding));
+
+        let top = launcherRect.top - iframeHeight - chatGap;
+        if (top < edgePadding) {
+          top = launcherRect.bottom + chatGap;
+        }
+        top = clamp(top, edgePadding, Math.max(edgePadding, window.innerHeight - iframeHeight - edgePadding));
+
+        iframe.style.left = `${left}px`;
+        iframe.style.top = `${top}px`;
+        iframe.style.right = 'auto';
+        iframe.style.bottom = 'auto';
+      };
+
+      const hydrateLauncherPosition = (launcher) => {
+        if (!isMobileDragViewport()) return;
+
+        const savedPosition = getSavedPosition();
+        if (!savedPosition) return;
+
+        const clampedPosition = clampLauncherPosition(launcher, savedPosition);
+        applyLauncherPosition(launcher, clampedPosition);
+        syncChatWindowPosition();
+      };
+
+      const initDraggableLauncher = (launcher) => {
+        if (!launcher || launcher.dataset.dragEnabled === 'true') return;
+        if (!isMobileDragViewport()) return;
+
+        launcher.dataset.dragEnabled = 'true';
+        launcher.style.touchAction = 'none';
+        hydrateLauncherPosition(launcher);
+
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let originX = 0;
+        let originY = 0;
+        let moved = false;
+        let suppressClick = false;
+
+        launcher.addEventListener('pointerdown', (event) => {
+          if (!isMobileDragViewport()) return;
+          if (event.button !== 0) return;
+
+          pointerId = event.pointerId;
+          moved = false;
+          suppressClick = false;
+
+          const rect = launcher.getBoundingClientRect();
+          startX = event.clientX;
+          startY = event.clientY;
+          originX = rect.left;
+          originY = rect.top;
+
+          launcher.setPointerCapture(pointerId);
+        });
+
+        launcher.addEventListener('pointermove', (event) => {
+          if (!isMobileDragViewport()) return;
+          if (pointerId !== event.pointerId) return;
+
+          const deltaX = event.clientX - startX;
+          const deltaY = event.clientY - startY;
+
+          if (!moved && Math.abs(deltaX) + Math.abs(deltaY) > 6) {
+            moved = true;
+            suppressClick = true;
+          }
+
+          if (!moved) return;
+
+          const nextPosition = clampLauncherPosition(launcher, {
+            x: originX + deltaX,
+            y: originY + deltaY,
+          });
+
+          applyLauncherPosition(launcher, nextPosition);
+          savePosition(nextPosition);
+          syncChatWindowPosition();
+        });
+
+        const finishDrag = (event) => {
+          if (!isMobileDragViewport()) return;
+          if (pointerId !== event.pointerId) return;
+          try {
+            launcher.releasePointerCapture(pointerId);
+          } catch {
+            // ignore release failures
+          }
+          pointerId = null;
+
+          if (moved) {
+            window.setTimeout(() => {
+              suppressClick = false;
+            }, 0);
+          }
+        };
+
+        launcher.addEventListener('pointerup', finishDrag);
+        launcher.addEventListener('pointercancel', finishDrag);
+        launcher.addEventListener('click', (event) => {
+          if (!suppressClick) return;
+          event.preventDefault();
+          event.stopPropagation();
+          suppressClick = false;
+        }, true);
+      };
+
+      const bootDraggableChatling = () => {
+        if (!isMobileDragViewport()) return;
+
+        const launcher = document.getElementById(launcherId);
+        if (launcher) {
+          initDraggableLauncher(launcher);
+          hydrateLauncherPosition(launcher);
+        }
+        syncChatWindowPosition();
+      };
+
+      const observer = new MutationObserver(() => {
+        bootDraggableChatling();
+      });
+
+      window.addEventListener('load', () => {
+        bootDraggableChatling();
+        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+      });
+
+      window.addEventListener('resize', () => {
+        if (!isMobileDragViewport()) return;
+
+        const launcher = document.getElementById(launcherId);
+        if (!launcher) return;
+
+        const currentPosition = {
+          x: launcher.getBoundingClientRect().left,
+          y: launcher.getBoundingClientRect().top,
+        };
+        const clampedPosition = clampLauncherPosition(launcher, currentPosition);
+        applyLauncherPosition(launcher, clampedPosition);
+        savePosition(clampedPosition);
+        syncChatWindowPosition();
+      });
+    })();
+  </script>
   <script
     async
     data-id="3978252132"
