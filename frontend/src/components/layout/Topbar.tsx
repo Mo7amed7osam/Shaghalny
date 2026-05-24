@@ -8,6 +8,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { StudentPwaInstallButton } from '@/components/pwa/StudentPwaInstallButton';
 import useAuth from '@/hooks/useAuth';
 import { getTheme, setTheme } from '@/lib/theme';
 import { useNavigate } from 'react-router-dom';
@@ -64,6 +65,7 @@ export const Topbar = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
+          {user?.role === 'Student' ? <StudentPwaInstallButton /> : null}
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </Button>
