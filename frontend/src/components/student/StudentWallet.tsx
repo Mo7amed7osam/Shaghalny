@@ -152,33 +152,63 @@ const StudentWallet: React.FC = () => {
         ) : (withdrawals || []).length === 0 ? (
           <EmptyState title="No withdrawal requests yet" description="Your withdrawal history will appear here after you submit the first payout request." />
         ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeaderCell>Amount</TableHeaderCell>
-                <TableHeaderCell>Method</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-                <TableHeaderCell>Submitted</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+          <>
+            <div className="space-y-3 md:hidden">
               {(withdrawals || []).map((w: any) => (
-                <TableRow key={w._id}>
-                  <TableCell className="font-semibold">${w.amount}</TableCell>
-                  <TableCell>{w.payoutMethod}</TableCell>
-                  <TableCell>
+                <div key={w._id} className="rounded-2xl border border-ink-200 bg-white p-4 shadow-soft dark:border-ink-dark-border dark:bg-ink-dark-surface">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
+                        {w.payoutMethod}
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-ink-900 dark:text-white">
+                        ${w.amount}
+                      </p>
+                    </div>
                     <Badge variant={w.status === 'APPROVED' ? 'success' : w.status === 'DECLINED' ? 'danger' : 'warning'}>
                       {w.status}
                     </Badge>
-                    {w.status === 'DECLINED' && w.decisionReason ? (
-                      <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">{w.decisionReason}</p>
-                    ) : null}
-                  </TableCell>
-                  <TableCell>{w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '—'}</TableCell>
-                </TableRow>
+                  </div>
+                  <p className="mt-3 text-sm text-ink-500 dark:text-ink-300">
+                    Submitted {w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '—'}
+                  </p>
+                  {w.status === 'DECLINED' && w.decisionReason ? (
+                    <p className="mt-3 text-xs text-rose-600 dark:text-rose-300">{w.decisionReason}</p>
+                  ) : null}
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell>Amount</TableHeaderCell>
+                    <TableHeaderCell>Method</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
+                    <TableHeaderCell>Submitted</TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(withdrawals || []).map((w: any) => (
+                    <TableRow key={w._id}>
+                      <TableCell className="font-semibold">${w.amount}</TableCell>
+                      <TableCell>{w.payoutMethod}</TableCell>
+                      <TableCell>
+                        <Badge variant={w.status === 'APPROVED' ? 'success' : w.status === 'DECLINED' ? 'danger' : 'warning'}>
+                          {w.status}
+                        </Badge>
+                        {w.status === 'DECLINED' && w.decisionReason ? (
+                          <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">{w.decisionReason}</p>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>{w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '—'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </section>
     </div>

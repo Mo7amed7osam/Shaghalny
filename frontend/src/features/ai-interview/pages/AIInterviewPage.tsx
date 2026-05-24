@@ -50,6 +50,7 @@ const AIInterviewPage: React.FC = () => {
   const [callPhase, setCallPhase] = useState<CallPhase>('idle');
   const [statusError, setStatusError] = useState<string | null>(null);
   const [retryPayload, setRetryPayload] = useState<{ questionId: string; files: RecordedCapture } | null>(null);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
 
   const {
     cameraReady,
@@ -377,6 +378,18 @@ const aiProcessingSteps = useMemo(() => {
     isRecording &&
     !answerMutation.isPending;
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const updateViewport = () => setIsCompactViewport(mediaQuery.matches);
+
+    updateViewport();
+    mediaQuery.addEventListener('change', updateViewport);
+
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -410,6 +423,29 @@ const aiProcessingSteps = useMemo(() => {
           <Button type="button" onClick={() => navigate(`/student/ai-interview/${session.sessionId}/result`)}>
             View result
           </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isCompactViewport) {
+    return (
+      <Card>
+        <CardContent className="space-y-4 py-8">
+          <p className="text-sm font-semibold text-ink-900 dark:text-white">
+            This interview must be completed on a desktop or laptop.
+          </p>
+          <p className="text-sm text-ink-600 dark:text-ink-300">
+            The verification flow requires camera, microphone, and entire-screen sharing, which is not reliable on mobile browsers.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button type="button" onClick={handleBackToSkills}>
+              Back to skills
+            </Button>
+            <Button type="button" variant="outline" onClick={() => navigate(`/student/ai-interview/${session.sessionId}/result`)}>
+              Open result page
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

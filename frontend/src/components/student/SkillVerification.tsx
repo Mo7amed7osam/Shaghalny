@@ -61,6 +61,10 @@ const SkillVerification: React.FC = () => {
 
   const handleStartInterview = async (skill: { _id: string; name: string }) => {
     if (isPending) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      toast.error('AI interviews currently require a desktop or laptop for camera, microphone, and full-screen sharing.');
+      return;
+    }
     try {
       setStartingSkillId(skill._id);
       const response = await beginInterview({ skill: skill.name, skillId: skill._id });
@@ -81,6 +85,12 @@ const SkillVerification: React.FC = () => {
         title="Skill verification interviews"
         description="Complete short AI-guided interviews to validate your strongest skills and improve hiring confidence for clients."
       /></motion.div>
+
+      <motion.div variants={fadeUp}>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700/30 dark:bg-amber-900/15 dark:text-amber-200">
+          Start the live interview from a desktop or laptop. The verification flow needs camera, microphone, and entire-screen sharing.
+        </div>
+      </motion.div>
 
       <motion.div variants={fadeUp}><section className="feature-highlight text-white">
         <CardContent className="relative grid gap-5 p-8 md:grid-cols-3 lg:p-10">
