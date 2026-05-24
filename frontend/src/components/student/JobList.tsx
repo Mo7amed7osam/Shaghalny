@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Briefcase, Building2, Clock, DollarSign, Search, SendHorizonal, ShieldAlert, X,
+  Briefcase, Building2, Clock, DollarSign, Search, SendHorizonal, ShieldAlert, Sparkles, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { fetchJobs, getStudentProfile, getStudentProposals, submitProposal } from '@/services/api';
+import { fetchJobs, getStudentProfile, getStudentProposals, improveCoverLetter, submitProposal } from '@/services/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -97,6 +97,24 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to submit proposal');
+    },
+  });
+
+  const improveLetterMutation = useMutation({
+    mutationFn: ({ text, jobTitle }: { text: string; jobTitle?: string }) =>
+      improveCoverLetter({ text, jobTitle }),
+    onSuccess: (data) => {
+      if (!activeJobId) return;
+      const improved = data?.improved?.trim();
+      if (!improved) {
+        toast.error('Could not improve the cover letter.');
+        return;
+      }
+      setDraftField(activeJobId, 'details', improved);
+      toast.success('Cover letter improved.');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to improve cover letter');
     },
   });
 
@@ -348,12 +366,38 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
               <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">
                 Cover letter <span className="text-rose-500">*</span>
               </label>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-ink-500 dark:text-ink-dark-muted">
+                  Write your draft first, then let AI tighten the language.
+                </p>
+                <Button
+                  type="button"
+                  variant="soft"
+                  size="sm"
+                  disabled={
+                    proposalMutation.isPending ||
+                    improveLetterMutation.isPending ||
+                    !(activeJobId ? getDraft(activeJobId).details.trim() : '')
+                  }
+                  onClick={() => {
+                    if (!activeJobId) return;
+                    improveLetterMutation.mutate({
+                      text: getDraft(activeJobId).details,
+                      jobTitle: activeJob?.title,
+                    });
+                  }}
+                  className="shrink-0"
+                >
+                  <Sparkles size={14} className={improveLetterMutation.isPending ? 'animate-pulse' : ''} />
+                  {improveLetterMutation.isPending ? 'Improving...' : 'Improve with AI'}
+                </Button>
+              </div>
               <Textarea
                 placeholder="Explain why you are a strong fit. Mention relevant experience, what you will deliver, and why this role interests you."
                 rows={6}
                 value={activeJobId ? getDraft(activeJobId).details : ''}
                 onChange={(e) => activeJobId && setDraftField(activeJobId, 'details', e.target.value)}
-                disabled={proposalMutation.isPending}
+                disabled={proposalMutation.isPending || improveLetterMutation.isPending}
               />
             </div>
 

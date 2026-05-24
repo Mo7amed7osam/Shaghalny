@@ -36,6 +36,9 @@ export const API = {
   skills: {
     list: '/skills',
   },
+  ai: {
+    improveText: '/ai/improve-text',
+  },
   interview: {
     start: '/interview/start',
     details: (sessionId: string) => `/interview/${sessionId}`,

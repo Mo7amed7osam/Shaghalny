@@ -29,6 +29,11 @@ export const getSkills = async () => {
   return response.data;
 };
 
+export const improveCoverLetter = async (payload: { text: string; jobTitle?: string }) => {
+  const response = await http.post(API.ai.improveText, payload);
+  return response.data;
+};
+
 export const postJob = async (jobData: any) => {
   const response = await http.post(API.jobs.create, jobData);
   return response.data;
