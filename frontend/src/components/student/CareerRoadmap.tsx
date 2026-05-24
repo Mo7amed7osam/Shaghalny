@@ -313,35 +313,36 @@ const CareerRoadmap: React.FC = () => {
         </div>
       ) : parsedRoadmap ? (
         <div className="space-y-6">
-          <Card className="feature-highlight border-0 p-0 shadow-soft">
-            <CardContent className="grid gap-5 p-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.9fr)] lg:p-10">
-              <div className="space-y-4">
-                <Badge className="border-white/15 bg-white/10 text-white hover:bg-white/10" variant="default">
-                  Personalized AI roadmap
-                </Badge>
-                <div className="space-y-3">
-                  <h2 className="max-w-3xl text-2xl font-semibold leading-tight text-white sm:text-3xl">
-                    {parsedRoadmap.heroTitle}
-                  </h2>
-                  <p className="max-w-2xl text-sm leading-6 text-white/78">
-                    A structured plan built around your goal, with a learning path, portfolio suggestions, and
-                    practical freelance steps.
-                  </p>
+          <Card className="p-0">
+            <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="brand">Personalized AI roadmap</Badge>
+                  <Badge variant="subtle">{parsedRoadmap.sections.length} sections</Badge>
                 </div>
+                <h2 className="text-lg font-semibold text-ink-900 dark:text-ink-dark-text">
+                  {parsedRoadmap.heroTitle}
+                </h2>
+                <p className="max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
+                  A structured plan built around your goal with a clear learning path, portfolio work, and freelance
+                  next steps.
+                </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/65">Goal</p>
-                  <p className="mt-2 text-sm font-medium text-white">{goal}</p>
+              <div className="flex flex-wrap gap-3 lg:justify-end">
+                <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">
+                    Goal
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-ink-900 dark:text-ink-dark-text">{goal}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/65">Sections</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{parsedRoadmap.sections.length}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/65">Focus</p>
-                  <p className="mt-2 text-sm font-medium text-white">Skills, projects, and first-job readiness</p>
+                <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">
+                    Focus
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-ink-900 dark:text-ink-dark-text">
+                    Skills, projects, and job readiness
+                  </p>
                 </div>
               </div>
             </CardContent>
