@@ -173,6 +173,15 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                           <p className="font-bold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
                           <p className="text-xs text-ink-500 dark:text-ink-400">{proposal.studentId?.email || '—'}</p>
                         </div>
+{selectedJob && (() => {
+                          const job = (jobs || []).find((j: any) => j._id === selectedJob);
+                          if (job) fetchMatchScore(proposal, job);
+                          return (
+                            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                              🤖 AI Match: {matchScores[proposal._id] !== undefined ? `${matchScores[proposal._id]}%` : 'Calculating...'}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <Badge variant={statusVariant[statusValue] ?? 'warning'}>{displayStatus}</Badge>
                     </div>
