@@ -8,6 +8,10 @@ on:
 env:
   REGISTRY: ghcr.io
   FRONTEND_API_URL: https://gradproject-back-1776705847.francecentral.azurecontainer.io:5000/api
+  AZURE_RESOURCE_GROUP: gradproject-rg
+  AZURE_LOCATION: francecentral
+  AZURE_CONTAINER_NAME: gradproject-back
+  AZURE_DNS_LABEL: gradproject-back-1776705847
 
 concurrency:
   group: cd-${{ github.workflow }}-${{ github.ref }}
@@ -145,11 +149,71 @@ jobs:
         cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:buildcache
         cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:buildcache,mode=max
 
+  deploy-backend-azure:
+    name: Redeploy Backend To Azure
+    needs: [changes, build-and-push-backend]
+    if: needs.build-and-push-backend.result == 'success' && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflows == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+    - name: Azure login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Remove existing backend container if present
+      run: |
+        if az container show --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" --name "${{ env.AZURE_CONTAINER_NAME }}" >/dev/null 2>&1; then
+          az container delete \
+            --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ env.AZURE_CONTAINER_NAME }}" \
+            --yes
+        fi
+
+    - name: Deploy latest backend image
+      run: |
+        az container create \
+          --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+          --name "${{ env.AZURE_CONTAINER_NAME }}" \
+          --location "${{ env.AZURE_LOCATION }}" \
+          --os-type Linux \
+          --cpu 1 \
+          --memory 1.5 \
+          --image "${{ env.REGISTRY }}/${GITHUB_REPOSITORY,,}/backend:latest" \
+          --dns-name-label "${{ env.AZURE_DNS_LABEL }}" \
+          --ip-address Public \
+          --ports 5000 \
+          --environment-variables \
+            PORT=5000 \
+            NODE_ENV=production \
+          --secure-environment-variables \
+            MONGO_URI="${{ secrets.MONGO_URI }}" \
+            JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            OPENROUTER_API_KEY="${{ secrets.OPENROUTER_API_KEY }}" \
+            GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
+            CLOUDINARY_CLOUD_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME }}" \
+            CLOUDINARY_API_KEY="${{ secrets.CLOUDINARY_API_KEY }}" \
+            CLOUDINARY_API_SECRET="${{ secrets.CLOUDINARY_API_SECRET }}"
+
+    - name: Verify backend deployment
+      run: |
+        az container show \
+          --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+          --name "${{ env.AZURE_CONTAINER_NAME }}" \
+          --query "{state:instanceView.state,fqdn:ipAddress.fqdn,ip:ipAddress.ip}" \
+          -o json
+
+        curl --retry 10 --retry-delay 5 --retry-connrefused \
+          "http://${{ env.AZURE_DNS_LABEL }}.${{ env.AZURE_LOCATION }}.azurecontainer.io:5000/health"
+
   deploy-notification:
     name: Deployment Notification
     runs-on: ubuntu-latest
-    needs: [changes, build-and-push-backend, build-and-push-frontend]
-    if: always() && (needs.build-and-push-backend.result == 'success' || needs.build-and-push-frontend.result == 'success')
+    needs: [changes, build-and-push-backend, build-and-push-frontend, deploy-backend-azure]
+    if: always() && (needs.build-and-push-backend.result == 'success' || needs.build-and-push-frontend.result == 'success' || needs.deploy-backend-azure.result == 'success')
     permissions:
       contents: read
     
@@ -158,6 +222,7 @@ jobs:
       run: |
         echo "🚀 Deployment successful!"
         echo "Backend job: ${{ needs.build-and-push-backend.result }}"
+        echo "Backend Azure deploy: ${{ needs.deploy-backend-azure.result }}"
         echo "Frontend job: ${{ needs.build-and-push-frontend.result }}"
         echo "Backend image: ${{ env.REGISTRY }}/${GITHUB_REPOSITORY,,}/backend:latest"
         echo "Frontend image: ${{ env.REGISTRY }}/${GITHUB_REPOSITORY,,}/frontend:latest"
