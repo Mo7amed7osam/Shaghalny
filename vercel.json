@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    { "handle": "filesystem" },
+    {
+      "src": "/api/(.*)",
+      "dest": "http://gradproject-back-1776705847.francecentral.azurecontainer.io:5000/api/$1"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "http://gradproject-back-1776705847.francecentral.azurecontainer.io:5000/uploads/$1"
+    },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

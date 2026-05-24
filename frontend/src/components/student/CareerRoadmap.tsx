@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
+import { API_BASE_URL } from '@/utils/constants';
 
 const CareerRoadmap: React.FC = () => {
   const [goal, setGoal] = useState('');
@@ -17,7 +18,7 @@ const CareerRoadmap: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/ai/career-roadmap', {
+      const response = await fetch(`${API_BASE_URL}/ai/career-roadmap`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

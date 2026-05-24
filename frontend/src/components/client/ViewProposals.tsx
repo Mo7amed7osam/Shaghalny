@@ -18,6 +18,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { API_BASE_URL } from '@/utils/constants';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -60,7 +61,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
   if (!job || matchScores[proposal._id] !== undefined) return;
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch('/api/ai/match-score', {
+    const response = await fetch(`${API_BASE_URL}/ai/match-score`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
