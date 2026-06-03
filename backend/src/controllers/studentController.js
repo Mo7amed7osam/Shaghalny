@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Job = require('../models/Job');
 const Proposal = require('../models/Proposal');
+const InterviewSession = require('../modules/ai-interview/interview.model');
 const { studentHasRequiredVerifiedSkills } = require('../utils/proposalEligibility');
 
 // Fetch student profile by ID
@@ -22,6 +23,36 @@ const getStudentProfile = async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
+        const completedSessions = await InterviewSession.find({
+            user: studentId,
+            status: 'completed',
+        })
+            .populate('skillRef', 'name')
+            .select('skill skillRef');
+
+        const completedSkillIds = new Set(
+            completedSessions
+                .map((session) => session.skillRef?._id?.toString?.() || session.skillRef?.toString?.())
+                .filter(Boolean)
+        );
+        const completedSkillNames = new Set(
+            completedSessions
+                .map((session) => String(session.skillRef?.name || session.skill || '').trim().toLowerCase())
+                .filter(Boolean)
+        );
+
+        const filteredVerifiedSkills = (student.verifiedSkills || []).filter((entry) => {
+            const skillId = entry.skill?._id?.toString?.() || entry.skill?.toString?.();
+            const skillName = String(entry.skill?.name || '').trim().toLowerCase();
+
+            return completedSkillIds.has(skillId) || (skillName && completedSkillNames.has(skillName));
+        });
+
+        if (filteredVerifiedSkills.length !== (student.verifiedSkills || []).length) {
+            student.verifiedSkills = filteredVerifiedSkills;
+            await student.save();
+        }
+
         const safeProfile = {
             id: student._id,
             name: student.name,
@@ -29,7 +60,7 @@ const getStudentProfile = async (req, res) => {
             university: student.university,
             portfolioLinks: student.portfolioLinks || [],
             profilePhotoUrl: student.profilePhotoUrl,
-            verifiedSkills: (student.verifiedSkills || []).map((skill) => ({
+            verifiedSkills: filteredVerifiedSkills.map((skill) => ({
                 skill: skill.skill,
                 score: skill.score,
                 verifiedAt: skill.verifiedAt,
