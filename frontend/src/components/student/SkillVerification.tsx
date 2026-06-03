@@ -32,9 +32,14 @@ const SkillVerification: React.FC = () => {
     enabled: !!userId,
   });
 
-  const getLatestSessionId = (skillId: string) => {
+  const getLatestSessionId = (skillId: string, skillName: string) => {
     const sessions = (mySessions || []).filter(
-      (s: any) => String(s.skillRef?._id || s.skillRef) === String(skillId) && s.status === 'completed'
+      (s: any) =>
+        s.status === 'completed' &&
+        (
+          String(s.skillRef?._id || s.skillRef) === String(skillId) ||
+          String(s.skill || '').trim().toLowerCase() === String(skillName || '').trim().toLowerCase()
+        )
     );
     return sessions[0]?._id || null;
   };
@@ -170,7 +175,7 @@ const SkillVerification: React.FC = () => {
                       className="w-full"
                       size="lg"
                       onClick={() => {
-                        const sessionId = getLatestSessionId(String(skill._id));
+                        const sessionId = getLatestSessionId(String(skill._id), String(skill.name || ''));
                         if (sessionId) {
                           navigate(`/student/ai-interview/${sessionId}/result`);
                         } else {

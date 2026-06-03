@@ -1,4 +1,6 @@
 const interviewService = require('./interview.service');
+const Skill = require('../../models/Skill');
+const InterviewSession = require('./interview.model');
 
 const handleError = (res, error) => {
   const status = error.status || 500;
@@ -54,10 +56,32 @@ const getInterviewResult = async (req, res) => {
 
 const getMyInterviewSessions = async (req, res) => {
   try {
-    const InterviewSession = require('./interview.model');
-    const sessions = await InterviewSession.find({ user: req.user.id })
+    let sessions = await InterviewSession.find({ user: req.user.id })
       .populate('skillRef', 'name')
       .sort({ updatedAt: -1 });
+
+    const legacySessions = sessions.filter((session) => !session.skillRef && session.skill);
+    if (legacySessions.length > 0) {
+      const skills = await Skill.find({
+        name: { $in: legacySessions.map((session) => session.skill).filter(Boolean) },
+      }).select('_id name');
+
+      const skillMap = new Map(skills.map((skill) => [String(skill.name).toLowerCase(), skill]));
+
+      await Promise.all(
+        legacySessions.map(async (session) => {
+          const matchedSkill = skillMap.get(String(session.skill).toLowerCase());
+          if (!matchedSkill) return;
+          session.skillRef = matchedSkill._id;
+          await session.save();
+        }),
+      );
+
+      sessions = await InterviewSession.find({ user: req.user.id })
+        .populate('skillRef', 'name')
+        .sort({ updatedAt: -1 });
+    }
+
     return res.status(200).json(sessions);
   } catch (error) {
     return handleError(res, error);
