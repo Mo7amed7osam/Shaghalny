@@ -1,4 +1,5 @@
 import { LogOut, Moon, Search, Sun, User } from 'lucide-react';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useMemo, useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -66,6 +67,7 @@ export const Topbar = () => {
         {/* Right actions */}
         <div className="flex items-center gap-2">
           {user?.role === 'Student' ? <StudentPwaInstallButton /> : null}
+          {user?.role === 'Student' ? <NotificationBell /> : null}
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </Button>
