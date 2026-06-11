@@ -29,7 +29,7 @@
       "targetBlank": true,
       "title": "GitHub Actions",
       "type": "link",
-      "url": "https://github.com/Mo7amed7osam/UniFreelance/actions"
+      "url": "https://github.com/Mo7amed7osam/Shaghalny/actions"
     },
     {
       "asDropdown": false,
@@ -40,7 +40,7 @@
       "targetBlank": true,
       "title": "GHCR Backend Image",
       "type": "link",
-      "url": "https://github.com/Mo7amed7osam/UniFreelance/pkgs/container/unifreelance%2Fbackend"
+      "url": "https://github.com/Mo7amed7osam/Shaghalny/pkgs/container/Shaghalny%2Fbackend"
     }
   ],
   "liveNow": false,
@@ -842,7 +842,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "## CI/CD Pipelines\n\n[![CI Pipeline](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/ci.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/ci.yml)\n[![CD Pipeline](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/cd.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/cd.yml)\n[![PR Checks](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/pr-checks.yml)\n[![Dependency Updates](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/dependency-updates.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/dependency-updates.yml)\n\n### Quick Links\n\n- [CI Workflow](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/ci.yml)\n- [CD Workflow](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/cd.yml)\n- [PR Checks](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/pr-checks.yml)\n- [Dependency Review](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/dependency-updates.yml)\n- [GitHub Actions Runs](https://github.com/Mo7amed7osam/UniFreelance/actions)\n- [GHCR Backend Package](https://github.com/Mo7amed7osam/UniFreelance/pkgs/container/unifreelance%2Fbackend)\n- [GHCR Frontend Package](https://github.com/Mo7amed7osam/UniFreelance/pkgs/container/unifreelance%2Ffrontend)\n",
+        "content": "## CI/CD Pipelines\n\n[![CI Pipeline](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/ci.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/ci.yml)\n[![CD Pipeline](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/cd.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/cd.yml)\n[![PR Checks](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/pr-checks.yml)\n[![Dependency Updates](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/dependency-updates.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/dependency-updates.yml)\n\n### Quick Links\n\n- [CI Workflow](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/ci.yml)\n- [CD Workflow](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/cd.yml)\n- [PR Checks](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/pr-checks.yml)\n- [Dependency Review](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/dependency-updates.yml)\n- [GitHub Actions Runs](https://github.com/Mo7amed7osam/Shaghalny/actions)\n- [GHCR Backend Package](https://github.com/Mo7amed7osam/Shaghalny/pkgs/container/Shaghalny%2Fbackend)\n- [GHCR Frontend Package](https://github.com/Mo7amed7osam/Shaghalny/pkgs/container/Shaghalny%2Ffrontend)\n",
         "mode": "markdown"
       },
       "pluginVersion": "13.0.1",

@@ -14,7 +14,7 @@ product
 
 ## Product Purpose
 
-Shaghalny is a student-focused freelancing marketplace that reduces the trust gap between early-career freelancers and clients. It offers structured job posting, proposal workflows, AI-guided video skill verification (Gravis), contracts with escrow, and wallet/payout management. Success means: a student can prove skills and earn on the platform; a client can hire verified student talent with less manual screening.
+Shaghalny is a student-focused freelancing marketplace that reduces the trust gap between early-career freelancers and clients. It offers structured job posting, proposal workflows, AI-guided video skill verification (Gravis), AI-driven cover letter enhancement, AI career roadmaps, real-time events and notifications, contracts with escrow, and wallet/payout management. It is also available as a Progressive Web App (PWA) with offline capabilities. Success means: a student can prove skills, plan their career, and earn on the platform; a client can hire verified student talent with less manual screening.
 
 ## Brand Personality
 

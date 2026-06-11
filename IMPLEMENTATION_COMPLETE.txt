@@ -150,8 +150,8 @@ WORKFLOW JOBS (8 total):
       → docker compose up -d
    
    2. Pre-built Images (GHCR)
-      → docker pull ghcr.io/mo7amed7osam/unifreelance/backend:latest
-      → docker pull ghcr.io/mo7amed7osam/unifreelance/frontend:latest
+      → docker pull ghcr.io/mo7amed7osam/shaghalny/backend:latest
+      → docker pull ghcr.io/mo7amed7osam/shaghalny/frontend:latest
    
    3. Kubernetes
       → Use provided manifests and configurations
@@ -166,7 +166,7 @@ WORKFLOW JOBS (8 total):
 QUICKEST WAY TO START (3 steps):
 
 1. Clone and Configure:
-   git clone https://github.com/Mo7amed7osam/UniFreelance.git Shaghalny
+   git clone https://github.com/Mo7amed7osam/Shaghalny.git Shaghalny
    cd Shaghalny
    cp .env.example .env
 
