@@ -1,10 +1,10 @@
 # Shaghalny
 
-[![CI Pipeline](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/ci.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/ci.yml)
-[![CD Pipeline](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/cd.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/cd.yml)
-[![PR Checks](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/Mo7amed7osam/UniFreelance/actions/workflows/pr-checks.yml)
+[![CI Pipeline](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/ci.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/ci.yml)
+[![CD Pipeline](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/cd.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/cd.yml)
+[![PR Checks](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/Mo7amed7osam/Shaghalny/actions/workflows/pr-checks.yml)
 
-Shaghalny is a student-focused freelancing marketplace built with a React frontend and an Express/MongoDB backend. The platform supports job posting, proposals, admin review flows, and video-based skill verification.
+Shaghalny is a student-focused freelancing marketplace built with a React frontend and an Express/MongoDB backend. The platform supports job posting, proposals, admin review flows, video-based skill verification, AI-driven cover letter improvement, AI career roadmaps, real-time events/notifications, and includes Progressive Web App (PWA) offline capabilities for mobile users.
 
 ## Documentation
 

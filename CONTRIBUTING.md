@@ -16,7 +16,7 @@ This document explains how to work on the repository without fighting the curren
 Clone the repository:
 
 ```bash
-git clone https://github.com/Mo7amed7osam/UniFreelance.git Shaghalny
+git clone https://github.com/Mo7amed7osam/Shaghalny.git Shaghalny
 cd Shaghalny
 ```
 

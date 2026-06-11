@@ -17,7 +17,7 @@ Optional for manual development:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Mo7amed7osam/UniFreelance.git Shaghalny
+git clone https://github.com/Mo7amed7osam/Shaghalny.git Shaghalny
 cd Shaghalny
 ```
 

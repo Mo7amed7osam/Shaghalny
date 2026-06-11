@@ -4,8 +4,8 @@ This document covers the supported deployment model in this repository: frontend
 
 ## Deployment Overview
 
-- Frontend image: `ghcr.io/mo7amed7osam/unifreelance/frontend`
-- Backend image: `ghcr.io/mo7amed7osam/unifreelance/backend`
+- Frontend image: `ghcr.io/mo7amed7osam/shaghalny/frontend`
+- Backend image: `ghcr.io/mo7amed7osam/shaghalny/backend`
 - Frontend runtime: Vercel
 - Backend runtime: Azure Container Instances
 - Registry: GHCR
@@ -78,7 +78,7 @@ Build the Azure-compatible backend image:
 docker buildx build \
   --platform linux/amd64 \
   --provenance=false \
-  -t ghcr.io/mo7amed7osam/unifreelance/backend:latest \
+  -t ghcr.io/mo7amed7osam/shaghalny/backend:latest \
   --push ./backend
 ```
 
@@ -91,7 +91,7 @@ docker buildx build \
   --platform linux/amd64 \
   --provenance=false \
   --build-arg VITE_API_URL=/api \
-  -t ghcr.io/mo7amed7osam/unifreelance/frontend:latest \
+  -t ghcr.io/mo7amed7osam/shaghalny/frontend:latest \
   --push ./frontend
 ```
 
@@ -128,7 +128,7 @@ az container create \
   --os-type Linux \
   --cpu 1 \
   --memory 1.5 \
-  --image ghcr.io/mo7amed7osam/unifreelance/backend:latest \
+  --image ghcr.io/mo7amed7osam/shaghalny/backend:latest \
   --registry-login-server ghcr.io \
   --registry-username mo7amed7osam \
   --registry-password "$GHCR_TOKEN" \
