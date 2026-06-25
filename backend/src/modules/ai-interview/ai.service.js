@@ -7,7 +7,7 @@ const {
 } = require('./media.service');
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3.5-haiku';
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-haiku-20241022';
 const ANTHROPIC_API_VERSION = process.env.ANTHROPIC_API_VERSION || '2023-06-01';

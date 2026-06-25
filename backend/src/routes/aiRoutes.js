@@ -2,6 +2,9 @@ const router = require("express").Router();
 const axios = require("axios");
 const { authenticate } = require("../middleware/auth");
 
+const OPENROUTER_MODEL =
+  process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+
 const stripDecorativeCharacters = (text = "") =>
   text
     .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, "")
@@ -18,7 +21,7 @@ router.post("/improve-text", authenticate, async (req, res) => {
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+        model: OPENROUTER_MODEL,
         max_tokens: 300,
         messages: [
           {
@@ -55,7 +58,7 @@ router.post("/career-roadmap", authenticate, async (req, res) => {
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku",
+        model: OPENROUTER_MODEL,
         max_tokens: 800,
         messages: [
           {
