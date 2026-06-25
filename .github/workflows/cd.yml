@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  FRONTEND_API_URL: https://gradproject-back-1776705847.francecentral.azurecontainer.io:5000/api
+  FRONTEND_API_URL: /api
   AZURE_RESOURCE_GROUP: gradproject-rg
   AZURE_LOCATION: francecentral
   AZURE_CONTAINER_NAME: gradproject-back

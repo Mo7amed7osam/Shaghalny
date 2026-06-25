@@ -42,6 +42,12 @@ Required:
 - `MONGO_URI` or `MONGODB_URI`
 - `JWT_SECRET`
 
+For this project, `MONGO_URI` must point to the `Grad-Project` database explicitly, for example:
+
+```bash
+mongodb+srv://<user>:<password>@<cluster>.mongodb.net/Grad-Project?retryWrites=true&w=majority
+```
+
 Recommended:
 
 - `PORT=5000`
