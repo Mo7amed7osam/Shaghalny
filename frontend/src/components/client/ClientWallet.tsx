@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -102,7 +103,7 @@ const ClientWallet: React.FC = () => {
       <div className="grid gap-4 xl:grid-cols-3">
         <StatCard
           label="Current balance"
-          value={balanceLoading ? <Skeleton className="h-10 w-24" /> : `$${Number(balanceData?.balance || 0).toFixed(2)}`}
+          value={balanceLoading ? <Skeleton className="h-10 w-24" /> : formatCurrency(balanceData?.balance)}
           caption="Funds ready for escrow-backed hiring."
           tone="brand"
         />
@@ -160,7 +161,7 @@ const ClientWallet: React.FC = () => {
             <TableBody>
               {(topups || []).map((topup: any) => (
                 <TableRow key={topup._id}>
-                  <TableCell className="font-semibold">${topup.amount}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(topup.amount)}</TableCell>
                   <TableCell>
                     <Badge variant={topup.status === 'APPROVED' ? 'success' : topup.status === 'DECLINED' ? 'danger' : 'warning'}>
                       {topup.status}

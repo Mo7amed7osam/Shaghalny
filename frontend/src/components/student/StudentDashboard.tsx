@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -142,7 +143,7 @@ const StudentDashboard: React.FC = () => {
         <StatItem
           icon={<DollarSign size={18} />}
           label="Available balance"
-          value={profileLoading ? <Skeleton className="h-8 w-16" /> : `$${balance}`}
+          value={profileLoading ? <Skeleton className="h-8 w-16" /> : formatCurrency(balance)}
           sub="Ready to withdraw"
           accent
         />

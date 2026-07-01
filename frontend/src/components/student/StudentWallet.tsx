@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -162,7 +163,7 @@ const StudentWallet: React.FC = () => {
                         {w.payoutMethod}
                       </p>
                       <p className="mt-1 text-lg font-semibold text-ink-900 dark:text-white">
-                        ${w.amount}
+                        {formatCurrency(w.amount)}
                       </p>
                     </div>
                     <Badge variant={w.status === 'APPROVED' ? 'success' : w.status === 'DECLINED' ? 'danger' : 'warning'}>
@@ -192,7 +193,7 @@ const StudentWallet: React.FC = () => {
                 <TableBody>
                   {(withdrawals || []).map((w: any) => (
                     <TableRow key={w._id}>
-                      <TableCell className="font-semibold">${w.amount}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(w.amount)}</TableCell>
                       <TableCell>{w.payoutMethod}</TableCell>
                       <TableCell>
                         <Badge variant={w.status === 'APPROVED' ? 'success' : w.status === 'DECLINED' ? 'danger' : 'warning'}>

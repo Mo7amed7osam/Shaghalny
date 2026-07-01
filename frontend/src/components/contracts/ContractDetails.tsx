@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -119,7 +120,7 @@ const ContractDetails: React.FC = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="muted-panel rounded-lg p-4">
               <p className="label-muted">Agreed budget</p>
-              <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">${contract.agreedBudget}</p>
+              <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">{formatCurrency(contract.agreedBudget)}</p>
             </div>
             <div className="muted-panel rounded-lg p-4 md:col-span-2">
               <p className="label-muted">Progress</p>

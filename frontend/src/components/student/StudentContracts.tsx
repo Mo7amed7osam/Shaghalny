@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -58,7 +59,7 @@ const StudentContracts: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-600 dark:text-brand-400">Available balance</p>
-              <p className="mt-0.5 text-3xl font-bold tracking-tight text-brand-700 dark:text-brand-300">${balance}</p>
+              <p className="mt-0.5 text-3xl font-bold tracking-tight text-brand-700 dark:text-brand-300">{formatCurrency(balance)}</p>
               <p className="text-xs text-brand-500 dark:text-brand-400">Released funds ready for withdrawal</p>
             </div>
             <Button variant="soft" size="sm" className="ml-auto" onClick={() => navigate('/student/wallet')}>
@@ -94,7 +95,7 @@ const StudentContracts: React.FC = () => {
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm font-bold text-ink-900 dark:text-white">${contract.agreedBudget}</span>
+                  <span className="text-sm font-bold text-ink-900 dark:text-white">{formatCurrency(contract.agreedBudget)}</span>
                   <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/contracts/${contract._id}`)}>
                     View contract <ArrowRight size={11} />
                   </Button>

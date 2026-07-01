@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -82,7 +83,7 @@ const ClientContracts: React.FC = () => {
                 </CardContent>
                 <Separator />
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm font-bold text-ink-900 dark:text-white">${contract.agreedBudget}</span>
+                  <span className="text-sm font-bold text-ink-900 dark:text-white">{formatCurrency(contract.agreedBudget)}</span>
                   <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/contracts/${contract._id}`)}>
                     View contract <ArrowRight size={11} />
                   </Button>

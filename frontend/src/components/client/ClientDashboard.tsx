@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -228,7 +229,7 @@ const ClientDashboard: React.FC = () => {
                     <div className="flex flex-col items-end gap-1">
                       <Badge variant={proposalVariant[status] ?? 'warning'} className="shrink-0">{status}</Badge>
                       {proposal.proposedBudget && (
-                        <span className="text-xs font-medium text-ink-600 dark:text-ink-300">${proposal.proposedBudget}</span>
+                        <span className="text-xs font-medium text-ink-600 dark:text-ink-300">{formatCurrency(proposal.proposedBudget)}</span>
                       )}
                     </div>
                   </Card>

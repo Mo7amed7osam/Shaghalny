@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -200,7 +201,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                       <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
                         <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Proposed budget</p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">
-                          {proposal.proposedBudget ? `$${proposal.proposedBudget}` : 'Not specified'}
+                          {proposal.proposedBudget ? formatCurrency(proposal.proposedBudget) : 'Not specified'}
                         </p>
                       </div>
                     </div>

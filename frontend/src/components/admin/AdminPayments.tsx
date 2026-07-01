@@ -1,3 +1,4 @@
+import { formatCurrency } from '@/lib/currency';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -141,7 +142,7 @@ const AdminPayments: React.FC = () => {
                       <div className="font-semibold text-ink-900 dark:text-white">{(item.clientId || item.studentId)?.name}</div>
                       <p className="text-xs text-ink-500 dark:text-ink-300">{(item.clientId || item.studentId)?.email}</p>
                     </TableCell>
-                    <TableCell className="font-semibold">${item.amount}</TableCell>
+                    <TableCell className="font-semibold">{formatCurrency(item.amount)}</TableCell>
                     {activeTab === 'withdrawals' ? <TableCell>{item.payoutMethod}</TableCell> : null}
                     <TableCell>
                       <Badge variant={item.status === 'APPROVED' ? 'success' : item.status === 'DECLINED' ? 'danger' : 'warning'}>
