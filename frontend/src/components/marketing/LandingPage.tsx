@@ -17,7 +17,7 @@ import {
   FileText,
   Moon,
   Sun,
-  DollarSign,
+  Wallet,
 } from 'lucide-react';
 
 import wordmark from '@/assets/shaghalny-wordmark.svg';
@@ -105,7 +105,7 @@ const ProductPreview: React.FC = () => {
             Build e-commerce landing page
           </p>
           <div className="flex items-center gap-3 text-xs text-ink-500 dark:text-ink-dark-muted">
-            <span className="flex items-center gap-1"><DollarSign size={10} />300 EGP budget</span>
+            <span className="flex items-center gap-1"><Wallet size={10} />300 EGP budget</span>
             <span className="flex items-center gap-1"><Clock size={10} />Posted 2h ago</span>
           </div>
           <Badge variant="brand" className="text-[10px]">React · Tailwind · TypeScript</Badge>

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, BookOpen, Briefcase, CheckCircle2,
-  Clock, DollarSign, FileText, Shield, Sparkles, TrendingUp,
+  Clock, Wallet, FileText, Shield, Sparkles, TrendingUp,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -141,7 +141,7 @@ const StudentDashboard: React.FC = () => {
           sub="Submitted or shortlisted"
         />
         <StatItem
-          icon={<DollarSign size={18} />}
+          icon={<Wallet size={18} />}
           label="Available balance"
           value={profileLoading ? <Skeleton className="h-8 w-16" /> : formatCurrency(balance)}
           sub="Ready to withdraw"
@@ -208,7 +208,7 @@ const StudentDashboard: React.FC = () => {
               {[
                 { label: 'Browse job board', icon: <BookOpen size={14} />, path: '/student/jobs' },
                 { label: 'Verify a skill', icon: <Shield size={14} />, path: '/student/skill-verification' },
-                { label: 'View my wallet', icon: <DollarSign size={14} />, path: '/student/wallet' },
+                { label: 'View my wallet', icon: <Wallet size={14} />, path: '/student/wallet' },
                 { label: 'My contracts', icon: <FileText size={14} />, path: '/student/contracts' },
               ].map((action) => (
                 <button

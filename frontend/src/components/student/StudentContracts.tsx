@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowRight, DollarSign, FileText } from 'lucide-react';
+import { ArrowRight, Wallet, FileText } from 'lucide-react';
 
 import useAuth from '@/hooks/useAuth';
 import { getContracts, getStudentProfile } from '@/services/api';
@@ -55,7 +55,7 @@ const StudentContracts: React.FC = () => {
         <Card className="border-brand-200 bg-brand-50 dark:border-brand-700/40 dark:bg-brand-900/20">
           <CardContent className="flex items-center gap-4 p-5">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-600 dark:bg-brand-800/50 dark:text-brand-300">
-              <DollarSign size={22} />
+              <Wallet size={22} />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-600 dark:text-brand-400">Available balance</p>

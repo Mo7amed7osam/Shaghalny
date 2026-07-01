@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { CheckCircle, DollarSign, ExternalLink, User } from 'lucide-react';
+import { CheckCircle, Wallet, ExternalLink, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -267,7 +267,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                             acceptMutation.mutate({ proposalId: proposal._id, agreedBudget: value });
                           }}
                         >
-                          <DollarSign size={14} />
+                          <Wallet size={14} />
                           {acceptMutation.isPending ? 'Funding escrow...' : 'Accept and fund escrow'}
                         </Button>
                       </div>

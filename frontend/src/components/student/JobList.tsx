@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-import { formatCurrency } from '@/lib/currency';
-  Briefcase, Building2, CheckCircle2, Clock, DollarSign, RotateCcw, Search, SendHorizonal, ShieldAlert, Sparkles, X,
+  Briefcase, Building2, CheckCircle2, Clock, Wallet, RotateCcw, Search, SendHorizonal, ShieldAlert, Sparkles, X,
 } from 'lucide-react';
+import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
 
 import { fetchJobs, getStudentProfile, getStudentProposals, improveCoverLetter, submitProposal } from '@/services/api';
@@ -289,7 +289,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                     <CardContent className="flex flex-wrap items-center gap-4 px-5 py-3">
                       {(job.budgetMin !== undefined || job.budgetMax !== undefined) && (
                         <span className="flex items-center gap-1.5 text-sm text-ink-600 dark:text-ink-300">
-                          <DollarSign size={13} className="text-ink-400" />
+                          <Wallet size={13} className="text-ink-400" />
                           <span className="font-medium">{job.budgetMin !== undefined ? formatCurrency(job.budgetMin) : '—'} – {job.budgetMax !== undefined ? formatCurrency(job.budgetMax) : '—'}</span>
                         </span>
                       )}
@@ -353,7 +353,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             <div className="flex flex-wrap gap-3 rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm dark:border-ink-dark-border dark:bg-white/5">
               {(activeJob.budgetMin !== undefined || activeJob.budgetMax !== undefined) && (
                 <span className="flex items-center gap-1.5 text-ink-600 dark:text-ink-300">
-                  <DollarSign size={13} /> {activeJob.budgetMin !== undefined ? formatCurrency(activeJob.budgetMin) : '—'} – {activeJob.budgetMax !== undefined ? formatCurrency(activeJob.budgetMax) : '—'}
+                  <Wallet size={13} /> {activeJob.budgetMin !== undefined ? formatCurrency(activeJob.budgetMin) : '—'} – {activeJob.budgetMax !== undefined ? formatCurrency(activeJob.budgetMax) : '—'}
                 </span>
               )}
               {activeJob.duration && (
