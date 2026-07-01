@@ -106,7 +106,7 @@ const StudentWallet: React.FC = () => {
       <div className="grid gap-4 xl:grid-cols-3">
         <StatCard
           label="Available balance"
-          value={balanceLoading ? <Skeleton className="h-10 w-24" /> : `$${Number(balanceData?.balance || 0).toFixed(2)}`}
+          value={balanceLoading ? <Skeleton className="h-10 w-24" /> : formatCurrency(balanceData?.balance)}
           caption="Your balance updates after client acceptance."
           tone="brand"
           className="xl:col-span-1"

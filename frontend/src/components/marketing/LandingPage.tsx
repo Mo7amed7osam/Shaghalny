@@ -105,7 +105,7 @@ const ProductPreview: React.FC = () => {
             Build e-commerce landing page
           </p>
           <div className="flex items-center gap-3 text-xs text-ink-500 dark:text-ink-dark-muted">
-            <span className="flex items-center gap-1"><DollarSign size={10} />$300 budget</span>
+            <span className="flex items-center gap-1"><DollarSign size={10} />300 EGP budget</span>
             <span className="flex items-center gap-1"><Clock size={10} />Posted 2h ago</span>
           </div>
           <Badge variant="brand" className="text-[10px]">React · Tailwind · TypeScript</Badge>
@@ -128,7 +128,7 @@ const ProductPreview: React.FC = () => {
             "I can deliver in 5 days with full responsive design." — Sara K.
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-accent-600 dark:text-accent-400">$280</span>
+            <span className="text-sm font-bold text-accent-600 dark:text-accent-400">280 EGP</span>
             <span className="text-xs text-ink-400">· 5 day delivery</span>
           </div>
         </div>
@@ -173,7 +173,7 @@ const ProductPreview: React.FC = () => {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">Contract Active</p>
-            <p className="text-xs text-ink-500 dark:text-ink-dark-muted">$280 in escrow · Day 2 of 5</p>
+            <p className="text-xs text-ink-500 dark:text-ink-dark-muted">280 EGP in escrow · Day 2 of 5</p>
           </div>
           <Badge variant="success" className="text-[10px] shrink-0">Live</Badge>
         </div>
