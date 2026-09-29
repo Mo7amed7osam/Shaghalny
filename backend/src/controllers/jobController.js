@@ -210,7 +210,19 @@ const getJobs = async (req, res) => {
       }
     }
 
-    const jobs = await Job.find(query)
+    const jobs = await Job.find({
+      $and: [
+        { status: "open" },
+        ...(query.type ? [{ type: query.type }] : []),
+        ...(query.$or ? [{ $or: query.$or }] : []),
+        ...(query.duration ? [{ duration: query.duration }] : []),
+        ...(query.budgetMax ? [{ budgetMax: query.budgetMax }] : []),
+        ...(query.budgetMin ? [{ budgetMin: query.budgetMin }] : []),
+        ...(query.requiredSkills
+          ? [{ requiredSkills: query.requiredSkills }]
+          : []),
+      ],
+    })
       .populate("employer", "name website companyLogoUrl isVerified")
       .populate("requiredSkills", "name");
     res.status(200).json(jobs);
