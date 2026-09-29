@@ -116,8 +116,8 @@ const getJobs = async (req, res) => {
       query.type = type;
     }
 
-    if (search) {
-      const searchTerm = search.toString().trim().slice(0, 100);
+    if (typeof search === "string") {
+      const searchTerm = search.trim().slice(0, 100);
       if (searchTerm) {
         const searchRegex = new RegExp(escapeRegExp(searchTerm), "i");
         const [matchedSkills, matchedEmployers] = await Promise.all([
@@ -158,8 +158,8 @@ const getJobs = async (req, res) => {
       }
     }
 
-    if (duration) {
-      const durationTerm = duration.toString().trim().slice(0, 100);
+    if (typeof duration === "string") {
+      const durationTerm = duration.trim().slice(0, 100);
 
       if (durationTerm) {
         query.duration = {
@@ -169,26 +169,25 @@ const getJobs = async (req, res) => {
       }
     }
 
-    if (minBudget !== undefined) {
+    if (typeof minBudget === "string") {
       const minVal = Number(minBudget);
-      if (!Number.isNaN(minVal)) {
+      if (Number.isFinite(minVal)) {
         query.budgetMax = { ...(query.budgetMax || {}), $gte: minVal };
       }
     }
 
-    if (maxBudget !== undefined) {
+    if (typeof maxBudget === "string") {
       const maxVal = Number(maxBudget);
-      if (!Number.isNaN(maxVal)) {
+      if (Number.isFinite(maxVal)) {
         query.budgetMin = { ...(query.budgetMin || {}), $lte: maxVal };
       }
     }
 
-    if (skills) {
-      const rawSkills = Array.isArray(skills)
-        ? skills
-        : skills.toString().split(",");
+    if (typeof skills === "string" || Array.isArray(skills)) {
+      const rawSkills = Array.isArray(skills) ? skills : skills.split(",");
       const normalized = rawSkills
-        .map((value) => value.toString().trim())
+        .filter((value) => typeof value === "string")
+        .map((value) => value.trim())
         .filter(Boolean);
       const skillIds = normalized.filter((value) =>
         /^[a-fA-F0-9]{24}$/.test(value),

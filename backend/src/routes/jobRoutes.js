@@ -19,7 +19,7 @@ const { checkRole } = require("../middleware/roleCheck");
 router.post("/", apiLimiter, authenticate, checkRole("Client"), createJob);
 
 // Route to get all jobs
-router.get("/", getJobs);
+router.get("/", apiLimiter, getJobs);
 
 // Route to get jobs for a client
 router.get(
