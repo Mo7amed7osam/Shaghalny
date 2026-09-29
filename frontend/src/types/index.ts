@@ -31,6 +31,10 @@ export interface Review {
   rating: number;
   comment?: string;
   jobTitle?: string;
+  jobType?: 'freelance' | 'internship';
+     workMode?: 'online' | 'onsite' | 'hybrid'; 
+  positions?: number;
+  positionsFilled?: number;
   createdAt?: string;
 }
 
@@ -44,6 +48,7 @@ export interface Job {
   budgetMin?: number;
   budgetMax?: number;
   duration?: string;
+    type?: 'freelance' | 'internship';
   employer?: Pick<User, '_id' | 'id' | 'name' | 'email' | 'website' | 'companyLogoUrl' | 'isVerified'>;
   company?: string;
   companyLogoUrl?: string;

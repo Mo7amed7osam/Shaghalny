@@ -95,7 +95,9 @@ const StudentContracts: React.FC = () => {
                 </div>
                 <Separator />
                 <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="text-sm font-bold text-ink-900 dark:text-white">{formatCurrency(contract.agreedBudget)}</span>
+                                   <span className="text-sm font-bold text-ink-900 dark:text-white">
+                    {Number(contract.agreedBudget) === 0 ? 'Unpaid internship' : formatCurrency(contract.agreedBudget)}
+                  </span>
                   <Button variant="ghost" size="sm" className="h-7 justify-start text-xs sm:justify-center" onClick={() => navigate(`/contracts/${contract._id}`)}>
                     View contract <ArrowRight size={11} />
                   </Button>
