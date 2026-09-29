@@ -1,4 +1,6 @@
 const Job = require("../models/Job");
+const isValidObjectId = (value) =>
+  typeof value === "string" && /^[a-fA-F0-9]{24}$/.test(value);
 const Proposal = require("../models/Proposal");
 const User = require("../models/User");
 const Skill = require("../models/Skill");
@@ -157,7 +159,14 @@ const getJobs = async (req, res) => {
     }
 
     if (duration) {
-      query.duration = { $regex: duration.toString(), $options: "i" };
+      const durationTerm = duration.toString().trim().slice(0, 100);
+
+      if (durationTerm) {
+        query.duration = {
+          $regex: escapeRegExp(durationTerm),
+          $options: "i",
+        };
+      }
     }
 
     if (minBudget !== undefined) {
@@ -189,7 +198,11 @@ const getJobs = async (req, res) => {
       );
       if (skillNames.length) {
         const matched = await Skill.find({
-          name: { $in: skillNames.map((name) => new RegExp(`^${name}$`, "i")) },
+          name: {
+            $in: skillNames.map(
+              (name) => new RegExp(`^${escapeRegExp(name)}$`, "i"),
+            ),
+          },
         }).select("_id");
         skillIds.push(...matched.map((skill) => skill._id.toString()));
       }
@@ -225,6 +238,10 @@ const submitProposal = async (req, res) => {
   try {
     const jobId = req.params.id || req.body.jobId;
     const { details, proposedBudget } = req.body;
+
+    if (!isValidObjectId(jobId)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
 
     const job = await Job.findById(jobId);
     if (!job) {
@@ -291,6 +308,10 @@ const submitProposal = async (req, res) => {
 // GET /jobs/:id/proposals - Get proposals for a specific job
 const getJobProposals = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
+
     const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -319,6 +340,10 @@ const getJobProposals = async (req, res) => {
 // GET /jobs/:id/matches - Get matched students for a job
 const getMatchedCandidates = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
+
     const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -340,6 +365,11 @@ const selectStudentForJob = async (req, res) => {
   try {
     const { studentId } = req.body;
     const jobId = req.params.id;
+
+    if (!isValidObjectId(jobId) || !isValidObjectId(studentId)) {
+      return res.status(400).json({ message: "Invalid job or student ID." });
+    }
+
     const proposal = await Proposal.findOne({
       jobId,
       studentId,
@@ -389,6 +419,9 @@ const submitJobReview = async (req, res) => {
     const { studentId, rating, comment } = req.body;
     const jobId = req.params.id;
 
+    if (!isValidObjectId(jobId) || !isValidObjectId(studentId)) {
+      return res.status(400).json({ message: "Invalid job or student ID." });
+    }
     if (!studentId) {
       return res.status(400).json({ message: "studentId is required." });
     }
@@ -471,6 +504,10 @@ const submitJobReview = async (req, res) => {
 // GET /jobs/:id - Get a single job
 const getJobById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
+
     const job = await Job.findById(req.params.id)
       .populate("employer", "name email website companyLogoUrl isVerified")
       .populate("requiredSkills", "name")

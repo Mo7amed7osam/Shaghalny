@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const apiLimiter = require("../middleware/rateLimiter");
 const {
   getContract,
   listContracts,
@@ -14,6 +15,7 @@ const { checkRole } = require("../middleware/roleCheck");
 // List contracts for current user
 router.get(
   "/",
+  apiLimiter,
   authenticate,
   checkRole(["Student", "Client", "Admin"]),
   listContracts,
@@ -22,31 +24,52 @@ router.get(
 // Get contract details
 router.get(
   "/:id",
+  apiLimiter,
   authenticate,
   checkRole(["Student", "Client", "Admin"]),
   getContract,
 );
 
 // Student submits work
-router.post("/:id/submissions", authenticate, checkRole("Student"), submitWork);
+router.post(
+  "/:id/submissions",
+  apiLimiter,
+  authenticate,
+  checkRole("Student"),
+  submitWork,
+);
 
 // Client accepts work
-router.post("/:id/accept", authenticate, checkRole("Client"), acceptWork);
+router.post(
+  "/:id/accept",
+  apiLimiter,
+  authenticate,
+  checkRole("Client"),
+  acceptWork,
+);
 
 // Client requests changes
 router.post(
   "/:id/request-changes",
+  apiLimiter,
   authenticate,
   checkRole("Client"),
   requestChanges,
 );
 
 // Client submits review
-router.post("/:id/review", authenticate, checkRole("Client"), submitReview);
+router.post(
+  "/:id/review",
+  apiLimiter,
+  authenticate,
+  checkRole("Client"),
+  submitReview,
+);
 
 // Client or student sends a contract message
 router.post(
   "/:id/messages",
+  apiLimiter,
   authenticate,
   checkRole(["Student", "Client"]),
   sendMessage,
