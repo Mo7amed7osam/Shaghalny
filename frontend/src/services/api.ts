@@ -198,6 +198,10 @@ export const submitContractReview = async (
   const response = await http.post(API.contracts.review(contractId), payload);
   return response.data;
 };
+export const sendContractMessage = async (contractId: string, message: string) => {
+  const response = await http.post(`/contracts/${contractId}/messages`, { message });
+  return response.data;
+};
 
 export const submitJobReview = async (
   jobId: string,

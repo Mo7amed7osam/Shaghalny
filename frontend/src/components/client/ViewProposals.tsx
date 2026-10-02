@@ -87,7 +87,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
   const acceptMutation = useMutation({
     mutationFn: ({ proposalId, agreedBudget }: { proposalId: string; agreedBudget?: number }) => acceptProposal(proposalId, { agreedBudget }),
     onSuccess: (data: any) => {
-      toast.success('Proposal accepted. Escrow funded.');
+            toast.success(data?.escrow ? 'Proposal accepted. Escrow funded.' : 'Intern accepted.');
       queryClient.invalidateQueries({ queryKey: ['client', 'proposals'] });
       queryClient.invalidateQueries({ queryKey: ['client', 'jobs'] });
       if (data?.contract?._id) navigate(`/contracts/${data.contract._id}`);
@@ -154,6 +154,8 @@ const fetchMatchScore = async (proposal: any, job: any) => {
             const statusValue = proposal.status || 'submitted';
             const displayStatus = statusValue === 'pending' ? 'submitted' : statusValue;
             const isAccepted = statusValue === 'accepted';
+                        const isUnpaidInternship =
+              proposal.jobId?.type === 'internship' && proposal.jobId?.isUnpaid === true;
 
             return (
               <motion.div key={proposal._id} variants={fadeUp}>
@@ -199,9 +201,15 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || '—'}</p>
                       </div>
                       <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Proposed budget</p>
+                                               <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                          {isUnpaidInternship ? 'Compensation' : 'Proposed budget'}
+                        </p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">
-                          {proposal.proposedBudget ? formatCurrency(proposal.proposedBudget) : 'Not specified'}
+                          {isUnpaidInternship
+                            ? 'Unpaid'
+                            : proposal.proposedBudget
+                              ? formatCurrency(proposal.proposedBudget)
+                              : 'Not specified'}
                         </p>
                       </div>
                     </div>
@@ -226,24 +234,15 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                         <p className="line-clamp-4">{proposal.details}</p>
                       </div>
                     )}
-
                     {/* Actions */}
                     {!isAccepted && (
                       <div className="space-y-3">
                         <Separator />
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          <div className="space-y-1">
-                            <label className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Agreed budget</label>
-                            <Input
-                              type="number"
-                              min={0}
-                              placeholder={proposal.proposedBudget ? String(proposal.proposedBudget) : 'Enter amount'}
-                              value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
-                              onChange={(e) => setBudgetDrafts((p) => ({ ...p, [proposal._id]: e.target.value }))}
-                              disabled={acceptMutation.isPending}
-                            />
-                          </div>
-                          <div className="flex items-end">
+                        {isUnpaidInternship ? (
+                          <>
+                            <div className="rounded-lg border border-brand-100 bg-brand-50 p-3 text-sm font-medium text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200">
+                              Unpaid internship — no budget needed
+                            </div>
                             <Button
                               variant="outline"
                               className="w-full"
@@ -252,12 +251,40 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                               <User size={13} />
                               View profile
                             </Button>
+                          </>
+                        ) : (
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Agreed budget</label>
+                              <Input
+                                type="number"
+                                min={0}
+                                placeholder={proposal.proposedBudget ? String(proposal.proposedBudget) : 'Enter amount'}
+                                value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
+                                onChange={(e) => setBudgetDrafts((p) => ({ ...p, [proposal._id]: e.target.value }))}
+                                disabled={acceptMutation.isPending}
+                              />
+                            </div>
+                            <div className="flex items-end">
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => proposal.studentId?._id ? navigate(`/students/${proposal.studentId._id}?jobId=${proposal.jobId?._id}`) : null}
+                              >
+                                <User size={13} />
+                                View profile
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         <Button
                           className="w-full"
                           disabled={acceptMutation.isPending}
                           onClick={() => {
+                            if (isUnpaidInternship) {
+                              acceptMutation.mutate({ proposalId: proposal._id });
+                              return;
+                            }
                             const draft = budgetDrafts[proposal._id];
                             const value = draft ? Number(draft) : proposal.proposedBudget;
                             if (!Number.isFinite(value) || value <= 0) {
@@ -267,8 +294,10 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                             acceptMutation.mutate({ proposalId: proposal._id, agreedBudget: value });
                           }}
                         >
-                          <Wallet size={14} />
-                          {acceptMutation.isPending ? 'Funding escrow...' : 'Accept and fund escrow'}
+                          {isUnpaidInternship ? <CheckCircle size={14} /> : <Wallet size={14} />}
+                          {acceptMutation.isPending
+                            ? (isUnpaidInternship ? 'Accepting...' : 'Funding escrow...')
+                            : (isUnpaidInternship ? 'Accept intern' : 'Accept and fund escrow')}
                         </Button>
                       </div>
                     )}

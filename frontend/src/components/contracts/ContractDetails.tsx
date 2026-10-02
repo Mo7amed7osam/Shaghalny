@@ -9,6 +9,7 @@ import {
   acceptContractWork,
   getContractDetails,
   requestContractChanges,
+  sendContractMessage,
   submitContractReview,
   submitContractWork,
 } from '@/services/api';
@@ -30,6 +31,7 @@ const ContractDetails: React.FC = () => {
 
   const [submissionMessage, setSubmissionMessage] = useState('');
   const [submissionLinks, setSubmissionLinks] = useState('');
+    const [newMessage, setNewMessage] = useState('');
   const [reviewRating, setReviewRating] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -53,17 +55,26 @@ const ContractDetails: React.FC = () => {
     },
   });
 
-  const acceptMutation = useMutation({
+   const acceptMutation = useMutation({
     mutationFn: () => acceptContractWork(id as string),
-    onSuccess: () => {
-      toast.success('Work accepted. Escrow released.');
+    onSuccess: (data: any) => {
+      toast.success(data?.escrow ? 'Work accepted. Escrow released.' : 'Work accepted.');
       queryClient.invalidateQueries({ queryKey: ['contracts', id] });
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to accept work.');
     },
   });
-
+  const messageMutation = useMutation({
+    mutationFn: (message: string) => sendContractMessage(id as string, message),
+    onSuccess: () => {
+      setNewMessage('');
+      queryClient.invalidateQueries({ queryKey: ['contracts', id] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to send message.');
+    },
+  });
   const requestChangesMutation = useMutation({
     mutationFn: () => requestContractChanges(id as string),
     onSuccess: () => {
@@ -92,12 +103,16 @@ const ContractDetails: React.FC = () => {
   if (isError || !data?.contract) return <EmptyState title="Unable to load contract" description="The contract could not be loaded right now." />;
 
   const { contract, submissions } = data;
+    const isUnpaidContract = Number(contract.agreedBudget) === 0;
 
   const steps = [
     { label: 'Hired', active: true },
     { label: 'Submitted', active: ['submitted', 'completed'].includes(contract.status) },
     { label: 'Accepted', active: contract.status === 'completed' },
-    { label: 'Paid', active: contract.escrowStatus === 'released' },
+        {
+      label: isUnpaidContract ? 'Completed' : 'Paid',
+      active: isUnpaidContract ? contract.status === 'completed' : contract.escrowStatus === 'released',
+    },
     { label: 'Reviewed', active: hasReviewed },
   ];
 
@@ -110,7 +125,11 @@ const ContractDetails: React.FC = () => {
         actions={
           <div className="flex flex-wrap gap-2">
             <Badge variant="brand">{contract.status}</Badge>
-            <Badge variant={contract.escrowStatus === 'released' ? 'success' : 'warning'}>{contract.escrowStatus}</Badge>
+                        {isUnpaidContract ? (
+              <Badge variant="brand">Unpaid</Badge>
+            ) : (
+              <Badge variant={contract.escrowStatus === 'released' ? 'success' : 'warning'}>{contract.escrowStatus}</Badge>
+            )}
           </div>
         }
       />
@@ -118,9 +137,11 @@ const ContractDetails: React.FC = () => {
       <Card>
         <CardContent className="space-y-4 p-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="muted-panel rounded-lg p-4">
-              <p className="label-muted">Agreed budget</p>
-              <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">{formatCurrency(contract.agreedBudget)}</p>
+                       <div className="muted-panel rounded-lg p-4">
+              <p className="label-muted">{isUnpaidContract ? 'Compensation' : 'Agreed budget'}</p>
+              <p className="mt-2 text-lg font-semibold text-ink-900 dark:text-white">
+                {isUnpaidContract ? 'Unpaid internship' : formatCurrency(contract.agreedBudget)}
+              </p>
             </div>
             <div className="muted-panel rounded-lg p-4 md:col-span-2">
               <p className="label-muted">Progress</p>
@@ -175,6 +196,49 @@ const ContractDetails: React.FC = () => {
         </CardContent>
       </Card>
 
+           <Card>
+        <CardContent className="space-y-3 p-4">
+          <h2 className="text-xl font-semibold">Messages</h2>
+          <p className="text-sm text-ink-500 dark:text-ink-300">
+            Coordinate meeting links, schedule, or on-site details here.
+          </p>
+          {(data.messages || []).length ? (
+            <div className="space-y-3">
+              {(data.messages || []).map((msg: any) => (
+                <div key={msg._id} className="muted-panel rounded-lg p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-300">
+                      {msg.senderRole}
+                    </span>
+                    <span className="text-xs text-ink-500 dark:text-ink-400">
+                      {msg.createdAt ? new Date(msg.createdAt).toLocaleString() : ''}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-ink-700 dark:text-ink-200">{msg.message}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="No messages yet" description="Send meeting links or coordination details to get started." />
+          )}
+          <div className="flex gap-2">
+            <Input
+              placeholder="e.g. Let's meet on WhatsApp: https://wa.me/..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              disabled={messageMutation.isPending}
+            />
+            <Button
+              type="button"
+              disabled={messageMutation.isPending || !newMessage.trim()}
+              onClick={() => messageMutation.mutate(newMessage.trim())}
+            >
+              {messageMutation.isPending ? 'Sending...' : 'Send'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {isStudent ? (
         <Card>
           <CardContent className="space-y-3 p-4">
@@ -217,8 +281,10 @@ const ContractDetails: React.FC = () => {
           <CardContent className="space-y-3 p-4">
             <h2 className="text-xl font-semibold">Client actions</h2>
             <div className="flex flex-wrap gap-3">
-              <Button type="button" variant="outline" disabled={acceptMutation.isPending || contract.status !== 'submitted'} onClick={() => acceptMutation.mutate()}>
-                {acceptMutation.isPending ? 'Releasing...' : 'Accept work and release escrow'}
+                            <Button type="button" variant="outline" disabled={acceptMutation.isPending || contract.status !== 'submitted'} onClick={() => acceptMutation.mutate()}>
+                {acceptMutation.isPending
+                  ? (isUnpaidContract ? 'Completing...' : 'Releasing...')
+                  : (isUnpaidContract ? 'Accept work and mark complete' : 'Accept work and release escrow')}
               </Button>
               <Button type="button" variant="ghost" disabled={requestChangesMutation.isPending || contract.status !== 'submitted'} onClick={() => requestChangesMutation.mutate()}>
                 {requestChangesMutation.isPending ? 'Updating...' : 'Request changes'}
@@ -235,7 +301,7 @@ const ContractDetails: React.FC = () => {
                   max={5}
                   value={reviewRating}
                   onChange={(e) => setReviewRating(e.target.value)}
-                  disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed}
+                  disabled={reviewMutation.isPending || contract.status !== 'completed' || hasReviewed}
                 />
               </div>
             </div>
@@ -246,13 +312,13 @@ const ContractDetails: React.FC = () => {
                 placeholder="Share your honest feedback about the student's work and professionalism."
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
-                disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed}
+                disabled={reviewMutation.isPending || contract.status !== 'completed' || hasReviewed}
               />
             </div>
             <Button
               type="button"
               variant="outline"
-              disabled={reviewMutation.isPending || contract.escrowStatus !== 'released' || hasReviewed || !reviewRating.trim()}
+              disabled={reviewMutation.isPending || contract.status !== 'completed'|| hasReviewed || !reviewRating.trim()}
               onClick={() => {
                 const ratingValue = Number(reviewRating);
                 if (!Number.isFinite(ratingValue) || ratingValue < 1 || ratingValue > 5) {

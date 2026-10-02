@@ -5,7 +5,8 @@ import {
   BadgeCheck,
   BriefcaseBusiness,
   Camera,
-  CheckCircle2,
+    CheckCircle2,
+  Download,
   ExternalLink,
   Eye,
   FileText,
@@ -24,6 +25,7 @@ import {
 import { toast } from 'sonner';
 
 import useAuth from '@/hooks/useAuth';
+import { downloadInternshipCertificate } from '@/lib/certificate';
 import {
   getStudentProfile,
   updateStudentProfile,
@@ -42,8 +44,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { buildAssetUrl } from '@/lib/assets';
-
-type Review = { clientName: string; rating: number; comment?: string; jobTitle?: string };
+type Review = { clientName: string; rating: number; comment?: string; jobTitle?: string; jobType?: 'freelance' | 'internship'; createdAt?: string };
 type ViewMode = 'edit' | 'public';
 
 const fadeUp = {
@@ -738,7 +739,6 @@ function PublicProfileView({
             )}
           </CardContent>
         </Card>
-
         <section className="space-y-3">
           <div className="min-w-0">
             <h2 className="text-xl font-semibold text-ink-900 dark:text-white">Client reviews</h2>
@@ -747,7 +747,7 @@ function PublicProfileView({
           {reviews.length ? (
             <div className="grid gap-4 lg:grid-cols-2">
               {reviews.map((r, i) => (
-                <Card key={`${r.clientName}-${i}`} className="space-y-3 p-5">
+                                <Card key={`${r.clientName}-${i}`} className="min-w-0 space-y-3 p-5">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-semibold text-ink-900 dark:text-white">{r.clientName}</p>
@@ -755,7 +755,26 @@ function PublicProfileView({
                     </div>
                     <Badge variant="subtle">{r.rating}/5</Badge>
                   </div>
-                  {r.comment ? <p className="text-sm text-ink-600 dark:text-ink-300">{r.comment}</p> : null}
+                                                   {r.comment ? <p className="break-words text-sm text-ink-600 dark:text-ink-300">{r.comment}</p> : null}
+                  {r.jobType === 'internship' ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        downloadInternshipCertificate({
+                          studentName: profile?.name || 'Student',
+                          internshipTitle: r.jobTitle || 'Internship',
+                          clientName: r.clientName,
+                          completedDate: r.createdAt
+                            ? new Date(r.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+                            : undefined,
+                        })
+                      }
+                    >
+                      <Download size={14} /> Download certificate
+                    </Button>
+                  ) : null}
                 </Card>
               ))}
             </div>

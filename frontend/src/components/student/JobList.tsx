@@ -70,8 +70,7 @@ const categoryFilters = [
   { label: 'Data', skills: ['data', 'analysis', 'python'] },
 ];
 
-const workTypeFilters = ['All', 'Fixed project', 'Quick task', 'Flexible'] as const;
-
+const workTypeFilters = ['All', 'Internship', 'Fixed project', 'Quick task', 'Flexible'] as const;
 const budgetFilters = [
   { label: 'Any budget', value: 'any' },
   { label: 'Under 15k', value: 'under-15k' },
@@ -88,7 +87,9 @@ function getJobSkillNames(job: any) {
 }
 
 function getWorkType(job: any) {
-  const explicit = String(job?.type || job?.jobType || '').trim();
+  if (job?.type === 'internship') return 'Internship';
+
+  const explicit = String(job?.jobType || '').trim();
   if (explicit) return explicit;
 
   const duration = String(job?.duration || '').toLowerCase();
@@ -115,7 +116,7 @@ function matchesCategory(job: any, category: string) {
 function matchesBudget(job: any, budgetBand: string) {
   if (budgetBand === 'any') return true;
   const maxBudget = getMaxBudget(job);
-  if (!maxBudget) return true;
+  if (!maxBudget) return false;
   if (budgetBand === 'under-15k') return maxBudget < 15000;
   if (budgetBand === '15k-25k') return maxBudget >= 15000 && maxBudget <= 25000;
   if (budgetBand === '25k-plus') return maxBudget > 25000;
@@ -123,12 +124,12 @@ function matchesBudget(job: any, budgetBand: string) {
 }
 
 function budgetLabel(job: any) {
+  if (job?.type === 'internship' && job?.isUnpaid) return 'Unpaid';
   if (job?.budgetMin !== undefined || job?.budgetMax !== undefined) {
     return `${job.budgetMin !== undefined ? formatCurrency(job.budgetMin) : '-'}-${job.budgetMax !== undefined ? formatCurrency(job.budgetMax) : '-'}`;
   }
   return job?.budget ? formatCurrency(job.budget) : 'Budget not set';
 }
-
 function postedLabel(job: any) {
   const source = job?.createdAt || job?.updatedAt;
   if (!source) return 'Recently';
@@ -295,6 +296,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
   const activeJob = allJobs.find((j: any) => (j._id || j.id) === activeJobId);
   const activeDraft = activeJobId ? getDraft(activeJobId) : emptyDraft();
   const coverLetterLength = activeDraft.details.trim().length;
+      const isActiveJobUnpaidInternship =
+    activeJob?.type === 'internship' && activeJob?.isUnpaid === true;
   const hasActiveFilters =
     Boolean(search) ||
     selectedCategory !== 'All' ||
@@ -551,6 +554,21 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="m-0 text-[16px] font-semibold tracking-[-0.01em] text-ink-900 dark:text-white">{job.title}</h3>
+                                                    {job.type === 'internship' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11.5px] font-semibold text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200">
+                              Internship
+                            </span>
+                          ) : null}
+                                                    {job.type === 'internship' && (job.positions || 1) > 1 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[11.5px] font-semibold text-ink-600 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-300">
+                              {job.positionsFilled || 0}/{job.positions} positions filled
+                            </span>
+                          ) : null}
+                          {job.workMode ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[11.5px] font-semibold text-ink-600 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-300">
+                              {job.workMode === 'onsite' ? 'On-site' : job.workMode === 'online' ? 'Online' : 'Hybrid'}
+                            </span>
+                          ) : null}
                           {clientVerified ? (
                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[11.5px] font-semibold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300">
                               <CheckCircle2 size={11} /> Verified client
@@ -637,7 +655,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
           {activeJob ? (
             <div className="flex flex-wrap gap-3 rounded-lg border border-ink-200 bg-ink-50 p-3 text-sm dark:border-ink-dark-border dark:bg-white/5">
-              {(activeJob.budgetMin !== undefined || activeJob.budgetMax !== undefined) ? (
+                           {(activeJob.budgetMin !== undefined || activeJob.budgetMax !== undefined || activeJob.type === 'internship') ? (
                 <span className="flex items-center gap-1.5 text-ink-600 dark:text-ink-300">
                   <Wallet size={13} /> {budgetLabel(activeJob)}
                 </span>
@@ -755,18 +773,20 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Proposed budget (EGP)</label>
-                <Input
-                  type="number"
-                  min={0}
-                  placeholder="15000"
-                  value={activeJobId ? getDraft(activeJobId).budget : ''}
-                  onChange={(e) => activeJobId && setDraftField(activeJobId, 'budget', e.target.value)}
-                  disabled={proposalMutation.isPending}
-                />
-              </div>
+                        <div className={`grid gap-3 ${isActiveJobUnpaidInternship ? '' : 'sm:grid-cols-2'}`}>
+              {!isActiveJobUnpaidInternship ? (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Proposed budget (EGP)</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="15000"
+                    value={activeJobId ? getDraft(activeJobId).budget : ''}
+                    onChange={(e) => activeJobId && setDraftField(activeJobId, 'budget', e.target.value)}
+                    disabled={proposalMutation.isPending}
+                  />
+                </div>
+              ) : null}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Your timeline</label>
                 <Input
