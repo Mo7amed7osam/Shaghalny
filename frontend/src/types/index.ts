@@ -1,3 +1,4 @@
+export type SkillCategory = string;
 export interface User {
   id?: string;
   _id?: string;
@@ -20,7 +21,7 @@ export interface User {
 
 export interface VerifiedSkill {
   skillId?: string;
-  skill?: { _id: string; name: string } | string;
+  skill?: { _id: string; name: string; category?: SkillCategory } | string;
   score: number;
   verifiedAt?: string;
 }
@@ -43,7 +44,7 @@ export interface Job {
   _id?: string;
   title: string;
   description: string;
-  requiredSkills: Array<{ _id: string; name: string } | string>;
+  requiredSkills: Array<{ _id: string; name: string; category?: SkillCategory } | string>;
   applicants: string[];
   budgetMin?: number;
   budgetMax?: number;
@@ -63,6 +64,7 @@ export interface Skill {
   _id?: string;
   name: string;
   description: string;
+  category?: SkillCategory;
 }
 
 export interface Interview {

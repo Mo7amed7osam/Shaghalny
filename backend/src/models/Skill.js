@@ -1,21 +1,35 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-// Create the Skill schema
+const SKILL_CATEGORIES = [
+  "Programming",
+  "Design",
+  "Business",
+  "Engineering",
+  "Media",
+  "Other",
+];
+
 const SkillSchema = new Schema({
-    name: {
-        type: String,
-        required: true,
-        unique: true, // Ensure skill names are unique
-    },
-    description: {
-        type: String,
-        required: true,
-    },
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    trim: true,
+    maxlength: 30,
+    default: "Other",
+    index: true,
+  },
 });
 
-// Create the Skill model
-const Skill = mongoose.model('Skill', SkillSchema);
+const Skill = mongoose.model("Skill", SkillSchema);
+Skill.CATEGORIES = SKILL_CATEGORIES;
 
-// Export the Skill model
 module.exports = Skill;

@@ -99,7 +99,7 @@ const createJob = async (req, res) => {
 
     const populatedJob = await Job.findById(newJob._id)
       .populate("employer", "name email website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name");
+      .populate("requiredSkills", "name category");
     res.status(201).json(populatedJob);
   } catch (error) {
     res.status(500).json({ message: "Error creating job", error });
@@ -224,7 +224,7 @@ const getJobs = async (req, res) => {
       ],
     })
       .populate("employer", "name website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name");
+      .populate("requiredSkills", "name category");
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching jobs", error });
@@ -235,7 +235,7 @@ const getJobs = async (req, res) => {
 const getClientJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ employer: req.user?.id })
-      .populate("requiredSkills", "name")
+      .populate("requiredSkills", "name category")
       .populate("selectedStudent", "name email")
       .populate("employer", "name website companyLogoUrl isVerified");
     res.status(200).json(jobs);
@@ -521,7 +521,7 @@ const getJobById = async (req, res) => {
 
     const job = await Job.findById(req.params.id)
       .populate("employer", "name email website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name")
+      .populate("requiredSkills", "name category")
       .populate("selectedStudent", "name email");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
