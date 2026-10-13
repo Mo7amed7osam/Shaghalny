@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
+import { SKILL_CATEGORIES, getCategoryMeta, getSkillCategory } from '@/lib/skillCategories';
 import { toast } from 'sonner';
 
 import { fetchJobs, getStudentProfile, getStudentProposals, improveCoverLetter, submitProposal } from '@/services/api';
@@ -62,13 +63,6 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.05 } },
 };
 
-const categoryFilters = [
-  { label: 'All', skills: [] },
-  { label: 'Development', skills: ['react', 'node', 'mongodb', 'python', 'next', 'flutter'] },
-  { label: 'Design', skills: ['ui', 'ux', 'figma', 'motion', 'design'] },
-  { label: 'Writing', skills: ['content', 'copywriting', 'writing'] },
-  { label: 'Data', skills: ['data', 'analysis', 'python'] },
-];
 
 const workTypeFilters = ['All', 'Internship', 'Fixed project', 'Quick task', 'Flexible'] as const;
 const budgetFilters = [
@@ -78,14 +72,10 @@ const budgetFilters = [
   { label: '25k+', value: '25k-plus' },
 ] as const;
 
-function getSkillName(skill: any) {
-  return String(skill?.name || skill || '').trim();
+function getJobCategories(job: any): string[] {
+  const skills = Array.isArray(job?.requiredSkills) ? job.requiredSkills : [];
+  return Array.from(new Set<string>(skills.map((skill: any) => getCategoryMeta(getSkillCategory(skill)).key)));
 }
-
-function getJobSkillNames(job: any) {
-  return (Array.isArray(job?.requiredSkills) ? job.requiredSkills : []).map(getSkillName).filter(Boolean);
-}
-
 function getWorkType(job: any) {
   if (job?.type === 'internship') return 'Internship';
 
@@ -106,13 +96,8 @@ function getMaxBudget(job: any) {
 
 function matchesCategory(job: any, category: string) {
   if (category === 'All') return true;
-  const categoryConfig = categoryFilters.find((item) => item.label === category);
-  if (!categoryConfig) return true;
-
-  const skillNames = getJobSkillNames(job).map((skill) => skill.toLowerCase());
-  return skillNames.some((skill) => categoryConfig.skills.some((keyword) => skill.includes(keyword)));
+  return getJobCategories(job).includes(category);
 }
-
 function matchesBudget(job: any, budgetBand: string) {
   if (budgetBand === 'any') return true;
   const maxBudget = getMaxBudget(job);
@@ -220,7 +205,16 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     (job?.requiredSkills || []).filter((skill: any) => !verifiedSkillIds.has(String(skill?._id || skill)));
 
   const allJobs = useMemo(() => jobs || [], [jobs]);
-
+  const categoryOptions = useMemo(() => {
+    const builtIn = SKILL_CATEGORIES.filter((item) => item.key !== 'Other').map((item) => item.key as string);
+    const custom = new Set<string>();
+    allJobs.forEach((job: any) =>
+      getJobCategories(job).forEach((key) => {
+        if (key !== 'Other' && !builtIn.includes(key)) custom.add(key);
+      })
+    );
+    return ['All', ...builtIn, ...Array.from(custom).sort()].map((label) => ({ label }));
+  }, [allJobs]);
   const filteredJobs = useMemo(
     () =>
       allJobs.filter((job: any) => {
@@ -377,7 +371,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             <div>
               <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Category</div>
               <div className="flex flex-wrap gap-2">
-                {categoryFilters.map((item) => {
+                {categoryOptions.map((item) => {
                   const active = selectedCategory === item.label;
                   return (
                     <button
@@ -553,7 +547,16 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       <CompanyLogo job={job} className="h-[46px] w-[46px]" />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="m-0 text-[16px] font-semibold tracking-[-0.01em] text-ink-900 dark:text-white">{job.title}</h3>
+                          <h3 className="m-0 min-w-0 max-w-full text-[16px] font-semibold tracking-[-0.01em] text-ink-900 [overflow-wrap:anywhere] dark:text-white">{job.title}</h3>
+                                                    {getJobCategories(job).slice(0, 2).map((categoryKey) => {
+                            const meta = getCategoryMeta(categoryKey);
+                            return (
+                              <span key={categoryKey} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${meta.badge}`}>
+                                <meta.icon size={11} />
+                                {meta.label}
+                              </span>
+                            );
+                          })}
                                                     {job.type === 'internship' ? (
                             <span className="inline-flex items-center gap-1 rounded-full border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11.5px] font-semibold text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200">
                               Internship
@@ -585,7 +588,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           <span>·</span>
                           <span>{postedLabel(job)}</span>
                         </div>
-                        <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-ink-600 dark:text-ink-300">{job.description}</p>
+                        <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300">{job.description}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {skills.slice(0, 4).map((skill: any) => (
                             <span key={skill._id || skill} className="rounded-[7px] border border-ink-200 bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-600 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-300">
@@ -647,7 +650,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
       <Sheet open={!!activeJobId} onOpenChange={(open) => { if (!open) setActiveJobId(null); }}>
         <SheetContent side="right" className="flex flex-col overflow-y-auto border-ink-200 bg-white/95 shadow-elevated backdrop-blur-xl dark:border-ink-dark-border dark:bg-ink-dark-surface/95 sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle className="pr-6">{activeJob?.title || 'Apply for this role'}</SheetTitle>
+           <SheetTitle className="pr-8 [overflow-wrap:anywhere]">{activeJob?.title || 'Apply for this role'}</SheetTitle>
             <SheetDescription>
               Complete the form below. A strong cover letter significantly improves your chance.
             </SheetDescription>
