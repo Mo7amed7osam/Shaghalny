@@ -532,8 +532,150 @@ const getJobById = async (req, res) => {
   }
 };
 
+// PATCH /jobs/:id - Update a job owned by the client
+const updateJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!isValidObjectId(jobId)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
+
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    if (job.employer.toString() !== req.user?.id) {
+      return res.status(403).json({
+        message: "You are not authorized to edit this job.",
+      });
+    }
+
+    if (
+      job.activeContract ||
+      ["in_progress", "completed", "closed"].includes(job.status)
+    ) {
+      return res.status(400).json({
+        message:
+          "This job cannot be edited after a contract has started or the job is closed.",
+      });
+    }
+
+    const {
+      title,
+      description,
+      requiredSkills,
+      budgetMin,
+      budgetMax,
+      duration,
+      type,
+      workMode,
+      positions,
+      isUnpaid,
+    } = req.body;
+
+    if (
+      typeof title !== "string" ||
+      title.trim().length < 3 ||
+      typeof description !== "string" ||
+      description.trim().length < 20
+    ) {
+      return res.status(400).json({
+        message:
+          "Title must be at least 3 characters and description at least 20 characters.",
+      });
+    }
+
+    if (
+      !Array.isArray(requiredSkills) ||
+      requiredSkills.length === 0 ||
+      !requiredSkills.every(isValidObjectId)
+    ) {
+      return res.status(400).json({
+        message: "At least one valid required skill is needed.",
+      });
+    }
+
+    const jobType = type === "internship" ? "internship" : "freelance";
+    const unpaid = jobType === "internship" && isUnpaid === true;
+
+    const min = unpaid
+      ? undefined
+      : budgetMin === undefined || budgetMin === ""
+        ? NaN
+        : Number(budgetMin);
+
+    const max = unpaid
+      ? undefined
+      : budgetMax === undefined || budgetMax === ""
+        ? NaN
+        : Number(budgetMax);
+
+    if (
+      !unpaid &&
+      (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min)
+    ) {
+      return res.status(400).json({
+        message: "Please provide valid minimum and maximum budgets.",
+      });
+    }
+
+    if (
+      workMode !== undefined &&
+      !["online", "onsite", "hybrid"].includes(workMode)
+    ) {
+      return res.status(400).json({
+        message: "Invalid work mode.",
+      });
+    }
+
+    const skillsExist = await Skill.countDocuments({
+      _id: { $in: requiredSkills },
+    });
+
+    if (skillsExist !== new Set(requiredSkills.map(String)).size) {
+      return res.status(400).json({
+        message: "One or more selected skills do not exist.",
+      });
+    }
+
+    job.title = title.trim();
+    job.description = description.trim();
+    job.requiredSkills = requiredSkills;
+    job.budgetMin = unpaid ? undefined : min;
+    job.budgetMax = unpaid ? undefined : max;
+    job.duration = typeof duration === "string" ? duration.trim() : "";
+    job.type = jobType;
+    job.isUnpaid = unpaid;
+    if (workMode !== undefined) {
+      job.workMode = workMode;
+    }
+    job.positions =
+      jobType === "internship" ? Math.max(1, Number(positions) || 1) : 1;
+
+    await job.save();
+
+    const updatedJob = await Job.findById(job._id)
+      .populate("requiredSkills", "name category")
+      .populate("employer", "name email website companyLogoUrl isVerified");
+
+    return res.status(200).json({
+      message: "Job updated successfully.",
+      job: updatedJob,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error updating job.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createJob,
+  updateJob,
   getJobs,
   getJobById,
   getClientJobs,

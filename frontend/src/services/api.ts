@@ -38,6 +38,10 @@ export const postJob = async (jobData: any) => {
   const response = await http.post(API.jobs.create, jobData);
   return response.data;
 };
+export const updateJob = async (jobId: string, jobData: any) => {
+  const response = await http.patch(`/jobs/${jobId}`, jobData);
+  return response.data;
+};
 
 export const getJobs = async (params?: {
   search?: string;
