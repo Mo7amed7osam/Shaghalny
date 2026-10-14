@@ -1,3 +1,4 @@
+const apiLimiter = require("../middleware/rateLimiter");
 const router = require("express").Router();
 const { authenticate } = require("../middleware/auth");
 const { checkAdmin } = require("../middleware/roleCheck");
@@ -20,7 +21,7 @@ const {
   approveWithdrawal,
   declineWithdrawal,
 } = require("../controllers/paymentAdminController");
-
+router.use(apiLimiter);
 // Route to get all submitted interviews for review
 router.get("/interviews", authenticate, checkAdmin, getSubmittedInterviews);
 
