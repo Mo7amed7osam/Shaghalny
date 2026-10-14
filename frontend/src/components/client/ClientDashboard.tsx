@@ -4,11 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, Briefcase, CheckCircle2, Clock, FileText,
-  PlusCircle, TrendingUp, Users,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  Clock,
+  FileText,
+  PlusCircle,
+  TrendingUp,
+  Users,
+  Pencil,
 } from 'lucide-react';
-
 import { getClientJobs, getClientProposals } from '@/services/api';
+import { getCategoryMeta, getSkillCategory } from '@/lib/skillCategories';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,7 +23,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } },
@@ -43,7 +49,10 @@ function getInitials(name?: string) {
   if (!name) return '?';
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
-
+function getJobCategoryKeys(job: any): string[] {
+  const skills = Array.isArray(job?.requiredSkills) ? job.requiredSkills : [];
+  return Array.from(new Set<string>(skills.map((s: any) => getCategoryMeta(getSkillCategory(s)).key)));
+}
 const StatItem: React.FC<{
   icon: React.ReactNode;
   label: string;
@@ -155,32 +164,77 @@ const ClientDashboard: React.FC = () => {
         ) : (
           <motion.div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" variants={stagger}>
             {(jobs || []).map((job: any) => (
-              <motion.div key={job._id} variants={fadeUp}>
-                <Card className="group flex flex-col gap-3 p-4 transition-all hover:-translate-y-0.5 hover:shadow-card">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
+              <motion.div key={job._id} variants={fadeUp} className="min-w-0">
+                <Card className="group flex min-w-0 flex-col gap-3 overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-card">
+                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
                         <Briefcase size={16} />
                       </div>
-                      <div>
-                        <p className="font-semibold leading-snug text-ink-900 dark:text-white">{job.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">
+                      <div className="min-w-0">
+                        <p
+                          className="line-clamp-2 font-semibold leading-snug text-ink-900 [overflow-wrap:anywhere] dark:text-white"
+                          title={job.title}
+                        >
+                          {job.title}
+                        </p>
+                        <p className="mt-0.5 truncate text-xs text-ink-500 dark:text-ink-400">
                           {job.requiredSkills?.slice(0, 2).map((s: any) => s.name || s).join(', ')}
                           {(job.requiredSkills?.length || 0) > 2 ? ` +${job.requiredSkills.length - 2}` : ''}
                         </p>
                       </div>
                     </div>
-                    <Badge variant={statusVariant[job.status] ?? 'warning'}>{job.status}</Badge>
+                    <Badge variant={statusVariant[job.status] ?? 'warning'} className="shrink-0">
+                      {String(job.status || '').replace(/_/g, ' ')}
+                    </Badge>
                   </div>
+                  {job.type === 'internship' || getJobCategoryKeys(job).length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {job.type === 'internship' ? (
+                        <span className="inline-flex rounded-full border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200">
+                          Internship
+                        </span>
+                      ) : null}
+                      {getJobCategoryKeys(job).slice(0, 2).map((key) => {
+                        const meta = getCategoryMeta(key);
+                        return (
+                          <span key={key} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${meta.badge}`}>
+                            <meta.icon size={10} />
+                            {meta.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                   <Separator />
-                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="flex items-center gap-1.5 text-xs text-ink-500 dark:text-ink-400">
                       <Clock size={11} />
                       {job.duration || 'Flexible'}
                     </span>
-                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => navigate(`/client/view-proposals?jobId=${job._id}`)}>
-                      View proposals <ArrowRight size={11} />
-                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {job.status === 'open' && !job.activeContract && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => navigate(`/client/post-job?edit=${job._id}`)}
+                        >
+                          <Pencil size={11} />
+                          Edit
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => navigate(`/client/view-proposals?jobId=${job._id}`)}
+                      >
+                        View proposals <ArrowRight size={11} />
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               </motion.div>

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const apiLimiter = require("../middleware/rateLimiter");
 const {
   createJob,
+  updateJob,
   getJobs,
   getJobById,
   submitProposal,
@@ -29,6 +30,7 @@ router.get(
   checkRole("Client"),
   getClientJobs,
 );
+router.patch("/:id", apiLimiter, authenticate, checkRole("Client"), updateJob);
 // Route to submit a proposal for a job
 router.post(
   "/:id/proposals",

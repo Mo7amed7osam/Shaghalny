@@ -99,7 +99,7 @@ const createJob = async (req, res) => {
 
     const populatedJob = await Job.findById(newJob._id)
       .populate("employer", "name email website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name");
+      .populate("requiredSkills", "name category");
     res.status(201).json(populatedJob);
   } catch (error) {
     res.status(500).json({ message: "Error creating job", error });
@@ -224,7 +224,7 @@ const getJobs = async (req, res) => {
       ],
     })
       .populate("employer", "name website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name");
+      .populate("requiredSkills", "name category");
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching jobs", error });
@@ -235,7 +235,7 @@ const getJobs = async (req, res) => {
 const getClientJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ employer: req.user?.id })
-      .populate("requiredSkills", "name")
+      .populate("requiredSkills", "name category")
       .populate("selectedStudent", "name email")
       .populate("employer", "name website companyLogoUrl isVerified");
     res.status(200).json(jobs);
@@ -521,7 +521,7 @@ const getJobById = async (req, res) => {
 
     const job = await Job.findById(req.params.id)
       .populate("employer", "name email website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name")
+      .populate("requiredSkills", "name category")
       .populate("selectedStudent", "name email");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -532,8 +532,178 @@ const getJobById = async (req, res) => {
   }
 };
 
+// PATCH /jobs/:id - Update a job owned by the client
+const updateJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!isValidObjectId(jobId)) {
+      return res.status(400).json({ message: "Invalid job ID." });
+    }
+
+    const existingJob = await Job.findById(jobId);
+
+    if (!existingJob) {
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    if (existingJob.employer.toString() !== req.user?.id) {
+      return res.status(403).json({
+        message: "You are not authorized to edit this job.",
+      });
+    }
+
+    if (
+      existingJob.activeContract ||
+      ["in_progress", "completed", "closed"].includes(existingJob.status)
+    ) {
+      return res.status(400).json({
+        message:
+          "This job cannot be edited after a contract has started or the job is closed.",
+      });
+    }
+
+    const {
+      title,
+      description,
+      requiredSkills,
+      budgetMin,
+      budgetMax,
+      duration,
+      type,
+      workMode,
+      positions,
+      isUnpaid,
+    } = req.body;
+
+    if (
+      typeof title !== "string" ||
+      title.trim().length < 3 ||
+      typeof description !== "string" ||
+      description.trim().length < 20
+    ) {
+      return res.status(400).json({
+        message:
+          "Title must be at least 3 characters and description at least 20 characters.",
+      });
+    }
+
+    if (
+      !Array.isArray(requiredSkills) ||
+      requiredSkills.length === 0 ||
+      !requiredSkills.every(isValidObjectId)
+    ) {
+      return res.status(400).json({
+        message: "At least one valid required skill is needed.",
+      });
+    }
+
+    const jobType = type === "internship" ? "internship" : "freelance";
+    const unpaid = jobType === "internship" && isUnpaid === true;
+
+    // Budgets are optional, matching createJob; validate only what is provided.
+    const parseBudget = (value) =>
+      unpaid || value === undefined || value === null || value === ""
+        ? undefined
+        : Number(value);
+    const min = parseBudget(budgetMin);
+    const max = parseBudget(budgetMax);
+
+    if (
+      (min !== undefined && (!Number.isFinite(min) || min < 0)) ||
+      (max !== undefined && (!Number.isFinite(max) || max < 0)) ||
+      (min !== undefined && max !== undefined && min > max)
+    ) {
+      return res.status(400).json({
+        message: "Please provide valid minimum and maximum budgets.",
+      });
+    }
+
+    // null or "" clears the work mode; an omitted key leaves it unchanged.
+    const hasWorkMode = Object.prototype.hasOwnProperty.call(
+      req.body,
+      "workMode",
+    );
+    const clearWorkMode =
+      hasWorkMode && (workMode === null || workMode === "");
+    if (
+      hasWorkMode &&
+      !clearWorkMode &&
+      !["online", "onsite", "hybrid"].includes(workMode)
+    ) {
+      return res.status(400).json({
+        message: "Invalid work mode.",
+      });
+    }
+
+    const uniqueSkills = [...new Set(requiredSkills.map(String))];
+    const skillsExist = await Skill.countDocuments({
+      _id: { $in: uniqueSkills },
+    });
+
+    if (skillsExist !== uniqueSkills.length) {
+      return res.status(400).json({
+        message: "One or more selected skills do not exist.",
+      });
+    }
+
+    const $set = {
+      title: title.trim(),
+      description: description.trim(),
+      requiredSkills: uniqueSkills,
+      duration: typeof duration === "string" ? duration.trim() : "",
+      type: jobType,
+      isUnpaid: unpaid,
+      positions:
+        jobType === "internship" ? Math.max(1, Number(positions) || 1) : 1,
+    };
+    const $unset = {};
+    if (min === undefined) $unset.budgetMin = "";
+    else $set.budgetMin = min;
+    if (max === undefined) $unset.budgetMax = "";
+    else $set.budgetMax = max;
+    if (clearWorkMode) $unset.workMode = "";
+    else if (hasWorkMode) $set.workMode = workMode;
+
+    // Re-check editability in the write itself so a proposal accepted while
+    // this request was validating cannot be overwritten.
+    const job = await Job.findOneAndUpdate(
+      {
+        _id: jobId,
+        employer: req.user?.id,
+        activeContract: null,
+        status: "open",
+      },
+      Object.keys($unset).length ? { $set, $unset } : { $set },
+      { new: true, runValidators: true },
+    );
+
+    if (!job) {
+      return res.status(409).json({
+        message:
+          "This job can no longer be edited because a contract has started or the job is closed.",
+      });
+    }
+
+    const updatedJob = await Job.findById(job._id)
+      .populate("requiredSkills", "name category")
+      .populate("employer", "name email website companyLogoUrl isVerified");
+
+    return res.status(200).json({
+      message: "Job updated successfully.",
+      job: updatedJob,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error updating job.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createJob,
+  updateJob,
   getJobs,
   getJobById,
   getClientJobs,

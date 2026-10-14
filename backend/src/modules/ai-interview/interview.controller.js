@@ -1,18 +1,21 @@
-const interviewService = require('./interview.service');
-const Skill = require('../../models/Skill');
-const InterviewSession = require('./interview.model');
+const interviewService = require("./interview.service");
+const Skill = require("../../models/Skill");
+const InterviewSession = require("./interview.model");
 
 const handleError = (res, error) => {
   const status = error.status || 500;
   return res.status(status).json({
     success: false,
-    message: error.message || 'Unexpected server error.',
+    message: error.message || "Unexpected server error.",
   });
 };
 
 const startInterview = async (req, res) => {
   try {
-    const result = await interviewService.startInterviewSession(req.user, req.body || {});
+    const result = await interviewService.startInterviewSession(
+      req.user,
+      req.body || {},
+    );
     return res.status(200).json(result);
   } catch (error) {
     return handleError(res, error);
@@ -21,7 +24,10 @@ const startInterview = async (req, res) => {
 
 const getInterviewSession = async (req, res) => {
   try {
-    const result = await interviewService.getInterviewSession(req.params.sessionId, req.user);
+    const result = await interviewService.getInterviewSession(
+      req.params.sessionId,
+      req.user,
+    );
     return res.status(200).json(result);
   } catch (error) {
     return handleError(res, error);
@@ -47,7 +53,10 @@ const submitInterviewAnswer = async (req, res) => {
 
 const getInterviewResult = async (req, res) => {
   try {
-    const result = await interviewService.getInterviewResult(req.params.sessionId, req.user);
+    const result = await interviewService.getInterviewResult(
+      req.params.sessionId,
+      req.user,
+    );
     return res.status(200).json(result);
   } catch (error) {
     return handleError(res, error);
@@ -57,20 +66,28 @@ const getInterviewResult = async (req, res) => {
 const getMyInterviewSessions = async (req, res) => {
   try {
     let sessions = await InterviewSession.find({ user: req.user.id })
-      .populate('skillRef', 'name')
+      .populate("skillRef", "name category")
       .sort({ updatedAt: -1 });
 
-    const legacySessions = sessions.filter((session) => !session.skillRef && session.skill);
+    const legacySessions = sessions.filter(
+      (session) => !session.skillRef && session.skill,
+    );
     if (legacySessions.length > 0) {
       const skills = await Skill.find({
-        name: { $in: legacySessions.map((session) => session.skill).filter(Boolean) },
-      }).select('_id name');
+        name: {
+          $in: legacySessions.map((session) => session.skill).filter(Boolean),
+        },
+      }).select("_id name");
 
-      const skillMap = new Map(skills.map((skill) => [String(skill.name).toLowerCase(), skill]));
+      const skillMap = new Map(
+        skills.map((skill) => [String(skill.name).toLowerCase(), skill]),
+      );
 
       await Promise.all(
         legacySessions.map(async (session) => {
-          const matchedSkill = skillMap.get(String(session.skill).toLowerCase());
+          const matchedSkill = skillMap.get(
+            String(session.skill).toLowerCase(),
+          );
           if (!matchedSkill) return;
           session.skillRef = matchedSkill._id;
           await session.save();
@@ -78,7 +95,7 @@ const getMyInterviewSessions = async (req, res) => {
       );
 
       sessions = await InterviewSession.find({ user: req.user.id })
-        .populate('skillRef', 'name')
+        .populate("skillRef", "name category")
         .sort({ updatedAt: -1 });
     }
 

@@ -38,6 +38,10 @@ export const postJob = async (jobData: any) => {
   const response = await http.post(API.jobs.create, jobData);
   return response.data;
 };
+export const updateJob = async (jobId: string, jobData: any) => {
+  const response = await http.patch(`/jobs/${jobId}`, jobData);
+  return response.data;
+};
 
 export const getJobs = async (params?: {
   search?: string;
@@ -290,8 +294,12 @@ export const deleteAdminJob = async (jobId: string) => {
   return response.data;
 };
 
-export const createSkill = async (payload: { name: string; description: string }) => {
+export const createSkill = async (payload: { name: string; description: string; category?: string }) => {
   const response = await http.post(API.admin.skills, payload);
+  return response.data;
+};
+export const updateSkill = async (skillId: string, payload: { category: string }) => {
+  const response = await http.patch(`${API.admin.skills}/${skillId}`, payload);
   return response.data;
 };
 export const deleteSkill = async (skillId: string) => {

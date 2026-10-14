@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { isPracticalCategory } from '@/lib/skillCategories';
 const ReviewInterview: React.FC = () => {
   const { interviewId } = useParams();
   const navigate = useNavigate();
@@ -94,6 +94,12 @@ const ReviewInterview: React.FC = () => {
         }
       />
 
+            {isPracticalCategory(interview.skillRef?.category) ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+          This is a hands-on skill. The AI only analyzed what the student said, not what was on screen. Watch the screen recording to confirm the practical work before approving.
+        </div>
+      ) : null}
+
       <div className="space-y-4">
         {(interview.answers || []).map((response: any, index: number) => (
           <Card key={response.answerId || index}>
@@ -105,13 +111,19 @@ const ReviewInterview: React.FC = () => {
 
               <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-4">
-                  <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
-                    <video className="aspect-video w-full object-cover" controls src={toAbsoluteUrl(response.screenVideoUrl || response.videoUrl)} />
+                                   <div className="space-y-1.5">
+                    <p className="label-muted">{response.screenVideoUrl ? 'Screen recording' : 'Recording'}</p>
+                    <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
+                      <video className="aspect-video w-full object-contain" controls src={toAbsoluteUrl(response.screenVideoUrl || response.videoUrl)} />
+                    </div>
                   </div>
 
-                  {response.cameraVideoUrl ? (
-                    <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
-                      <video className="aspect-video w-full object-cover" controls src={toAbsoluteUrl(response.cameraVideoUrl)} />
+                  {response.cameraVideoUrl && response.screenVideoUrl ? (
+                    <div className="space-y-1.5">
+                      <p className="label-muted">Camera</p>
+                      <div className="overflow-hidden rounded-xl border border-ink-200 bg-black dark:border-white/10">
+                        <video className="aspect-video w-full object-cover" controls src={toAbsoluteUrl(response.cameraVideoUrl)} />
+                      </div>
                     </div>
                   ) : null}
                 </div>

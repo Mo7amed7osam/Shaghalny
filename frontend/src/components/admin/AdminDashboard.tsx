@@ -2,13 +2,15 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { MoreHorizontal, PlusCircle,  Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import {
   createSkill, deleteAdminJob, deleteAdminUser,
   deleteSkill, getAdminJobs, getAdminUsers, getInterviews, getSkills,
+  updateSkill,
 } from '@/services/api';
+import { SKILL_CATEGORIES, getCategoryMeta, groupSkillsByCategory } from '@/lib/skillCategories';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription,
@@ -39,7 +41,7 @@ const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } },
 } as const;
-
+const NEW_CATEGORY_VALUE = '__new__';
 function getInitials(name?: string) {
   if (!name) return '?';
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -52,10 +54,15 @@ const AdminDashboard: React.FC = () => {
   const [status, setStatus] = useState('SUBMITTED');
   const [skillName, setSkillName] = useState('');
   const [skillDescription, setSkillDescription] = useState('');
+  const [skillCategory, setSkillCategory] = useState('Programming');
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [confirmDeleteUser, setConfirmDeleteUser] = useState<{ id: string; name: string } | null>(null);
   const [confirmDeleteJob, setConfirmDeleteJob] = useState<{ id: string; title: string } | null>(null);
   const [confirmDeleteSkill, setConfirmDeleteSkill] = useState<{ id: string; name: string } | null>(null);
-const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [editSkill, setEditSkill] = useState<{ id: string; name: string } | null>(null);
+const [editCategory, setEditCategory] = useState('');
+const [editNewCategory, setEditNewCategory] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const { data: interviews, isLoading: interviewsLoading } = useQuery({
     queryKey: ['admin', 'interviews', status],
     queryFn: () => getInterviews(status),
@@ -76,25 +83,57 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>();
     mutationFn: (id: string) => deleteAdminJob(id),
     onSuccess: () => { toast.success('Job deleted.'); queryClient.invalidateQueries({ queryKey: ['admin', 'jobs'] }); },
   });
-  const createSkillMutation = useMutation({
-    mutationFn: (payload: { name: string; description: string }) => createSkill(payload),
-    onSuccess: () => {
+    const createSkillMutation = useMutation({
+    mutationFn: (payload: { name: string; description: string; category?: string }) => createSkill(payload),
+    onSuccess: (created: any) => {
       toast.success('Skill created.');
       setSkillName('');
       setSkillDescription('');
+      setNewCategoryName('');
+      setSkillCategory(created?.category && created.category !== 'Other' ? created.category : 'Programming');
       queryClient.invalidateQueries({ queryKey: ['skills'] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to create skill.');
     },
   });
   const deleteSkillMutation = useMutation({
     mutationFn: (id: string) => deleteSkill(id),
     onSuccess: () => { toast.success('Skill deleted.'); queryClient.invalidateQueries({ queryKey: ['skills'] }); },
   });
-
+const updateSkillMutation = useMutation({
+  mutationFn: ({ id, category }: { id: string; category: string }) => updateSkill(id, { category }),
+  onSuccess: () => {
+    toast.success('Category updated.');
+    queryClient.invalidateQueries({ queryKey: ['skills'] });
+    queryClient.invalidateQueries({ queryKey: ['jobs'] });
+  },
+  onError: (error: any) => {
+    toast.error(error?.response?.data?.message || 'Failed to update category.');
+  },
+});
   const sortedSkills = useMemo(() => {
     return (skills || []).slice().sort((a: any, b: any) => a.name.localeCompare(b.name));
   }, [skills]);
   
-
+  const categoryChoices = useMemo(() => {
+    const builtIn = SKILL_CATEGORIES.filter((item) => item.key !== 'Other').map((item) => item.key as string);
+    const custom = Array.from(
+      new Set<string>(
+        (skills || [])
+          .map((skill: any) => String(skill.category || '').trim())
+          .filter((key: string) => key && key !== 'Other' && !builtIn.includes(key))
+      )
+    ).sort();
+    return [...builtIn, ...custom];
+  }, [skills]);
+  const editChoices = useMemo(() => [...categoryChoices, 'Other'], [categoryChoices]);
+const openEdit = (skill: any) => {
+  const current = getCategoryMeta(skill.category).key;
+  setEditSkill({ id: skill._id, name: skill.name });
+  setEditCategory(current);
+  setEditNewCategory('');
+};
 const filteredInterviews = useMemo(() => {
   if (!allInterviews) return [];
 
@@ -393,7 +432,12 @@ const filteredStats = useMemo(() => [
                   {(interviews || []).map((iv: any) => (
                     <TableRow key={iv.sessionId}>
                       <TableCell className="font-semibold">{iv.user?.name || '-'}</TableCell>
-                      <TableCell>{iv.skillRef?.name || iv.skill}</TableCell>
+                                            <TableCell>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span>{iv.skillRef?.name || iv.skill}</span>
+                          {iv.skillRef?.category ? <Badge variant="subtle">{iv.skillRef.category}</Badge> : null}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge variant={iv.finalRecommendation === 'pass' ? 'success' : iv.finalRecommendation === 'fail' ? 'danger' : 'warning'}>
                           {iv.finalRecommendation || 'review'}
@@ -529,15 +573,42 @@ const filteredStats = useMemo(() => [
                     value={skillName}
                     onChange={(e) => setSkillName(e.target.value)}
                   />
-                  <Input
-                    placeholder="Short description"
+                                    <Input
+                    placeholder="Short description (optional)"
                     value={skillDescription}
                     onChange={(e) => setSkillDescription(e.target.value)}
                   />
+                                   <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Category</label>
+                    <Select value={skillCategory} onChange={(e) => setSkillCategory(e.target.value)}>
+                      {categoryChoices.map((key) => (
+                        <option key={key} value={key}>{key}</option>
+                      ))}
+                      <option value={NEW_CATEGORY_VALUE}>+ New category…</option>
+                    </Select>
+                  </div>
+                  {skillCategory === NEW_CATEGORY_VALUE ? (
+                    <Input
+                      placeholder="New category name (e.g. Marketing)"
+                      value={newCategoryName}
+                      maxLength={30}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                    />
+                  ) : null}
                   <Button
                     className="w-full"
-                    onClick={() => createSkillMutation.mutate({ name: skillName, description: skillDescription })}
-                    disabled={createSkillMutation.isPending || !skillName.trim()}
+                    onClick={() =>
+                      createSkillMutation.mutate({
+                        name: skillName.trim(),
+                        description: skillDescription.trim() || skillName.trim(),
+                        category: skillCategory === NEW_CATEGORY_VALUE ? newCategoryName.trim() : skillCategory,
+                      })
+                    }
+                    disabled={
+                      createSkillMutation.isPending ||
+                      !skillName.trim() ||
+                      (skillCategory === NEW_CATEGORY_VALUE && !newCategoryName.trim())
+                    }
                   >
                     {createSkillMutation.isPending ? 'Adding...' : 'Add skill'}
                   </Button>
@@ -554,17 +625,37 @@ const filteredStats = useMemo(() => [
                   ) : sortedSkills.length === 0 ? (
                     <EmptyState title="No skills yet" description="Add the first skill track above." />
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {sortedSkills.map((skill: any) => (
-                        <div key={skill._id} className="flex items-center gap-1">
-                          <Badge variant="subtle">{skill.name}</Badge>
-                          <button
-                            onClick={() => setConfirmDeleteSkill({ id: skill._id, name: skill.name })}
-                            className="flex h-5 w-5 items-center justify-center rounded text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
-                            disabled={deleteSkillMutation.isPending}
-                          >
-                            <Trash2 size={11} />
-                          </button>
+                                        <div className="space-y-5">
+                      {groupSkillsByCategory(sortedSkills).map(({ meta, skills: groupSkills }) => (
+                        <div key={meta.key} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex h-6 w-6 items-center justify-center rounded-md border ${meta.badge}`}>
+                              <meta.icon size={13} />
+                            </span>
+                            <p className="text-sm font-semibold text-ink-900 dark:text-white">{meta.label}</p>
+                            <span className="text-xs text-ink-400">{groupSkills.length}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {groupSkills.map((skill: any) => (
+                              <div key={skill._id} className="flex items-center gap-1">
+                                <Badge variant="subtle">{skill.name}</Badge>
+                                <button
+  onClick={() => openEdit(skill)}
+  aria-label={`Change category of ${skill.name}`}
+  className="flex h-5 w-5 items-center justify-center rounded text-ink-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+>
+  <Pencil size={11} />
+</button>
+                                <button
+                                  onClick={() => setConfirmDeleteSkill({ id: skill._id, name: skill.name })}
+                                  className="flex h-5 w-5 items-center justify-center rounded text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                                  disabled={deleteSkillMutation.isPending}
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -635,6 +726,49 @@ const filteredStats = useMemo(() => [
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Change skill category */}
+<AlertDialog open={!!editSkill} onOpenChange={(open) => { if (!open) setEditSkill(null); }}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Change category</AlertDialogTitle>
+      <AlertDialogDescription>
+        Choose a category for <strong>{editSkill?.name}</strong>.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <div className="space-y-3">
+      <Select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+        {editChoices.map((key) => (
+          <option key={key} value={key}>{key}</option>
+        ))}
+        <option value={NEW_CATEGORY_VALUE}>+ New category…</option>
+      </Select>
+      {editCategory === NEW_CATEGORY_VALUE ? (
+        <Input
+          placeholder="New category name"
+          value={editNewCategory}
+          maxLength={30}
+          onChange={(e) => setEditNewCategory(e.target.value)}
+        />
+      ) : null}
+    </div>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        disabled={editCategory === NEW_CATEGORY_VALUE && !editNewCategory.trim()}
+        onClick={() => {
+          if (!editSkill) return;
+          updateSkillMutation.mutate({
+            id: editSkill.id,
+            category: editCategory === NEW_CATEGORY_VALUE ? editNewCategory.trim() : editCategory,
+          });
+          setEditSkill(null);
+        }}
+      >
+        Save
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
     </div>
   );
 };

@@ -23,6 +23,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { startInterviewSession } from '@/features/ai-interview/services/interviewApi';
 import { cn } from '@/lib/utils';
+import { getCategoryMeta, groupSkillsByCategory, isPracticalCategory } from '@/lib/skillCategories';
 
 type Filter = 'all' | 'verified' | 'pending';
 
@@ -36,6 +37,13 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.05 } },
 };
 
+const chipClass = (active: boolean) =>
+  cn(
+    'rounded-[8px] border px-2.5 py-1.5 text-[12.5px] font-semibold transition',
+    active
+      ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-500/35 dark:bg-brand-500/15 dark:text-brand-200'
+      : 'border-ink-200 bg-ink-50 text-ink-600 hover:border-brand-200 hover:text-brand-700 dark:border-ink-dark-border dark:bg-white/[0.045] dark:text-ink-300'
+  );
 function scoreRing(score: number | null) {
   const value = typeof score === 'number' ? Math.max(0, Math.min(100, score)) : 0;
   return `conic-gradient(#6366f1 ${value}%, #edeef3 0)`;
@@ -46,6 +54,7 @@ const SkillVerification: React.FC = () => {
   const { user } = useAuth();
   const [startingSkillId, setStartingSkillId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const userId = user?._id || user?.id;
 
   const { data: profile } = useQuery({
@@ -90,15 +99,26 @@ const SkillVerification: React.FC = () => {
   });
 
   const skillList = skills || [];
+
+  const categoryChips = useMemo(
+    () => groupSkillsByCategory(skillList).map(({ meta, skills: items }) => ({ meta, count: items.length })),
+    [skillList]
+  );
+
   const visibleSkills = useMemo(() => {
+    let list = skillList;
     if (filter === 'verified') {
-      return skillList.filter((skill: any) => verifiedSkillIds.has(String(skill._id)));
+      list = list.filter((skill: any) => verifiedSkillIds.has(String(skill._id)));
+    } else if (filter === 'pending') {
+      list = list.filter((skill: any) => !verifiedSkillIds.has(String(skill._id)));
     }
-    if (filter === 'pending') {
-      return skillList.filter((skill: any) => !verifiedSkillIds.has(String(skill._id)));
+    if (categoryFilter !== 'all') {
+      list = list.filter((skill: any) => getCategoryMeta(skill.category).key === categoryFilter);
     }
-    return skillList;
-  }, [filter, skillList, verifiedSkillIds]);
+    return list;
+  }, [filter, categoryFilter, skillList, verifiedSkillIds]);
+
+  const groupedVisibleSkills = useMemo(() => groupSkillsByCategory(visibleSkills), [visibleSkills]);
 
   const verifiedScores = (profile?.verifiedSkills || [])
     .map((item: any) => (typeof item.score === 'number' ? item.score : null))
@@ -159,28 +179,71 @@ const SkillVerification: React.FC = () => {
 
       <div className="grid items-start gap-[22px] xl:grid-cols-[minmax(0,1fr)_320px]">
         <motion.section variants={fadeUp} className="min-w-0">
-          <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
-            {[
-              { key: 'all', label: 'All skills' },
-              { key: 'verified', label: 'Verified' },
-              { key: 'pending', label: 'Not verified' },
-            ].map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => setFilter(item.key as Filter)}
-                className={cn(
-                  'shrink-0 rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors',
-                  filter === item.key
-                    ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-500/25 dark:bg-brand-500/15 dark:text-brand-200'
-                    : 'border-ink-200 bg-white text-ink-500 hover:text-ink-900 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-dark-muted dark:hover:text-white'
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+                    <div className="sh-panel mb-4 space-y-[18px] p-[18px]">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-ink-900 dark:text-white">Filters</span>
+              {filter !== 'all' || categoryFilter !== 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilter('all');
+                    setCategoryFilter('all');
+                  }}
+                  className="text-xs font-semibold text-brand-600 transition hover:text-brand-700"
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
 
+            <div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Status</div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'all', label: 'All skills' },
+                  { key: 'verified', label: 'Verified' },
+                  { key: 'pending', label: 'Not verified' },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    aria-pressed={filter === item.key}
+                    onClick={() => setFilter(item.key as Filter)}
+                    className={chipClass(filter === item.key)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {categoryChips.length > 1 ? (
+              <div>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Category</div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={categoryFilter === 'all'}
+                    onClick={() => setCategoryFilter('all')}
+                    className={chipClass(categoryFilter === 'all')}
+                  >
+                    All
+                  </button>
+                  {categoryChips.map(({ meta }) => (
+                    <button
+                      key={meta.key}
+                      type="button"
+                      aria-pressed={categoryFilter === meta.key}
+                      onClick={() => setCategoryFilter(meta.key)}
+                      className={chipClass(categoryFilter === meta.key)}
+                    >
+                      {meta.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
           {isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -192,85 +255,109 @@ const SkillVerification: React.FC = () => {
           ) : visibleSkills.length === 0 ? (
             <EmptyState title="No skills in this view" description="Try another verification filter." />
           ) : (
-            <motion.div className="space-y-3" variants={stagger} initial="hidden" animate="visible" key={filter}>
-              {visibleSkills.map((skill: any) => {
-                const skillId = String(skill._id);
-                const verified = verifiedSkillIds.has(skillId);
-                const score = getVerifiedScore(skillId);
-                const starting = isPending && startingSkillId === skillId;
+            <motion.div
+              className="space-y-6"
+              variants={stagger}
+              initial="hidden"
+              animate="visible"
+              key={`${filter}-${categoryFilter}`}
+            >
+              {groupedVisibleSkills.map(({ meta, skills: groupSkills }) => (
+                <section key={meta.key} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className={cn('inline-flex h-6 w-6 items-center justify-center rounded-md border', meta.badge)}>
+                      <meta.icon size={13} />
+                    </span>
+                    <h2 className="m-0 text-sm font-semibold text-ink-900 dark:text-white">{meta.label}</h2>
+                    <span className="text-xs text-ink-400">{groupSkills.length}</span>
+                  </div>
 
-                return (
-                  <motion.article
-                    key={skillId}
-                    variants={fadeUp}
-                    className="sh-panel flex flex-col gap-4 px-[18px] py-4 transition hover:-translate-y-0.5 hover:border-brand-200 sm:flex-row sm:items-center"
-                  >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-                      <Mic size={19} />
-                    </div>
+                  {groupSkills.map((skill: any) => {
+                    const skillId = String(skill._id);
+                    const verified = verifiedSkillIds.has(skillId);
+                    const score = getVerifiedScore(skillId);
+                    const starting = isPending && startingSkillId === skillId;
+                    const practical = isPracticalCategory(skill.category);
+                    const RowIcon = practical ? MonitorUp : Mic;
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="m-0 text-[15.5px] font-semibold tracking-[-0.01em] text-ink-900 dark:text-white">
-                          {skill.name}
-                        </h3>
-                        {verified ? (
-                          <Badge variant="success" className="normal-case tracking-normal">
-                            <CheckCircle2 size={10} /> Verified
-                          </Badge>
-                        ) : (
-                          <Badge variant="subtle" className="normal-case tracking-normal">
-                            Not verified
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-ink-600 dark:text-ink-300">
-                        {skill.description || 'No description provided.'}
-                      </p>
-                      <div className="mt-1 text-[11.5px] text-ink-400 dark:text-ink-dark-muted">
-                        About 15 min · 8 questions · live with Shaghalny AI
-                      </div>
-                    </div>
-
-                    {verified ? (
-                      <div className="flex shrink-0 items-center gap-3 sm:justify-end">
-                        <div
-                          className="flex h-[38px] w-[38px] items-center justify-center rounded-full"
-                          style={{ background: scoreRing(score) }}
-                        >
-                          <span className="sh-number flex h-[29px] w-[29px] items-center justify-center rounded-full bg-white text-[11px] text-ink-900 dark:bg-ink-dark-surface dark:text-white">
-                            {score ?? '-'}
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            const sessionId = getLatestSessionId(skillId, String(skill.name || ''));
-                            if (sessionId) {
-                              navigate(`/student/ai-interview/${sessionId}/result`);
-                            } else {
-                              navigate('/student/profile');
-                            }
-                          }}
-                        >
-                          View result
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        className="shrink-0 sm:self-center"
-                        onClick={() => handleStartInterview(skill)}
-                        disabled={starting}
+                    return (
+                      <motion.article
+                        key={skillId}
+                        variants={fadeUp}
+                        className="sh-panel flex flex-col gap-4 px-[18px] py-4 transition hover:-translate-y-0.5 hover:border-brand-200 sm:flex-row sm:items-center"
                       >
-                        {starting ? 'Starting...' : 'Start interview'}
-                        {!starting ? <ArrowRight size={16} /> : null}
-                      </Button>
-                    )}
-                  </motion.article>
-                );
-              })}
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+                          <RowIcon size={19} />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="m-0 min-w-0 text-[15.5px] font-semibold tracking-[-0.01em] text-ink-900 [overflow-wrap:anywhere] dark:text-white">
+                              {skill.name}
+                            </h3>
+                            {verified ? (
+                              <Badge variant="success" className="normal-case tracking-normal">
+                                <CheckCircle2 size={10} /> Verified
+                              </Badge>
+                            ) : (
+                              <Badge variant="subtle" className="normal-case tracking-normal">
+                                Not verified
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300">
+                            {skill.description || 'No description provided.'}
+                          </p>
+                          <div className="mt-1 text-[11.5px] text-ink-400 dark:text-ink-dark-muted">
+                            {
+  practical
+    ? '3 questions · includes a short screen demo'
+    : '3 questions · live with Shaghalny AI'
+}
+                          </div>
+                        </div>
+
+                        {verified ? (
+                          <div className="flex shrink-0 items-center gap-3 sm:justify-end">
+                            <div
+                              className="flex h-[38px] w-[38px] items-center justify-center rounded-full"
+                              style={{ background: scoreRing(score) }}
+                            >
+                              <span className="sh-number flex h-[29px] w-[29px] items-center justify-center rounded-full bg-white text-[11px] text-ink-900 dark:bg-ink-dark-surface dark:text-white">
+                                {score ?? '-'}
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const sessionId = getLatestSessionId(skillId, String(skill.name || ''));
+                                if (sessionId) {
+                                  navigate(`/student/ai-interview/${sessionId}/result`);
+                                } else {
+                                  navigate('/student/profile');
+                                }
+                              }}
+                            >
+                              View result
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            className="shrink-0 sm:self-center"
+                            onClick={() => handleStartInterview(skill)}
+                            disabled={starting}
+                          >
+                            {starting ? 'Starting...' : 'Start interview'}
+                            {!starting ? <ArrowRight size={16} /> : null}
+                          </Button>
+                        )}
+                      </motion.article>
+                    );
+                  })}
+                </section>
+              ))}
             </motion.div>
           )}
         </motion.section>
