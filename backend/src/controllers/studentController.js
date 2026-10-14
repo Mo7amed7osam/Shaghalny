@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Job = require("../models/Job");
 const Proposal = require("../models/Proposal");
@@ -10,6 +11,9 @@ const {
 const getStudentProfile = async (req, res) => {
   try {
     const studentId = req.params.id;
+    if (!mongoose.isValidObjectId(studentId)) {
+      return res.status(400).json({ message: "Invalid student ID" });
+    }
     const isSelf = req.user?.id === studentId;
     const isAdmin = req.user?.role === "Admin";
     const isClient = req.user?.role === "Client";
@@ -102,7 +106,13 @@ const getStudentProfile = async (req, res) => {
 
     const jobId = (req.query.jobId || "").toString().trim();
     if (jobId) {
-      const job = await Job.findById(jobId).select("employer");
+      if (!mongoose.isValidObjectId(jobId)) {
+        return res.status(400).json({ message: "Invalid job ID" });
+      }
+
+      const jobObjectId = new mongoose.Types.ObjectId(jobId);
+      const studentObjectId = new mongoose.Types.ObjectId(studentId);
+      const job = await Job.findById(jobObjectId).select("employer");
       if (!job) {
         return res.status(404).json({ message: "Job not found" });
       }
@@ -112,7 +122,10 @@ const getStudentProfile = async (req, res) => {
           .json({ message: "Not authorized to view proposals for this job" });
       }
       if (isSelf || isAdmin || isClient) {
-        const proposals = await Proposal.find({ jobId, studentId })
+        const proposals = await Proposal.find({
+          jobId: jobObjectId,
+          studentId: studentObjectId,
+        })
           .select("status details proposedBudget createdAt")
           .sort({ createdAt: -1 });
         safeProfile.proposalHistory = proposals;
@@ -232,12 +245,10 @@ const uploadStudentPhoto = async (req, res) => {
     const profilePhotoUrl = `/uploads/photos/${photoFile.filename}`;
     await User.findByIdAndUpdate(studentId, { profilePhotoUrl });
 
-    res
-      .status(200)
-      .json({
-        message: "Profile photo uploaded successfully",
-        profilePhotoUrl,
-      });
+    res.status(200).json({
+      message: "Profile photo uploaded successfully",
+      profilePhotoUrl,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -284,7 +295,13 @@ const submitProposal = async (req, res) => {
   try {
     const jobId = req.params.jobId || req.body.jobId;
     const { details, proposedBudget } = req.body;
-    const job = await Job.findById(jobId);
+
+    if (typeof jobId !== "string" || !mongoose.isValidObjectId(jobId)) {
+      return res.status(400).json({ message: "Invalid job ID" });
+    }
+
+    const jobObjectId = new mongoose.Types.ObjectId(jobId);
+    const job = await Job.findById(jobObjectId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -292,7 +309,10 @@ const submitProposal = async (req, res) => {
       return res.status(400).json({ message: "Job is not open for proposals" });
     }
 
-    const existing = await Proposal.findOne({ jobId, studentId: req.user?.id });
+    const existing = await Proposal.findOne({
+      jobId: jobObjectId,
+      studentId: req.user?.id,
+    });
     if (existing) {
       return res
         .status(400)
@@ -322,7 +342,7 @@ const submitProposal = async (req, res) => {
     }
 
     const proposal = new Proposal({
-      jobId,
+      jobId: jobObjectId,
       studentId: req.user?.id,
       details,
       proposedBudget: parsedBudget,
