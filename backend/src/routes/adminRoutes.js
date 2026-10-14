@@ -21,7 +21,7 @@ const {
   approveWithdrawal,
   declineWithdrawal,
 } = require("../controllers/paymentAdminController");
-router.use(authenticate, userLimiter);
+router.use(userLimiter);
 // Route to get all submitted interviews for review
 router.get("/interviews", authenticate, checkAdmin, getSubmittedInterviews);
 
