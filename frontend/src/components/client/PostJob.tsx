@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +35,7 @@ const PostJob: React.FC = () => {
   const [searchParams] = useSearchParams();
   const editJobId = searchParams.get('edit');
   const isEditMode = Boolean(editJobId);
+  const queryClient = useQueryClient();
 
   const { data: skills, isLoading } = useQuery({
     queryKey: ['skills'],
@@ -106,6 +107,10 @@ const PostJob: React.FC = () => {
         ? updateJob(editJobId!, payload)
         : postJob(payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['client', 'jobs'] });
+      if (isEditMode) {
+        queryClient.invalidateQueries({ queryKey: ['job', editJobId] });
+      }
       toast.success(
         isEditMode
           ? 'Job updated successfully.'
@@ -137,7 +142,7 @@ const PostJob: React.FC = () => {
             duration: values.duration || undefined,
            type: values.type,
     isUnpaid: values.type === 'internship' && values.unpaid,
-      workMode: values.workMode,
+      workMode: values.workMode ?? (isEditMode ? null : undefined),
       positions: values.type === 'internship' ? (values.positions ? Number(values.positions) : 1) : undefined,
     });
   };

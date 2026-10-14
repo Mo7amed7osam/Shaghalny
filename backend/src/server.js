@@ -21,6 +21,11 @@ dotenv.config();
 // Create an instance of the Express application
 const app = express();
 
+// Behind a reverse proxy (Railway / Nginx), so req.ip reflects the real client
+// for rate limiting. Override with TRUST_PROXY (e.g. 0 to disable, 2 for two hops).
+const trustProxy = process.env.TRUST_PROXY;
+app.set('trust proxy', trustProxy === undefined ? 1 : Number.isNaN(Number(trustProxy)) ? trustProxy : Number(trustProxy));
+
 // Middleware to parse JSON requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -1,4 +1,4 @@
-const apiLimiter = require('../middleware/rateLimiter');
+const { userLimiter } = require('../middleware/rateLimiter');
 const router = require('express').Router();
 const {
     getStudentProfile,
@@ -14,7 +14,7 @@ const { authenticate } = require('../middleware/auth');
 const { checkRole } = require('../middleware/roleCheck');
 const { upload } = require('../middleware/uploadMiddleware');
 
-router.use(apiLimiter);
+router.use(authenticate, userLimiter);
 
 // Route to get student profile
 router.get('/:id/profile', authenticate, checkRole(['Student', 'Client', 'Admin']), getStudentProfile);

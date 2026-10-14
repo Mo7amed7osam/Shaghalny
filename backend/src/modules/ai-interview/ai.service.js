@@ -328,7 +328,9 @@ const generateInterviewQuestions = async (skill, options = {}) => {
 
   try {
     const rawText = await callConfiguredLlm(prompt);
-    const parsed = parseJson(rawText);
+    const reply = parseJson(rawText);
+    // Some models wrap the list, e.g. {"questions": [...]}.
+    const parsed = Array.isArray(reply) ? reply : reply?.questions;
     if (!Array.isArray(parsed) || parsed.length === 0) {
       console.warn(
         "AI question generation returned an unusable reply, using fallback questions. Reply started with:",

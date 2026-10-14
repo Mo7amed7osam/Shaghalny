@@ -126,10 +126,10 @@ const createSkill = async (req, res) => {
   try {
     const name = (req.body?.name || "").trim();
     const description = (req.body?.description || "").trim() || name;
-    const category = await resolveCategory(req.body?.category);
     if (!name) {
       return res.status(400).json({ message: "Skill name is required" });
     }
+    const category = await resolveCategory(req.body?.category);
 
     const existing = await Skill.findOne({
       name: { $regex: new RegExp(`^${escapeRegExp(name)}$`, "i") },

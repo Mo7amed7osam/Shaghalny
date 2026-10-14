@@ -541,21 +541,21 @@ const updateJob = async (req, res) => {
       return res.status(400).json({ message: "Invalid job ID." });
     }
 
-    const job = await Job.findById(jobId);
+    const existingJob = await Job.findById(jobId);
 
-    if (!job) {
+    if (!existingJob) {
       return res.status(404).json({ message: "Job not found." });
     }
 
-    if (job.employer.toString() !== req.user?.id) {
+    if (existingJob.employer.toString() !== req.user?.id) {
       return res.status(403).json({
         message: "You are not authorized to edit this job.",
       });
     }
 
     if (
-      job.activeContract ||
-      ["in_progress", "completed", "closed"].includes(job.status)
+      existingJob.activeContract ||
+      ["in_progress", "completed", "closed"].includes(existingJob.status)
     ) {
       return res.status(400).json({
         message:
@@ -601,29 +601,34 @@ const updateJob = async (req, res) => {
     const jobType = type === "internship" ? "internship" : "freelance";
     const unpaid = jobType === "internship" && isUnpaid === true;
 
-    const min = unpaid
-      ? undefined
-      : budgetMin === undefined || budgetMin === ""
-        ? NaN
-        : Number(budgetMin);
-
-    const max = unpaid
-      ? undefined
-      : budgetMax === undefined || budgetMax === ""
-        ? NaN
-        : Number(budgetMax);
+    // Budgets are optional, matching createJob; validate only what is provided.
+    const parseBudget = (value) =>
+      unpaid || value === undefined || value === null || value === ""
+        ? undefined
+        : Number(value);
+    const min = parseBudget(budgetMin);
+    const max = parseBudget(budgetMax);
 
     if (
-      !unpaid &&
-      (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min)
+      (min !== undefined && (!Number.isFinite(min) || min < 0)) ||
+      (max !== undefined && (!Number.isFinite(max) || max < 0)) ||
+      (min !== undefined && max !== undefined && min > max)
     ) {
       return res.status(400).json({
         message: "Please provide valid minimum and maximum budgets.",
       });
     }
 
+    // null or "" clears the work mode; an omitted key leaves it unchanged.
+    const hasWorkMode = Object.prototype.hasOwnProperty.call(
+      req.body,
+      "workMode",
+    );
+    const clearWorkMode =
+      hasWorkMode && (workMode === null || workMode === "");
     if (
-      workMode !== undefined &&
+      hasWorkMode &&
+      !clearWorkMode &&
       !["online", "onsite", "hybrid"].includes(workMode)
     ) {
       return res.status(400).json({
@@ -631,31 +636,54 @@ const updateJob = async (req, res) => {
       });
     }
 
+    const uniqueSkills = [...new Set(requiredSkills.map(String))];
     const skillsExist = await Skill.countDocuments({
-      _id: { $in: requiredSkills },
+      _id: { $in: uniqueSkills },
     });
 
-    if (skillsExist !== new Set(requiredSkills.map(String)).size) {
+    if (skillsExist !== uniqueSkills.length) {
       return res.status(400).json({
         message: "One or more selected skills do not exist.",
       });
     }
 
-    job.title = title.trim();
-    job.description = description.trim();
-    job.requiredSkills = requiredSkills;
-    job.budgetMin = unpaid ? undefined : min;
-    job.budgetMax = unpaid ? undefined : max;
-    job.duration = typeof duration === "string" ? duration.trim() : "";
-    job.type = jobType;
-    job.isUnpaid = unpaid;
-    if (workMode !== undefined) {
-      job.workMode = workMode;
-    }
-    job.positions =
-      jobType === "internship" ? Math.max(1, Number(positions) || 1) : 1;
+    const $set = {
+      title: title.trim(),
+      description: description.trim(),
+      requiredSkills: uniqueSkills,
+      duration: typeof duration === "string" ? duration.trim() : "",
+      type: jobType,
+      isUnpaid: unpaid,
+      positions:
+        jobType === "internship" ? Math.max(1, Number(positions) || 1) : 1,
+    };
+    const $unset = {};
+    if (min === undefined) $unset.budgetMin = "";
+    else $set.budgetMin = min;
+    if (max === undefined) $unset.budgetMax = "";
+    else $set.budgetMax = max;
+    if (clearWorkMode) $unset.workMode = "";
+    else if (hasWorkMode) $set.workMode = workMode;
 
-    await job.save();
+    // Re-check editability in the write itself so a proposal accepted while
+    // this request was validating cannot be overwritten.
+    const job = await Job.findOneAndUpdate(
+      {
+        _id: jobId,
+        employer: req.user?.id,
+        activeContract: null,
+        status: "open",
+      },
+      Object.keys($unset).length ? { $set, $unset } : { $set },
+      { new: true, runValidators: true },
+    );
+
+    if (!job) {
+      return res.status(409).json({
+        message:
+          "This job can no longer be edited because a contract has started or the job is closed.",
+      });
+    }
 
     const updatedJob = await Job.findById(job._id)
       .populate("requiredSkills", "name category")

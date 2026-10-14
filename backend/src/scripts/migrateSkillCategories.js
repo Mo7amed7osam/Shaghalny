@@ -8,6 +8,10 @@ const Skill = require("../models/Skill");
 
 const RULES = [
   [
+    "Programming",
+    /react|node|mongo|python|django|flask|laravel|angular|\bvue|express|spring|next\.?js|flutter|typescript|javascript|\.net|dotnet|devops|java|sql|docker|machine learning|data science|data analysis|backend|frontend|php|kotlin|swift|golang|\brust\b|database|\bapi\b|software|c\+\+|c#/i,
+  ],
+  [
     "Engineering",
     /civil|autocad|structural|mechanical|electrical|architect|surveying/i,
   ],
@@ -20,10 +24,6 @@ const RULES = [
     /\bui\b|\bux\b|figma|motion|graphic|photoshop|illustrator|design|branding/i,
   ],
   ["Business", /marketing|sales|accounting|finance|management|seo|business/i],
-  [
-    "Programming",
-    /react|node|mongo|python|django|flask|laravel|angular|\bvue|express|spring|next|flutter|typescript|javascript|\.net|dotnet|devops|java|sql|docker|machine learning|data science|data analysis|backend|frontend|php|kotlin|swift|golang|rust|c\+\+|c#/i,
-  ],
 ];
 
 const APPLY = process.argv.includes("--apply");
@@ -63,8 +63,9 @@ const detectCategory = (name) => {
       );
     } else {
       for (const skill of skills) {
+        // Skip skills an admin categorized while this script was running.
         await Skill.collection.updateOne(
-          { _id: skill._id },
+          { _id: skill._id, category: { $exists: false } },
           { $set: { category: detectCategory(skill.name) } },
         );
       }
