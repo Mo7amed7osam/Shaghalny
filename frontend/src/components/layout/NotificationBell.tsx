@@ -1,6 +1,6 @@
 import { Bell } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface Notification {
   _id: string;
@@ -16,7 +16,8 @@ export const NotificationBell = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const fetchNotifications = async () => {
     try {
@@ -57,11 +58,24 @@ export const NotificationBell = () => {
   }, []);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref}
+      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && open) {
+          event.stopPropagation();
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
+    >
       <button
+        type="button"
+        ref={triggerRef}
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
         onClick={() => setOpen(prev => !prev)}
         className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 bg-white transition-colors hover:bg-ink-50 dark:border-ink-dark-border dark:bg-ink-dark-surface dark:hover:bg-white/10"
-        aria-label="Notifications"
+        aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
       >
         <Bell size={16} />
         {unreadCount > 0 && (
@@ -72,7 +86,7 @@ export const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-xl border border-ink-200 bg-white shadow-lg dark:border-ink-dark-border dark:bg-ink-dark-surface">
+        <div id={panelId} role="region" aria-label="Notifications" className="absolute right-0 top-11 z-50 w-[calc(100vw-2rem)] max-w-80 rounded-xl border border-ink-200 bg-white shadow-lg dark:border-ink-dark-border dark:bg-ink-dark-surface">
           <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3 dark:border-ink-dark-border">
             <span className="font-semibold text-ink-900 dark:text-white">Notifications</span>
             {unreadCount > 0 && (
@@ -87,19 +101,21 @@ export const NotificationBell = () => {
 
           <div className="max-h-72 overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-ink-400">No notifications yet</p>
+              <p className="px-4 py-6 text-center text-sm text-ink-500">No notifications yet</p>
             ) : (
               notifications.map(n => (
                 <div
                   key={n._id}
-                  onClick={() => { if (n.eventId) { navigate('/events'); setOpen(false); } }}
-                  className={`cursor-pointer border-b border-ink-100 px-4 py-3 transition-colors hover:bg-ink-50 dark:border-ink-dark-border dark:hover:bg-white/5 ${!n.isRead ? 'bg-brand-50 dark:bg-brand-500/10' : ''}`}
+                  className={`border-b border-ink-100 px-4 py-3 transition-colors hover:bg-ink-50 dark:border-ink-dark-border dark:hover:bg-white/5 ${!n.isRead ? 'bg-brand-50 dark:bg-brand-500/10' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-medium text-ink-900 dark:text-white">{n.title}</p>
+                      <p className="text-sm font-medium text-ink-900 dark:text-white">
+                        {n.eventId ? <Link to={`/events/${encodeURIComponent(n.eventId)}`} onClick={() => setOpen(false)} className="underline underline-offset-2">{n.title}</Link> : n.title}
+                        {!n.isRead ? <span className="sr-only"> (Unread)</span> : null}
+                      </p>
                       <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">{n.message}</p>
-                      <p className="mt-1 text-[10px] text-ink-400">
+                      <p className="mt-1 text-[10px] text-ink-500">
                         {new Date(n.createdAt).toLocaleDateString()}
                       </p>
                     </div>

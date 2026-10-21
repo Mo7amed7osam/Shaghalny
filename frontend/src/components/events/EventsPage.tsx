@@ -43,7 +43,7 @@ const EventsPage: React.FC = () => {
               <div className="space-y-2 p-4">
                 <h3 className="text-lg font-semibold leading-snug group-hover:text-brand-600 transition-colors">{ev.title}</h3>
                 <p className="text-sm text-ink-500 dark:text-ink-300 line-clamp-2">{ev.description}</p>
-                <div className="flex flex-wrap gap-3 pt-1 text-sm text-ink-400">
+                <div className="flex flex-wrap gap-3 pt-1 text-sm text-ink-500">
                   <span className="flex items-center gap-1"><Calendar size={13} />{new Date(ev.date).toLocaleDateString('en-EG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   <span className="flex items-center gap-1"><Clock size={13} />{ev.time}</span>
                 </div>

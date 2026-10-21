@@ -131,7 +131,7 @@ const StudentPublicProfile: React.FC = () => {
                             {review.jobTitle ? `${review.jobTitle} • ` : ''}Rating {review.rating}/5
                           </p>
                         </div>
-                        {review.createdAt ? <span className="text-xs text-ink-400 dark:text-ink-300">{new Date(review.createdAt).toLocaleDateString()}</span> : null}
+                        {review.createdAt ? <span className="text-xs text-ink-500 dark:text-ink-300">{new Date(review.createdAt).toLocaleDateString()}</span> : null}
                       </div>
                       {review.comment ? <p className="mt-3 text-sm text-ink-600 dark:text-ink-300">{review.comment}</p> : null}
                     </div>
@@ -151,7 +151,7 @@ const StudentPublicProfile: React.FC = () => {
                       <div key={proposal._id} className="muted-panel rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <Badge variant="subtle">{proposal.status}</Badge>
-                          {proposal.createdAt ? <span className="text-xs text-ink-400 dark:text-ink-300">{new Date(proposal.createdAt).toLocaleDateString()}</span> : null}
+                          {proposal.createdAt ? <span className="text-xs text-ink-500 dark:text-ink-300">{new Date(proposal.createdAt).toLocaleDateString()}</span> : null}
                         </div>
                         {proposal.proposedBudget ? <p className="mt-3 text-sm text-ink-600 dark:text-ink-300">Proposed budget: {formatCurrency(proposal.proposedBudget)}</p> : null}
                         {proposal.details ? <p className="mt-3 whitespace-pre-line text-sm text-ink-500 dark:text-ink-300">{proposal.details}</p> : null}

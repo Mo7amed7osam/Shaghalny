@@ -1,4 +1,5 @@
 import React from 'react';
+import { RouteAccessibility } from '@/components/common/RouteAccessibility';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from '@/components/auth/Login';
 import Register from '@/components/auth/Register';
@@ -30,6 +31,7 @@ import EventsPage from '@/components/events/EventsPage';
 import InterviewHistory from '@/components/student/InterviewHistory';
 export const AppRouter = () => (
   <BrowserRouter>
+    <RouteAccessibility />
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />

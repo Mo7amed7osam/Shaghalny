@@ -34,6 +34,7 @@ import {
   uploadStudentPhoto,
 } from '@/services/api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { resizeImageFile } from '@/lib/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -148,6 +149,8 @@ const StudentProfile: React.FC = () => {
   const [localPhotoPreview, setLocalPhotoPreview] = useState('');
   const [localCoverPreview, setLocalCoverPreview] = useState('');
   const [photoLoadError, setPhotoLoadError] = useState(false);
+  const hydratedProfileId = useRef<string | null>(null);
+  const previewUrls = useRef<{ photo: string; cover: string }>({ photo: '', cover: '' });
 
   const { data: profile, isLoading, isError } = useQuery({
     queryKey: ['student', 'profile', userId],
@@ -157,24 +160,50 @@ const StudentProfile: React.FC = () => {
 
   useEffect(() => {
     if (!profile) return;
-    setFormValues({
-      name: profile.name || '',
-      description: profile.description || '',
-      profilePhotoUrl: profile.profilePhotoUrl || '',
-      coverPhotoUrl: profile.coverPhotoUrl || '',
-      university: profile.university || '',
-      portfolioLinks: (profile.portfolioLinks || []).join('\n'),
-    });
+    const profileId = String(profile._id || userId || '');
+    if (hydratedProfileId.current !== profileId) {
+      // First load: hydrate the whole form
+      hydratedProfileId.current = profileId;
+      setFormValues({
+        name: profile.name || '',
+        description: profile.description || '',
+        profilePhotoUrl: profile.profilePhotoUrl || '',
+        coverPhotoUrl: profile.coverPhotoUrl || '',
+        university: profile.university || '',
+        portfolioLinks: (profile.portfolioLinks || []).join('\n'),
+      });
+      setPhotoLoadError(false);
+    } else {
+      // Refetches (e.g. after a photo/cover upload) must not wipe unsaved text edits
+      setFormValues((p) => ({
+        ...p,
+        profilePhotoUrl: profile.profilePhotoUrl || p.profilePhotoUrl,
+        coverPhotoUrl: profile.coverPhotoUrl || p.coverPhotoUrl,
+      }));
+    }
     setReviews(profile.reviews || []);
-    setPhotoLoadError(false);
-  }, [profile]);
+  }, [profile, userId]);
+
+  const setPreview = (kind: 'photo' | 'cover', nextUrl: string) => {
+    const previous = previewUrls.current[kind];
+    if (previous && previous !== nextUrl) URL.revokeObjectURL(previous);
+    previewUrls.current[kind] = nextUrl;
+    if (kind === 'photo') setLocalPhotoPreview(nextUrl);
+    else setLocalCoverPreview(nextUrl);
+  };
 
   useEffect(() => {
+    const urls = previewUrls.current;
     return () => {
-      if (localPhotoPreview) URL.revokeObjectURL(localPhotoPreview);
-      if (localCoverPreview) URL.revokeObjectURL(localCoverPreview);
+      if (urls.photo) URL.revokeObjectURL(urls.photo);
+      if (urls.cover) URL.revokeObjectURL(urls.cover);
     };
-  }, [localPhotoPreview, localCoverPreview]);
+  }, []);
+
+  const getUploadErrorMessage = (error: any, fallback: string) => {
+    if (error?.response?.status === 413) return 'Image is too large. Try a smaller file.';
+    return error?.response?.data?.message || fallback;
+  };
 
   const { mutateAsync: saveProfile, isPending: isSaving } = useMutation({
     mutationFn: (payload: any) => updateStudentProfile(userId, payload),
@@ -200,7 +229,7 @@ const StudentProfile: React.FC = () => {
     onSuccess: (data) => {
       if (data?.profilePhotoUrl) {
         setFormValues((p) => ({ ...p, profilePhotoUrl: data.profilePhotoUrl }));
-        setLocalPhotoPreview('');
+        setPreview('photo', '');
         queryClient.setQueryData(['student', 'profile', userId], (old: any) => old ? { ...old, profilePhotoUrl: data.profilePhotoUrl } : old);
         queryClient.setQueryData(['auth', 'me'], (old: any) => old?.user ? { ...old, user: { ...old.user, profilePhotoUrl: data.profilePhotoUrl } } : old);
       }
@@ -210,9 +239,10 @@ const StudentProfile: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       if (photoInputRef.current) photoInputRef.current.value = '';
     },
-    onError: () => {
-      setLocalPhotoPreview('');
-      toast.error('Failed to upload profile photo');
+    onError: (error: any) => {
+      setPreview('photo', '');
+      toast.error(getUploadErrorMessage(error, 'Failed to upload profile photo'));
+      if (photoInputRef.current) photoInputRef.current.value = '';
     },
   });
 
@@ -221,7 +251,7 @@ const StudentProfile: React.FC = () => {
     onSuccess: (data) => {
       if (data?.coverPhotoUrl) {
         setFormValues((p) => ({ ...p, coverPhotoUrl: data.coverPhotoUrl }));
-        setLocalCoverPreview('');
+        setPreview('cover', '');
         queryClient.setQueryData(['student', 'profile', userId], (old: any) => old ? { ...old, coverPhotoUrl: data.coverPhotoUrl } : old);
         queryClient.setQueryData(['auth', 'me'], (old: any) => old?.user ? { ...old, user: { ...old.user, coverPhotoUrl: data.coverPhotoUrl } } : old);
       }
@@ -230,9 +260,10 @@ const StudentProfile: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       if (coverInputRef.current) coverInputRef.current.value = '';
     },
-    onError: () => {
-      setLocalCoverPreview('');
-      toast.error('Failed to upload cover');
+    onError: (error: any) => {
+      setPreview('cover', '');
+      toast.error(getUploadErrorMessage(error, 'Failed to upload cover'));
+      if (coverInputRef.current) coverInputRef.current.value = '';
     },
   });
 
@@ -265,13 +296,10 @@ const StudentProfile: React.FC = () => {
       toast.error('Upload an image file.');
       return;
     }
-    const previewUrl = URL.createObjectURL(file);
-    setLocalPhotoPreview((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return previewUrl;
-    });
+    setPreview('photo', URL.createObjectURL(file));
     setPhotoLoadError(false);
-    await uploadPhoto(file);
+    const optimized = await resizeImageFile(file, 800);
+    await uploadPhoto(optimized).catch(() => undefined);
   };
 
   const handleCoverSelect = async (file?: File) => {
@@ -280,12 +308,9 @@ const StudentProfile: React.FC = () => {
       toast.error('Upload an image file.');
       return;
     }
-    const previewUrl = URL.createObjectURL(file);
-    setLocalCoverPreview((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return previewUrl;
-    });
-    await uploadCover(file);
+    setPreview('cover', URL.createObjectURL(file));
+    const optimized = await resizeImageFile(file, 2000);
+    await uploadCover(optimized).catch(() => undefined);
   };
 
   const handleCvSelect = async (file?: File) => {
@@ -309,10 +334,10 @@ const StudentProfile: React.FC = () => {
   };
 
   const handleSave = () => {
-    saveProfile({
-      ...formValues,
-      portfolioLinks: formValues.portfolioLinks,
-    });
+    // Photo/cover are persisted by their own upload endpoints; sending them here
+    // could overwrite a fresh upload with a stale/empty value.
+    const { profilePhotoUrl: _photo, coverPhotoUrl: _cover, ...textFields } = formValues;
+    saveProfile(textFields);
   };
 
   if (!user || isLoading) {
@@ -477,7 +502,7 @@ const StudentProfile: React.FC = () => {
                     {nextCompletionItem ? `Next: ${nextCompletionItem}` : 'Client-ready profile'}
                   </span>
                 </div>
-                <Progress value={completionPct} className="mt-4" />
+                <Progress aria-label="Profile completion" value={completionPct} className="mt-4" />
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {completionChecks.map((item) => (
                     <span
@@ -589,7 +614,7 @@ const StudentProfile: React.FC = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 text-ink-400 hover:text-red-600"
+                      className="shrink-0 text-ink-500 hover:text-red-600"
                       onClick={() => removePortfolioLink(index)}
                       disabled={portfolioLinkFields.length === 1 && !portfolioLinkFields[0]}
                       aria-label={`Remove portfolio link ${index + 1}`}
@@ -719,7 +744,7 @@ function PublicProfileView({
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <ExternalLink size={15} className="mt-0.5 shrink-0 text-ink-400 transition-colors group-hover:text-brand-500" />
+                      <ExternalLink size={15} className="mt-0.5 shrink-0 text-ink-500 transition-colors group-hover:text-brand-500" />
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{getDomain(link)}</p>
                         <p className="mt-1 truncate text-xs text-ink-500 dark:text-ink-dark-muted">{link}</p>

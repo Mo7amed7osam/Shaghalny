@@ -1,0 +1,28 @@
+### Result
+[{"theme":"light","path":"/","violations":[],"incomplete":["color-contrast"]},{"theme":"light","path":"/login","violations":[],"incomplete":["color-contrast"]},{"theme":"light","path":"/register","violations":[],"incomplete":["color-contrast"]},{"theme":"dark","path":"/","violations":[],"incomplete":["color-contrast"]},{"theme":"dark","path":"/login","violations":[],"incomplete":["color-contrast"]},{"theme":"dark","path":"/register","violations":[],"incomplete":[]}]
+### Ran Playwright code
+```js
+await (async (page) => {
+ const results=[];
+ await page.unroute('**/api/**');
+ await page.evaluate(()=>localStorage.removeItem('token'));
+ await page.setViewportSize({width:1280,height:900});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ for(const theme of ['light','dark']) {
+  for(const path of ['/','/login','/register']) {
+   await page.goto('http://127.0.0.1:5173'+path);
+   await page.evaluate(theme=>{localStorage.setItem('theme',theme);document.documentElement.classList.toggle('dark',theme==='dark');},theme);
+   await page.addScriptTag({path:'/tmp/shaghalny-axe.min.js'});
+   await page.getByRole('heading',{level:1}).waitFor();
+   await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=500){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,50));}window.scrollTo(0,0);});
+   await page.waitForTimeout(700);
+   const r=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),incomplete:r.incomplete.map(v=>v.id)};});
+   results.push({theme,path,...r});
+  }
+ }
+ return results;
+}
+)(page);
+```
+### Events
+- New console entries: .playwright-cli/console-2026-10-21T19-57-46-737Z.log#L383-L402

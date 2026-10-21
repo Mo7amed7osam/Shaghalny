@@ -112,11 +112,11 @@ const fetchMatchScore = async (proposal: any, job: any) => {
         <Card>
           <CardContent className="grid gap-4 p-5 md:grid-cols-2">
             <div className="mt-4 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by job</label>
+              <label htmlFor="viewproposals-filter-by-job" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by job</label>
               {jobsLoading ? (
                 <Skeleton className="h-9 w-full rounded-lg" />
               ) : (
-                <Select value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
+                <Select id="viewproposals-filter-by-job" value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
                   <option value="">All jobs</option>
                   {(jobs || []).map((job: any) => (
                     <option key={job._id} value={job._id}>{job.title}</option>
@@ -125,11 +125,11 @@ const fetchMatchScore = async (proposal: any, job: any) => {
               )}
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by verified skill</label>
+              <label htmlFor="viewproposals-filter-by-verified-skill" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Filter by verified skill</label>
               {skillsLoading ? (
                 <Skeleton className="h-9 w-full rounded-lg" />
               ) : (
-                <Select value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
+                <Select id="viewproposals-filter-by-verified-skill" value={selectedSkill} onChange={(e) => setSelectedSkill(e.target.value)}>
                   <option value="">All skills</option>
                   {(skills || []).map((skill: any) => (
                     <option key={skill._id} value={skill._id}>{skill.name}</option>
@@ -169,13 +169,13 @@ const fetchMatchScore = async (proposal: any, job: any) => {
 
                   <CardHeader className="gap-0 space-y-0 px-4 pb-3 pt-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <Avatar className="h-11 w-11 shrink-0">
                           <AvatarFallback>{getInitials(proposal.studentId?.name)}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-bold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
-                          <p className="text-xs text-ink-500 dark:text-ink-400">{proposal.studentId?.email || '—'}</p>
+                        <div className="min-w-0">
+                          <p className="truncate font-bold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
+                          <p className="truncate text-xs text-ink-500 dark:text-ink-400">{proposal.studentId?.email || '—'}</p>
                         </div>
 {selectedJob && (() => {
                           const job = (jobs || []).find((j: any) => j._id === selectedJob);
@@ -187,7 +187,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                           );
                         })()}
                       </div>
-                      <Badge variant={statusVariant[statusValue] ?? 'warning'}>{displayStatus}</Badge>
+                      <Badge variant={statusVariant[statusValue] ?? 'warning'} className="shrink-0">{displayStatus}</Badge>
                     </div>
                   </CardHeader>
 
@@ -197,11 +197,11 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                     {/* Job + budget */}
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Job</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-ink-dark-muted">Job</p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">{proposal.jobId?.title || '—'}</p>
                       </div>
                       <div className="rounded-lg border border-ink-200 bg-ink-50 p-3 dark:border-ink-dark-border dark:bg-white/5">
-                                               <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-ink-dark-muted">
                           {isUnpaidInternship ? 'Compensation' : 'Proposed budget'}
                         </p>
                         <p className="mt-1 text-sm font-semibold text-ink-900 dark:text-white">
@@ -217,7 +217,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                     {/* Verified skills */}
                     {(proposal.studentId?.verifiedSkills || []).length > 0 && (
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Verified skills</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-ink-dark-muted">Verified skills</p>
                         <div className="flex flex-wrap gap-1.5">
                           {proposal.studentId.verifiedSkills.map((v: any) => (
                             <Badge key={v.skill?._id || v.skill} variant="brand">
@@ -255,15 +255,17 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                         ) : (
                           <div className="grid gap-3 sm:grid-cols-2">
                             <div className="space-y-1">
-                              <label className="text-xs font-semibold uppercase tracking-wide text-ink-400 dark:text-ink-500">Agreed budget</label>
-                              <Input
-                                type="number"
-                                min={0}
-                                placeholder={proposal.proposedBudget ? String(proposal.proposedBudget) : 'Enter amount'}
-                                value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
-                                onChange={(e) => setBudgetDrafts((p) => ({ ...p, [proposal._id]: e.target.value }))}
-                                disabled={acceptMutation.isPending}
-                              />
+                              <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+                                <span>Agreed budget (EGP)</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder={proposal.proposedBudget ? String(proposal.proposedBudget) : 'Enter amount'}
+                                  value={budgetDrafts[proposal._id] ?? proposal.proposedBudget ?? ''}
+                                  onChange={(e) => setBudgetDrafts((p) => ({ ...p, [proposal._id]: e.target.value }))}
+                                  disabled={acceptMutation.isPending}
+                                />
+                              </label>
                             </div>
                             <div className="flex items-end">
                               <Button

@@ -79,17 +79,32 @@ const AdminEvents: React.FC = () => {
             <Button variant="ghost" size="icon" onClick={resetForm} aria-label="Close form"><X size={18} /></Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input placeholder="Title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
-            <Input placeholder="Location *" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
-            <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-            <Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Title *</span>
+              <Input placeholder="Title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Location *</span>
+              <Input placeholder="Location *" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Date</span>
+              <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Time</span>
+              <Input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+            </label>
           </div>
-          <Textarea
+          <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Description *</span>
+              <Textarea
             rows={3}
             placeholder="Description *"
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
+            </label>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={form.isOnline} onChange={e => setForm(f => ({ ...f, isOnline: e.target.checked }))} />
@@ -97,8 +112,11 @@ const AdminEvents: React.FC = () => {
             </label>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-ink-500">Event image</p>
-            <input type="file" accept="image/*" onChange={e => setForm(f => ({ ...f, image: e.target.files?.[0] || null }))} />
+            <p className="text-sm text-ink-500 dark:text-ink-dark-muted">Event image</p>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Event image</span>
+              <Input type="file" accept="image/*" onChange={e => setForm(f => ({ ...f, image: e.target.files?.[0] || null }))} />
+            </label>
           </div>
           <div className="flex gap-3">
             <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
@@ -122,7 +140,7 @@ const AdminEvents: React.FC = () => {
                 <p className="text-xs font-semibold uppercase tracking-widest text-brand-500">{ev.isOnline ? 'Online' : ev.location}</p>
                 <h3 className="text-lg font-semibold">{ev.title}</h3>
                 <p className="text-sm text-ink-500 dark:text-ink-300 line-clamp-2">{ev.description}</p>
-                <p className="text-sm text-ink-400">{new Date(ev.date).toLocaleDateString('en-EG', { day: 'numeric', month: 'long', year: 'numeric' })} · {ev.time}</p>
+                <p className="text-sm text-ink-500">{new Date(ev.date).toLocaleDateString('en-EG', { day: 'numeric', month: 'long', year: 'numeric' })} · {ev.time}</p>
                 <div className="flex gap-2 pt-2">
                   <Button size="sm" variant="ghost" onClick={() => handleEdit(ev)}><Pencil size={14} className="mr-1" /> Edit</Button>
                   <Button

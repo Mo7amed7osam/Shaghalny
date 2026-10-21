@@ -124,13 +124,22 @@ const ClientWallet: React.FC = () => {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Input type="number" min={0} placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={topupMutation.isPending} />
-            <Input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={(e) => setScreenshot(e.target.files?.[0] || null)} disabled={topupMutation.isPending} />
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Amount (EGP)</span>
+              <Input type="number" min={0} placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={topupMutation.isPending} />
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Payment screenshot</span>
+              <Input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={(e) => setScreenshot(e.target.files?.[0] || null)} disabled={topupMutation.isPending} />
+            </label>
           </div>
 
           {screenshot ? <p className="text-sm text-ink-500 dark:text-ink-300">{screenshot.name}</p> : null}
 
-          <Textarea rows={4} placeholder="Optional note" value={note} onChange={(e) => setNote(e.target.value)} disabled={topupMutation.isPending} />
+          <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Optional note</span>
+              <Textarea rows={4} placeholder="Optional note" value={note} onChange={(e) => setNote(e.target.value)} disabled={topupMutation.isPending} />
+            </label>
 
           <Button type="button" disabled={topupMutation.isPending} onClick={handleSubmit}>
             {topupMutation.isPending ? 'Submitting…' : 'Submit top-up'}

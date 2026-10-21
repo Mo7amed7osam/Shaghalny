@@ -363,13 +363,13 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm font-semibold text-ink-900 dark:text-white">Filters</span>
             {hasActiveFilters ? (
-              <button type="button" onClick={resetFilters} className="text-xs font-semibold text-brand-600 transition hover:text-brand-700">Reset</button>
+              <button type="button" onClick={resetFilters} className="text-xs font-semibold text-brand-600 transition hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200">Reset</button>
             ) : null}
           </div>
 
           <div className="space-y-[18px]">
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Category</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Category</div>
               <div className="flex flex-wrap gap-2">
                 {categoryOptions.map((item) => {
                   const active = selectedCategory === item.label;
@@ -382,7 +382,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       className={`rounded-[8px] border px-2.5 py-1.5 text-[12.5px] font-semibold transition ${
                         active
                           ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-500/35 dark:bg-brand-500/15 dark:text-brand-200'
-                          : 'border-ink-200 bg-ink-50 text-ink-600 hover:border-brand-200 hover:text-brand-700 dark:border-ink-dark-border dark:bg-white/[0.045] dark:text-ink-300'
+                          : 'border-ink-200 bg-ink-50 text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 hover:text-brand-700 dark:hover:text-brand-300 dark:border-ink-dark-border dark:bg-white/[0.045] dark:text-ink-300'
                       }`}
                     >
                       {item.label}
@@ -393,7 +393,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Job type</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Job type</div>
               <div className="space-y-2.5">
                 {workTypeFilters.map((type) => {
                   const active = selectedWorkType === type;
@@ -416,7 +416,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-400 dark:text-ink-dark-muted">Budget range</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Budget range</div>
               <div className="space-y-2">
                 {budgetFilters.map((item) => {
                   const active = selectedBudget === item.value;
@@ -429,7 +429,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       className={`flex w-full items-center justify-between rounded-[10px] border px-3 py-2 text-[13px] font-semibold transition ${
                         active
                           ? 'border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-500/35 dark:bg-brand-500/15 dark:text-brand-200'
-                          : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 hover:text-brand-700 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
+                          : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 hover:text-brand-700 dark:hover:text-brand-300 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
                       }`}
                     >
                       {item.label}
@@ -453,7 +453,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                   className={`flex w-full items-center justify-between rounded-[11px] border px-3 py-2.5 text-left text-[13px] font-semibold transition ${
                     item.checked
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300'
-                      : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
+                      : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
                   }`}
                 >
                   <span>{item.label}</span>
@@ -472,7 +472,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
               ].map((item) => (
                 <div key={item.label} className="rounded-[10px] bg-ink-50 px-2 py-2 text-center dark:bg-white/[0.04]">
                   <div className="sh-number text-sm text-ink-900 dark:text-white">{item.value}</div>
-                  <div className="mt-0.5 text-[10.5px] font-semibold text-ink-400">{item.label}</div>
+                  <div className="mt-0.5 text-[10.5px] font-semibold text-ink-500">{item.label}</div>
                 </div>
               ))}
             </div>
@@ -481,15 +481,15 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
         <main className="min-w-0 space-y-3">
           <div className="sh-panel flex min-w-0 items-center gap-3 px-4 py-3">
-            <Search size={16} className="shrink-0 text-ink-400" />
-            <Input
+            <Search size={16} className="shrink-0 text-ink-500" />
+            <Input aria-label="Search by title, skill, or keyword"
               placeholder="Search by title, skill, or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="min-h-0 border-0 bg-transparent p-0 text-sm shadow-none focus:ring-0 dark:bg-transparent"
             />
             {search ? (
-              <button onClick={() => setSearch('')} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-600">
+              <button type="button" aria-label="Clear search" onClick={() => setSearch('')} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-600">
                 <X size={14} />
               </button>
             ) : null}
@@ -542,7 +542,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       key={jobKey}
                       variants={fadeUp}
                       layout
-                      className="sh-panel flex flex-col gap-4 p-[18px] transition hover:-translate-y-0.5 hover:border-brand-200 xl:flex-row"
+                      className="sh-panel flex flex-col gap-4 p-[18px] transition hover:-translate-y-0.5 hover:border-brand-200 dark:hover:border-brand-500/40 xl:flex-row"
                     >
                       <CompanyLogo job={job} className="h-[46px] w-[46px]" />
                       <div className="min-w-0 flex-1">
@@ -609,7 +609,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
                       <div className="flex shrink-0 flex-col justify-between gap-3 border-t border-ink-100 pt-3 xl:w-[158px] xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0 dark:border-ink-dark-border">
                         <div className="flex items-start justify-between gap-3 xl:flex-col xl:items-end">
-                          <button type="button" className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-ink-200 bg-white text-ink-400 dark:border-ink-dark-border dark:bg-white/[0.055]">
+                          <button type="button" className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-ink-200 bg-white text-ink-500 dark:border-ink-dark-border dark:bg-white/[0.055]">
                             <Bookmark size={15} />
                           </button>
                           <div className="text-right">
@@ -619,7 +619,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                               <div className="mt-2 flex items-center justify-end gap-2">
                                 <div
                                   className="flex h-[26px] w-[26px] items-center justify-center rounded-full"
-                                  style={{ background: `conic-gradient(#6366f1 ${score}%, #edeef3 0)` }}
+                                  style={{ background: `conic-gradient(#6366f1 ${score}%, var(--ring-track) 0)` }}
                                 >
                                   <span className="h-[18px] w-[18px] rounded-full bg-white dark:bg-ink-dark-surface" />
                                 </div>
@@ -762,6 +762,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                 </div>
               </div>
 
+              <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Cover letter</span>
               <Textarea
                 placeholder="Explain why you are a strong fit. Mention relevant experience, what you will deliver, and why this role interests you."
                 rows={6}
@@ -770,17 +772,18 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                 disabled={proposalMutation.isPending || improveLetterMutation.isPending}
                 className="min-h-[180px] rounded-xl"
               />
+            </label>
               <div className="flex items-center justify-between gap-3 text-xs text-ink-500 dark:text-ink-dark-muted">
                 <span>Keep it specific to this job. Avoid generic statements.</span>
                 <span>{coverLetterLength} chars</span>
               </div>
             </div>
 
-                        <div className={`grid gap-3 ${isActiveJobUnpaidInternship ? '' : 'sm:grid-cols-2'}`}>
+            <div className={`grid gap-3 ${isActiveJobUnpaidInternship ? '' : 'sm:grid-cols-2'}`}>
               {!isActiveJobUnpaidInternship ? (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Proposed budget (EGP)</label>
-                  <Input
+                  <label htmlFor="joblist-proposed-budget-egp" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Proposed budget (EGP)</label>
+                  <Input id="joblist-proposed-budget-egp"
                     type="number"
                     min={0}
                     placeholder="15000"
@@ -791,8 +794,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                 </div>
               ) : null}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Your timeline</label>
-                <Input
+                <label htmlFor="joblist-your-timeline" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Your timeline</label>
+                <Input id="joblist-your-timeline"
                   placeholder="e.g. 2 weeks"
                   value={activeJobId ? getDraft(activeJobId).timeline : ''}
                   onChange={(e) => activeJobId && setDraftField(activeJobId, 'timeline', e.target.value)}
@@ -802,8 +805,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Portfolio links</label>
-              <Input
+              <label htmlFor="joblist-portfolio-links" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Portfolio links</label>
+              <Input id="joblist-portfolio-links"
                 placeholder="https://github.com/you or https://portfolio.com"
                 value={activeJobId ? getDraft(activeJobId).portfolio : ''}
                 onChange={(e) => activeJobId && setDraftField(activeJobId, 'portfolio', e.target.value)}

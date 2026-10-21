@@ -156,9 +156,10 @@ const updateStudentProfile = async (req, res) => {
       "portfolioLinks",
     ];
     const updatedData = allowedFields.reduce((acc, field) => {
-      if (req.body[field] !== undefined) {
-        acc[field] = req.body[field];
-      }
+      if (req.body[field] === undefined) return acc;
+      // Images are set via upload endpoints; never let an empty value from a stale form wipe them
+      if ((field === "profilePhotoUrl" || field === "coverPhotoUrl") && !req.body[field]) return acc;
+      acc[field] = req.body[field];
       return acc;
     }, {});
 

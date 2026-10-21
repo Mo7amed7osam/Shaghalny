@@ -46,7 +46,7 @@ const chipClass = (active: boolean) =>
   );
 function scoreRing(score: number | null) {
   const value = typeof score === 'number' ? Math.max(0, Math.min(100, score)) : 0;
-  return `conic-gradient(#6366f1 ${value}%, #edeef3 0)`;
+  return `conic-gradient(#6366f1 ${value}%, var(--ring-track) 0)`;
 }
 
 const SkillVerification: React.FC = () => {
@@ -284,7 +284,7 @@ const SkillVerification: React.FC = () => {
                       <motion.article
                         key={skillId}
                         variants={fadeUp}
-                        className="sh-panel flex flex-col gap-4 px-[18px] py-4 transition hover:-translate-y-0.5 hover:border-brand-200 sm:flex-row sm:items-center"
+                        className="sh-panel flex flex-col gap-4 px-[18px] py-4 transition hover:-translate-y-0.5 hover:border-brand-200 dark:hover:border-brand-500/40 sm:flex-row sm:items-center"
                       >
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
                           <RowIcon size={19} />
@@ -308,12 +308,10 @@ const SkillVerification: React.FC = () => {
                           <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300">
                             {skill.description || 'No description provided.'}
                           </p>
-                          <div className="mt-1 text-[11.5px] text-ink-400 dark:text-ink-dark-muted">
-                            {
-  practical
-    ? '3 questions · includes a short screen demo'
-    : '3 questions · live with Shaghalny AI'
-}
+                          <div className="mt-1 text-[11.5px] text-ink-500 dark:text-ink-dark-muted">
+                            {practical
+                              ? '3 questions · includes a short screen demo'
+                              : '3 questions · live with Shaghalny AI'}
                           </div>
                         </div>
 

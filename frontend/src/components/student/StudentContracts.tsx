@@ -60,7 +60,7 @@ const StudentContracts: React.FC = () => {
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-600 dark:text-brand-400">Available balance</p>
               <p className="mt-0.5 text-2xl font-bold tracking-tight text-brand-700 dark:text-brand-300">{formatCurrency(balance)}</p>
-              <p className="text-xs text-brand-500 dark:text-brand-400">Released funds ready for withdrawal</p>
+              <p className="text-xs text-brand-600 dark:text-brand-400">Released funds ready for withdrawal</p>
             </div>
             <Button variant="soft" size="sm" className="w-full sm:ml-auto sm:w-auto" onClick={() => navigate('/student/wallet')}>
               Withdraw <ArrowRight size={13} />

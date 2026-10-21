@@ -94,7 +94,7 @@ const QuickAction = ({
   <button
     type="button"
     onClick={onClick}
-    className="sh-panel flex items-center gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-brand-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+    className="sh-panel flex items-center gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-brand-200 dark:hover:border-brand-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
   >
     <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] ${tone}`}>
       {icon}
@@ -167,10 +167,10 @@ const StudentDashboard: React.FC = () => {
       </motion.section>
 
       <motion.div variants={fadeUp} className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-        <QuickAction title="Browse jobs" meta={`${(jobs || []).length} open`} icon={<Briefcase size={18} />} tone="bg-brand-50 text-brand-500" onClick={() => navigate('/student/jobs')} />
-        <QuickAction title="Edit profile" meta={`${profileLoading ? '...' : completionPct}% complete`} icon={<UserRound size={18} />} tone="bg-amber-50 text-amber-600" onClick={() => navigate('/student/profile')} />
-        <QuickAction title="Verify skills" meta={`${verifiedSkillsCount} verified`} icon={<Mic size={18} />} tone="bg-emerald-50 text-emerald-600" onClick={() => navigate('/student/skill-verification')} />
-        <QuickAction title="Wallet" meta={formatCurrency(balance)} icon={<Wallet size={18} />} tone="bg-sky-50 text-sky-600" onClick={() => navigate('/student/wallet')} />
+        <QuickAction title="Browse jobs" meta={`${(jobs || []).length} open`} icon={<Briefcase size={18} />} tone="bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-300" onClick={() => navigate('/student/jobs')} />
+        <QuickAction title="Edit profile" meta={`${profileLoading ? '...' : completionPct}% complete`} icon={<UserRound size={18} />} tone="bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300" onClick={() => navigate('/student/profile')} />
+        <QuickAction title="Verify skills" meta={`${verifiedSkillsCount} verified`} icon={<Mic size={18} />} tone="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300" onClick={() => navigate('/student/skill-verification')} />
+        <QuickAction title="Wallet" meta={formatCurrency(balance)} icon={<Wallet size={18} />} tone="bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300" onClick={() => navigate('/student/wallet')} />
       </motion.div>
 
       <div className="grid items-start gap-[22px] xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -178,7 +178,7 @@ const StudentDashboard: React.FC = () => {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-semibold text-ink-900 dark:text-white">Recommended for you</h2>
-              <button type="button" onClick={() => navigate('/student/jobs')} className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+              <button type="button" onClick={() => navigate('/student/jobs')} className="text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200">
                 View all <ArrowRight size={13} className="inline" />
               </button>
             </div>
@@ -196,7 +196,7 @@ const StudentDashboard: React.FC = () => {
                       key={job._id || index}
                       type="button"
                       onClick={() => navigate('/student/jobs')}
-                      className="sh-panel flex w-full items-center gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-brand-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                      className="sh-panel flex w-full items-center gap-3 px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-brand-200 dark:hover:border-brand-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                     >
                       <CompanyLogo job={job} className="h-10 w-10 rounded-[11px]" />
                       <span className="min-w-0 flex-1">
@@ -217,7 +217,7 @@ const StudentDashboard: React.FC = () => {
           <section className="sh-panel p-5">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-base font-semibold text-ink-900 dark:text-white">Recent applications</h2>
-              <button type="button" onClick={() => navigate('/student/contracts')} className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+              <button type="button" onClick={() => navigate('/student/contracts')} className="text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200">
                 See all
               </button>
             </div>
@@ -254,9 +254,9 @@ const StudentDashboard: React.FC = () => {
             <div className="flex items-center gap-4">
               <div
                 className="flex h-[70px] w-[70px] shrink-0 items-center justify-center rounded-full"
-                style={{ background: `conic-gradient(#6366f1 ${completionPct}%, #edeef3 0)` }}
+                style={{ background: `conic-gradient(#6366f1 ${completionPct}%, var(--ring-track) 0)` }}
               >
-                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white text-[17px] font-bold text-brand-600 dark:bg-ink-dark-surface">
+                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white text-[17px] font-bold text-brand-600 dark:text-brand-300 dark:bg-ink-dark-surface">
                   {profileLoading ? '...' : `${completionPct}%`}
                 </div>
               </div>
@@ -294,7 +294,7 @@ const StudentDashboard: React.FC = () => {
 
           <section className="sh-panel p-[18px]">
             <div className="flex items-center gap-3">
-              <div className="flex h-[46px] w-[46px] shrink-0 flex-col items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15">
+              <div className="flex h-[46px] w-[46px] shrink-0 flex-col items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:text-brand-300 dark:bg-brand-500/15">
                 <Mic size={18} />
               </div>
               <div className="min-w-0 flex-1">

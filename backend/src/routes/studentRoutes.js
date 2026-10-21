@@ -12,7 +12,7 @@ const {
 } = require('../controllers/studentController');
 const { authenticate } = require('../middleware/auth');
 const { checkRole } = require('../middleware/roleCheck');
-const { upload } = require('../middleware/uploadMiddleware');
+const { upload, imageUpload, handleUpload } = require('../middleware/uploadMiddleware');
 
 router.use(userLimiter);
 
@@ -26,10 +26,10 @@ router.put('/:id/profile', authenticate, checkRole(['Student', 'Admin']), update
 router.post('/:id/upload-cv', authenticate, checkRole(['Student', 'Admin']), upload.single('cv'), uploadStudentCV);
 
 // Route to upload profile photo
-router.post('/:id/upload-photo', authenticate, checkRole(['Student', 'Admin']), upload.single('photo'), uploadStudentPhoto);
+router.post('/:id/upload-photo', authenticate, checkRole(['Student', 'Admin']), handleUpload(imageUpload.single('photo')), uploadStudentPhoto);
 
 // Route to upload profile cover
-router.post('/:id/upload-cover', authenticate, checkRole(['Student', 'Admin']), upload.single('cover'), uploadStudentCover);
+router.post('/:id/upload-cover', authenticate, checkRole(['Student', 'Admin']), handleUpload(imageUpload.single('cover')), uploadStudentCover);
 
 // Route to browse available jobs
 router.get('/jobs', authenticate, checkRole('Student'), browseJobs);

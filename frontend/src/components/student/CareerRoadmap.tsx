@@ -250,7 +250,9 @@ const CareerRoadmap: React.FC = () => {
           </div>
 
           <div className="relative flex flex-col gap-3 lg:flex-row">
-            <Input
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Career goal</span>
+              <Input
               placeholder="e.g. I want to become a Backend Developer"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
@@ -260,8 +262,9 @@ const CareerRoadmap: React.FC = () => {
                 }
               }}
               disabled={isLoading}
-              className="h-12 rounded-xl border-ink-200 bg-white/90 px-4 text-sm shadow-none dark:bg-ink-dark-surface"
+              className="h-12 rounded-xl border-ink-200 bg-white/90 px-4 text-sm shadow-none dark:border-ink-dark-border dark:bg-ink-dark-surface"
             />
+            </label>
 
             <Button
               onClick={generateRoadmap}
@@ -354,7 +357,7 @@ const CareerRoadmap: React.FC = () => {
               const Icon = meta.icon;
 
               return (
-                <Card key={section.title + index} className="interactive-card overflow-hidden border-ink-200/80 p-0">
+                <Card key={section.title + index} className="interactive-card overflow-hidden border-ink-200/80 p-0 dark:border-ink-dark-border">
                   <CardContent className="space-y-4 p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-4">

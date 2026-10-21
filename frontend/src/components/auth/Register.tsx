@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Logo } from '@/components/brand/Logo';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
@@ -69,7 +69,7 @@ const Register: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-ink-50 dark:bg-ink-dark-bg">
       {/* Left: form */}
-      <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
+      <main id="main-content" tabIndex={-1} className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md">
           <div className="mb-6">
             <Link to="/" className="flex items-center text-ink-900 no-underline dark:text-ink-dark-text">
@@ -80,24 +80,24 @@ const Register: React.FC = () => {
           <Card>
             <CardHeader>
               <div className="page-eyebrow mb-1">Create account</div>
-              <CardTitle className="text-2xl">Join Shaghalny</CardTitle>
+              <h1 className="text-2xl font-semibold">Join Shaghalny</h1>
               <CardDescription>
                 Create a student or client account. Your dashboard adapts to your role.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5">
-              <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+              <form className="space-y-3" noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
                 <div className="space-y-1.5">
                   <Label htmlFor="name">Full name</Label>
-                  <Input id="name" placeholder="Full name" {...register('name')} />
-                  {errors.name ? <p className="text-xs text-rose-600 dark:text-rose-400">{errors.name.message}</p> : null}
+                  <Input id="name" autoComplete="name" aria-invalid={!!errors.name} aria-describedby={errors.name ? "name-error" : undefined} placeholder="Full name" {...register('name')} />
+                  {errors.name ? <p id="name-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.name.message}</p> : null}
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="name@example.com" {...register('email')} />
-                  {errors.email ? <p className="text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
+                  <Input id="email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} type="email" placeholder="name@example.com" {...register('email')} />
+                  {errors.email ? <p id="email-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -105,22 +105,23 @@ const Register: React.FC = () => {
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
                       <Input
-                        id="password"
+                        id="password" autoComplete="new-password" aria-invalid={!!errors.password} aria-describedby={errors.password ? "password-error" : undefined}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Choose a password"
-                        className="pr-10"
+                        className="pr-14"
                         {...register('password')}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 dark:text-ink-dark-muted dark:hover:text-white"
+                        className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-600 dark:text-ink-300"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPassword}
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    {errors.password ? <p className="text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
+                    {errors.password ? <p id="password-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
                   </div>
 
                   <div className="space-y-1.5">
@@ -149,11 +150,11 @@ const Register: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
 
       {/* Right: feature panel */}
-      <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-[radial-gradient(circle_at_top,_#eef5ff_0%,_#f6f9ff_45%,_#ffffff_100%)] p-8 text-ink-950 lg:flex dark:bg-ink-950 dark:text-white">
-        <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-500 dark:border-white/20 dark:bg-white/10 dark:text-ink-300">
+      <div className="hidden w-[42%] shrink-0 flex-col justify-between bg-[radial-gradient(circle_at_top,_#eef5ff_0%,_#f6f9ff_45%,_#ffffff_100%)] p-8 text-ink-950 lg:flex dark:bg-none dark:bg-ink-dark-surface dark:text-white">
+        <div className="inline-flex self-start items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-500 dark:border-white/20 dark:bg-white/10 dark:text-ink-300">
           <Sparkles size={12} />
           Why Shaghalny
         </div>

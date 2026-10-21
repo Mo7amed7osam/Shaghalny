@@ -183,7 +183,7 @@ const StudentWallet: React.FC = () => {
             <div className="divide-y divide-ink-100 dark:divide-ink-dark-border">
               {(withdrawals || []).map((w: any) => (
                 <div key={w._id} className="grid gap-3 py-3 sm:grid-cols-[38px_minmax(0,1fr)_auto_auto] sm:items-center">
-                  <div className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] ${w.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-ink-100 text-ink-500 dark:bg-white/[0.055]'}`}>
+                  <div className={`flex h-[38px] w-[38px] items-center justify-center rounded-[10px] ${w.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-ink-100 text-ink-500 dark:bg-white/[0.055]'}`}>
                     {w.status === 'APPROVED' ? <ArrowDown size={17} /> : <ArrowUp size={17} />}
                   </div>
                   <div className="min-w-0">
@@ -209,7 +209,7 @@ const StudentWallet: React.FC = () => {
               <h3 className="text-sm font-semibold text-ink-900 dark:text-white">Payout method</h3>
               <button
                 type="button"
-                className="text-xs font-semibold text-brand-600 transition hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                className="text-xs font-semibold text-brand-600 transition hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                 onClick={handleChangePayoutMethod}
                 disabled={withdrawMutation.isPending}
               >
@@ -226,14 +226,14 @@ const StudentWallet: React.FC = () => {
               </div>
               <Check size={15} className="text-emerald-600" />
             </div>
-            <p className="mt-2.5 text-xs leading-5 text-ink-400">Withdrawals arrive after admin review.</p>
+            <p className="mt-2.5 text-xs leading-5 text-ink-500">Withdrawals arrive after admin review.</p>
           </section>
 
           <section className="sh-panel p-[18px]">
             <h3 className="mb-3 text-sm font-semibold text-ink-900 dark:text-white">This month</h3>
             <div className="space-y-2.5 text-[13px]">
               <div className="flex justify-between"><span className="text-ink-500">Available</span><span className="sh-number">{formatCurrency(balance)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-500">Pending</span><span className="sh-number text-amber-700">{formatCurrency(stats.pending)}</span></div>
+              <div className="flex justify-between"><span className="text-ink-500">Pending</span><span className="sh-number text-amber-700 dark:text-amber-300">{formatCurrency(stats.pending)}</span></div>
               <div className="flex justify-between"><span className="text-ink-500">Withdrawn</span><span className="sh-number">{formatCurrency(stats.lifetimeWithdrawn)}</span></div>
               <div className="h-px bg-ink-100 dark:bg-ink-dark-border" />
               <div className="flex justify-between font-semibold"><span>Net</span><span className="sh-number">{formatCurrency(Math.max(Number(balance) - stats.pending, 0))}</span></div>
@@ -258,7 +258,9 @@ const StudentWallet: React.FC = () => {
               handleSubmit();
             }}
           >
-            <Input
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Amount (EGP)</span>
+              <Input
               type="number"
               min={0}
               placeholder="Amount"
@@ -266,7 +268,10 @@ const StudentWallet: React.FC = () => {
               onChange={(e) => setAmount(e.target.value)}
               disabled={withdrawMutation.isPending}
             />
-            <Select
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Payout method</span>
+              <Select
               ref={payoutMethodRef}
               value={payoutMethod}
               onChange={(e) => setPayoutMethod(e.target.value as 'BANK' | 'INSTAPAY')}
@@ -275,30 +280,40 @@ const StudentWallet: React.FC = () => {
               <option value="BANK">Bank account</option>
               <option value="INSTAPAY">Instapay</option>
             </Select>
+            </label>
 
             {payoutMethod === 'BANK' ? (
+              <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Bank account</span>
               <Input
                 placeholder="Bank account"
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
                 disabled={withdrawMutation.isPending}
               />
+            </label>
             ) : (
+              <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Instapay handle</span>
               <Input
                 placeholder="Instapay handle"
                 value={instapayHandle}
                 onChange={(e) => setInstapayHandle(e.target.value)}
                 disabled={withdrawMutation.isPending}
               />
+            </label>
             )}
 
-            <Textarea
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Optional note</span>
+              <Textarea
               rows={4}
               placeholder="Optional note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               disabled={withdrawMutation.isPending}
             />
+            </label>
 
             <DialogFooter className="pt-1">
               <Button

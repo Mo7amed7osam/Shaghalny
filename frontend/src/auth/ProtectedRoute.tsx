@@ -11,7 +11,7 @@ const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
-    return <div className="p-6 text-ink-500">Loading...</div>;
+    return <main id="main-content" tabIndex={-1} className="p-6 text-ink-500"><p role="status">Loading...</p></main>;
   }
 
   if (!isAuthenticated) {

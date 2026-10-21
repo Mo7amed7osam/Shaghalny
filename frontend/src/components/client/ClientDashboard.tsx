@@ -68,7 +68,7 @@ const StatItem: React.FC<{
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500 dark:text-ink-400">{label}</p>
         <p className={`mt-1 text-2xl font-bold tracking-tight ${accent ? 'text-brand-700 dark:text-brand-300' : 'text-ink-900 dark:text-white'}`}>{value}</p>
-        {sub && <p className="mt-0.5 text-xs text-ink-400 dark:text-ink-500">{sub}</p>}
+        {sub && <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-dark-muted">{sub}</p>}
       </div>
     </Card>
   </motion.div>

@@ -33,7 +33,7 @@ export const CameraRecorder: React.FC<CameraRecorderProps> = ({
   return (
     <div className={cn('pointer-events-none w-full max-w-[15rem] rounded-[1.6rem] border border-white/10 bg-black/60 p-2.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl', className)}>
       <div className="overflow-hidden rounded-[1.15rem] border border-white/10 bg-black">
-        <video ref={previewRef} className="aspect-[4/5] w-full object-cover" autoPlay playsInline muted />
+        <video aria-label="Your camera preview (muted)" ref={previewRef} className="aspect-[4/5] w-full object-cover" autoPlay playsInline muted />
       </div>
 
       <div className="space-y-2 px-1.5 pb-1 pt-3">
@@ -46,7 +46,7 @@ export const CameraRecorder: React.FC<CameraRecorderProps> = ({
         </div>
 
         <p className="text-xs leading-5 text-white/70">{statusText || 'Camera stays live during the interview.'}</p>
-        {error ? <p className="rounded-2xl border border-rose-300/15 bg-rose-500/10 px-2.5 py-2 text-[11px] text-rose-200">{error}</p> : null}
+        {error ? <p role="alert" className="rounded-2xl border border-rose-300/15 bg-rose-500/10 px-2.5 py-2 text-[11px] text-rose-200">{error}</p> : null}
       </div>
     </div>
   );

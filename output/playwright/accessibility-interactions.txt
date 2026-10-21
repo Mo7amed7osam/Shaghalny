@@ -1,0 +1,83 @@
+### Result
+[{"name":"Skip link is first keyboard stop","passed":true},{"name":"Skip link focuses main","passed":true},{"name":"Route change focuses main","passed":true},{"name":"Route title updated","passed":true},{"name":"Invalid field receives focus","passed":true},{"name":"Registration errors linked to every invalid field","passed":true,"details":[{"id":"name","description":"Name is required"},{"id":"email","description":"Enter a valid email"},{"id":"password","description":"Password must be at least 6 characters"}]},{"name":"Password reveal exposes state","passed":true},{"name":"320px document reflow /","passed":true},{"name":"320px document reflow /login","passed":true},{"name":"320px document reflow /register","passed":true},{"name":"Drawer traps focus, Tab 0","passed":true},{"name":"Drawer traps focus, Tab 1","passed":true},{"name":"Drawer traps focus, Tab 2","passed":true},{"name":"Drawer traps focus, Tab 3","passed":true},{"name":"Drawer traps focus, Tab 4","passed":true},{"name":"Drawer traps focus, Tab 5","passed":true},{"name":"Drawer traps focus, Tab 6","passed":true},{"name":"Drawer traps focus, Tab 7","passed":true},{"name":"Drawer traps focus, Tab 8","passed":true},{"name":"Drawer traps focus, Tab 9","passed":true},{"name":"Drawer traps focus, Tab 10","passed":true},{"name":"Drawer traps focus, Tab 11","passed":true},{"name":"Drawer traps focus, Tab 12","passed":true},{"name":"Drawer traps focus, Tab 13","passed":true},{"name":"Drawer traps focus, Tab 14","passed":true},{"name":"Drawer restores focus","passed":true},{"name":"Notifications expose expanded state","passed":true},{"name":"Notifications close and restore focus","passed":true},{"name":"Drawer navigation focuses destination main","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 0","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 1","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 2","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 3","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 4","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 5","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 6","passed":true},{"name":"Withdrawal traps reverse focus, Shift+Tab 7","passed":true},{"name":"Reduced motion disables smooth scrolling","passed":true}]
+### Ran Playwright code
+```js
+await (async (page) => {
+ const checks=[];
+ const check=(name,passed,details)=>{checks.push({name,passed,details});if(!passed)throw new Error(name+': '+JSON.stringify(details));};
+ await page.unroute('**/api/**');
+ await page.evaluate(()=>localStorage.removeItem('token'));
+ await page.goto('http://127.0.0.1:5173/login');
+ await page.keyboard.press('Tab');
+ check('Skip link is first keyboard stop',await page.getByRole('link',{name:'Skip to main content'}).evaluate(el=>el===document.activeElement));
+ await page.keyboard.press('Enter');
+ check('Skip link focuses main',await page.locator('#main-content').evaluate(el=>el===document.activeElement));
+ await page.getByRole('link',{name:'Create an account'}).click();
+ await page.waitForURL('**/register');
+ await page.waitForTimeout(150);
+ check('Route change focuses main',await page.locator('#main-content').evaluate(el=>el===document.activeElement));
+ check('Route title updated',(await page.title())==='Create account | Shaghalny');
+ await page.getByRole('button',{name:'Create account',exact:true}).click();
+ await page.getByText('Name is required',{exact:true}).waitFor();
+ check('Invalid field receives focus',await page.getByLabel('Full name',{exact:true}).evaluate(el=>el===document.activeElement));
+ const errors=await page.locator('input[aria-invalid=true]').evaluateAll(els=>els.map(el=>({id:el.id,description:document.getElementById(el.getAttribute('aria-describedby'))?.textContent})));
+ check('Registration errors linked to every invalid field',errors.length===3&&errors.every(e=>e.description),errors);
+ await page.getByRole('button',{name:'Show password',exact:true}).click();
+ check('Password reveal exposes state',(await page.getByRole('button',{name:'Hide password',exact:true}).getAttribute('aria-pressed'))==='true');
+ for(const path of ['/','/login','/register']){
+  await page.setViewportSize({width:320,height:800});
+  await page.goto('http://127.0.0.1:5173'+path);
+  check('320px document reflow '+path,await page.evaluate(()=>document.documentElement.scrollWidth<=320));
+ }
+ await page.route('**/api/**',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(!path.startsWith('/api/'))return route.continue();
+  const data=path.endsWith('/auth/me')?{user:{_id:'a11y-test',name:'Accessibility Test',email:'test@example.com',role:'Student'}}:path.includes('/notifications')?{notifications:[{_id:'notice',title:'Test event',message:'Event reminder',isRead:false,createdAt:'2026-10-21T12:00:00Z',eventId:'test-event'}],unreadCount:1}:[];
+  await route.fulfill({json:data});
+ });
+ await page.evaluate(()=>localStorage.setItem('token','local-a11y-fixture'));
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('http://127.0.0.1:5173/student/jobs');
+ const trigger=page.getByRole('button',{name:'Open navigation menu',exact:true});
+ await trigger.click();
+ const dialog=page.getByRole('dialog',{name:'Navigation menu'});
+ await dialog.waitFor();
+ for(let i=0;i<15;i++){
+  await page.keyboard.press('Tab');
+  check('Drawer traps focus, Tab '+i,await dialog.evaluate(el=>el.contains(document.activeElement)));
+ }
+ await page.keyboard.press('Escape');
+ await dialog.waitFor({state:'hidden'});
+ check('Drawer restores focus',await trigger.evaluate(el=>el===document.activeElement));
+ await page.getByRole('button',{name:'Notifications, 1 unread'}).click();
+ check('Notifications expose expanded state',(await page.getByRole('button',{name:'Notifications, 1 unread'}).getAttribute('aria-expanded'))==='true');
+ await page.getByRole('link',{name:'Test event'}).focus();
+ await page.keyboard.press('Escape');
+ check('Notifications close and restore focus',await page.getByRole('button',{name:'Notifications, 1 unread'}).evaluate(el=>el===document.activeElement&&el.getAttribute('aria-expanded')==='false'));
+ await trigger.click();
+ await page.getByRole('dialog',{name:'Navigation menu'}).getByRole('link',{name:'Wallet',exact:true}).click();
+ await page.waitForURL('**/student/wallet');
+ await page.waitForTimeout(500);
+ check('Drawer navigation focuses destination main',await page.locator('#main-content').evaluate(el=>el===document.activeElement));
+ await page.getByRole('button',{name:'Withdraw funds',exact:true}).click();
+ const withdrawal=page.getByRole('dialog',{name:'Withdraw funds',exact:true});
+ await withdrawal.waitFor();
+ for(let i=0;i<8;i++){
+  await page.keyboard.press('Shift+Tab');
+  check('Withdrawal traps reverse focus, Shift+Tab '+i,await withdrawal.evaluate(el=>el.contains(document.activeElement)));
+ }
+ await page.keyboard.press('Escape');
+ await withdrawal.waitFor({state:'hidden'});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ check('Reduced motion disables smooth scrolling',await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior==='auto'));
+ await page.screenshot({path:'output/playwright/accessibility-mobile.png',fullPage:true});
+ return checks;
+}
+)(page);
+```
+### Page
+- Page URL: http://127.0.0.1:5173/student/wallet
+- Page Title: Student wallet | Shaghalny
+- Console: 0 errors, 3 warnings
+### Events
+- New console entries: .playwright-cli/console-2026-10-21T19-57-46-737Z.log#L403-L425

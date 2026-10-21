@@ -1,0 +1,41 @@
+### Result
+[{"role":"Student","theme":"light","path":"/student/jobs","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"light","path":"/student/wallet","violations":[],"incomplete":["aria-hidden-focus","color-contrast"]},{"role":"Student","theme":"light","path":"/student/career-roadmap","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"light","path":"/student/contracts","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"light","path":"/events","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"light","path":"/client/post-job","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"light","path":"/client/wallet","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"light","path":"/client/view-proposals","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"light","path":"/admin/dashboard","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"light","path":"/admin/payments","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"light","path":"/admin/events","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"dark","path":"/student/jobs","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"dark","path":"/student/wallet","violations":[],"incomplete":["aria-hidden-focus","color-contrast"]},{"role":"Student","theme":"dark","path":"/student/career-roadmap","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"dark","path":"/student/contracts","violations":[],"incomplete":["color-contrast"]},{"role":"Student","theme":"dark","path":"/events","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"dark","path":"/client/post-job","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"dark","path":"/client/wallet","violations":[],"incomplete":["color-contrast"]},{"role":"Client","theme":"dark","path":"/client/view-proposals","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"dark","path":"/admin/dashboard","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"dark","path":"/admin/payments","violations":[],"incomplete":["color-contrast"]},{"role":"Admin","theme":"dark","path":"/admin/events","violations":[],"incomplete":["color-contrast"]}]
+### Ran Playwright code
+```js
+await (async (page) => {
+ const results=[];
+ let role='Student';
+ await page.route('**/api/**',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(!path.startsWith('/api/'))return route.continue();
+  let data=[];
+  if(path.endsWith('/auth/me'))data={user:{_id:'a11y-test',name:'Accessibility Test',email:'test@example.com',role}};
+  else if(path.includes('/notifications'))data={notifications:[{_id:'notice',title:'Test event',message:'Event reminder',isRead:false,createdAt:'2026-10-21T12:00:00Z',eventId:'test-event'}],unreadCount:1};
+  else if(path.includes('/balance'))data={balance:1000};
+  else if(path.includes('/profile'))data={_id:'a11y-test',name:'Accessibility Test',email:'test@example.com',skills:[],portfolioLinks:[],completedInterviews:[]};
+  await route.fulfill({json:data});
+ });
+ await page.evaluate(()=>localStorage.setItem('token','local-a11y-fixture'));
+ await page.setViewportSize({width:1280,height:900});
+ await page.emulateMedia({reducedMotion:'reduce'});
+ const paths={Student:['/student/jobs','/student/wallet','/student/career-roadmap','/student/contracts','/events'],Client:['/client/post-job','/client/wallet','/client/view-proposals'],Admin:['/admin/dashboard','/admin/payments','/admin/events']};
+ for(const theme of ['light','dark'])for(const [nextRole,routes] of Object.entries(paths)){
+  role=nextRole;
+  for(const path of routes){
+   await page.goto('http://127.0.0.1:5173'+path);
+   await page.getByRole('heading',{level:1}).first().waitFor({timeout:10000});
+   await page.evaluate(theme=>{document.documentElement.classList.toggle('dark',theme==='dark');localStorage.setItem('theme',theme);},theme);
+   if(path==='/student/wallet')await page.getByRole('button',{name:'Withdraw funds',exact:true}).click();
+   if(path==='/admin/events')await page.getByRole('button',{name:'Add Event'}).click();
+   await page.waitForTimeout(700);
+   await page.addScriptTag({path:'/tmp/shaghalny-axe.min.js'});
+   const r=await page.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),incomplete:r.incomplete.map(v=>v.id)};});
+   results.push({role,theme,path,...r});
+  }
+ }
+ return results;
+}
+)(page);
+```
+### Events
+- New console entries: .playwright-cli/console-2026-10-21T19-57-46-737Z.log#L190-L341

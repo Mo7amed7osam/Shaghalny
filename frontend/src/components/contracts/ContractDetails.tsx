@@ -243,20 +243,26 @@ const ContractDetails: React.FC = () => {
         <Card>
           <CardContent className="space-y-3 p-4">
             <h2 className="text-xl font-semibold">Deliver work</h2>
-            <Textarea
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Delivery message</span>
+              <Textarea
               rows={4}
               placeholder="Describe the delivery and anything the client should review."
               value={submissionMessage}
               onChange={(e) => setSubmissionMessage(e.target.value)}
               disabled={submitMutation.isPending}
             />
-            <Textarea
+            </label>
+            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Links (one per line)</span>
+              <Textarea
               rows={3}
               placeholder="Links (one per line)"
               value={submissionLinks}
               onChange={(e) => setSubmissionLinks(e.target.value)}
               disabled={submitMutation.isPending}
             />
+            </label>
             <Button
               type="button"
               disabled={submitMutation.isPending || !submissionMessage.trim()}
@@ -293,8 +299,8 @@ const ContractDetails: React.FC = () => {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Rating (1–5)</label>
-                <Input
+                <label htmlFor="contractdetails-rating-1-5" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Rating (1–5)</label>
+                <Input id="contractdetails-rating-1-5"
                   placeholder="e.g. 4"
                   type="number"
                   min={1}
@@ -306,8 +312,8 @@ const ContractDetails: React.FC = () => {
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Feedback</label>
-              <Textarea
+              <label htmlFor="contractdetails-feedback" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Feedback</label>
+              <Textarea id="contractdetails-feedback"
                 rows={3}
                 placeholder="Share your honest feedback about the student's work and professionalism."
                 value={reviewComment}

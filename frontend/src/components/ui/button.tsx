@@ -8,13 +8,13 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-brand-500 text-white shadow-[0_4px_12px_-4px_rgba(99,102,241,0.55)] hover:bg-brand-600 hover:shadow-[0_8px_18px_-8px_rgba(99,102,241,0.7)] dark:bg-brand-500 dark:hover:bg-brand-600',
+          'bg-brand-600 text-white shadow-[0_4px_12px_-4px_rgba(99,102,241,0.55)] hover:bg-brand-600 hover:shadow-[0_8px_18px_-8px_rgba(99,102,241,0.7)] dark:bg-brand-600 dark:hover:bg-brand-700',
         primary:
-          'bg-brand-500 text-white shadow-[0_4px_12px_-4px_rgba(99,102,241,0.55)] hover:bg-brand-600',
+          'bg-brand-600 text-white shadow-[0_4px_12px_-4px_rgba(99,102,241,0.55)] hover:bg-brand-600',
         secondary:
           'bg-ink-900 text-white shadow-soft hover:bg-ink-800 dark:border dark:border-white/10 dark:bg-white/10 dark:text-ink-dark-text dark:hover:bg-white/15',
         soft:
-          'border border-brand-100 bg-brand-50 text-brand-600 hover:border-brand-200 hover:bg-brand-100 dark:border-brand-500/25 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/20',
+          'border border-brand-100 bg-brand-50 text-brand-600 hover:border-brand-200 dark:hover:border-brand-500/40 hover:bg-brand-100 dark:border-brand-500/25 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/20',
         outline:
           'border border-ink-200 bg-white text-ink-700 shadow-soft hover:border-brand-200 hover:text-ink-900 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-200 dark:hover:border-brand-500/35 dark:hover:bg-white/[0.1]',
         ghost:

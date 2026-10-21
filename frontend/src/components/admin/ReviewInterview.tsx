@@ -189,13 +189,13 @@ const ReviewInterview: React.FC = () => {
       <Card>
         <CardContent className="grid gap-4 p-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Score (0-100)</label>
-            <Input type="number" min="0" max="100" value={score} onChange={(e) => setScore(e.target.value)} />
+            <label htmlFor="reviewinterview-score-0-100" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Score (0-100)</label>
+            <Input id="reviewinterview-score-0-100" type="number" min="0" max="100" value={score} onChange={(e) => setScore(e.target.value)} />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Decision</label>
-            <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <label htmlFor="reviewinterview-decision" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Decision</label>
+            <Select id="reviewinterview-decision" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="pass">Approve (Pass)</option>
               <option value="fail">Reject (Fail)</option>
             </Select>

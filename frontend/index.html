@@ -1,8 +1,13 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
+  <script>
+    try {
+      if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    } catch (e) {}
+  </script>
 
   <link rel="icon" type="image/svg+xml" href="/brand-icon.svg" />
   <link rel="alternate icon" type="image/png" href="/favicon.png" />

@@ -614,7 +614,7 @@ const AIInterviewPage: React.FC = () => {
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/45">
                 Question {nextQuestion.order}
               </p>
-              <h1 className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
+              <h1 aria-live="polite" aria-atomic="true" className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
                 {nextQuestion.text}
               </h1>
 
@@ -627,7 +627,7 @@ const AIInterviewPage: React.FC = () => {
               </div>
 
               <div className="mt-6 space-y-2">
-                <p className="text-sm font-medium text-white/85">{statusText}</p>
+                <p role="status" className="text-sm font-medium text-white/85">{statusText}</p>
                 {speechBlocked ? (
                   <p className="text-xs text-amber-200">
                     Voice playback failed. Gravis switched to text and recording may continue.

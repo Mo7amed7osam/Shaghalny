@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Logo } from '@/components/brand/Logo';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -67,9 +67,9 @@ const Login: React.FC = () => {
               <Sparkles size={12} />
               Student marketplace
             </div>
-            <h1 className="text-balance text-3xl font-semibold text-white">
+            <h2 className="text-balance text-3xl font-semibold text-white">
               Freelancing infrastructure built for students.
-            </h1>
+            </h2>
             <p className="text-sm leading-6 text-brand-100">
               Manage proposals, verified interviews, contracts, and hiring workflows from one workspace.
             </p>
@@ -89,7 +89,7 @@ const Login: React.FC = () => {
       </div>
 
       {/* Right: form */}
-      <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
+      <main id="main-content" tabIndex={-1} className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md">
           <div className="mb-6 lg:hidden">
             <Link to="/" className="flex items-center text-ink-900 no-underline dark:text-ink-dark-text" aria-label="Shaghalny home">
@@ -100,42 +100,43 @@ const Login: React.FC = () => {
           <Card className="border-white/80 bg-white/90 shadow-elevated">
             <CardHeader>
               <div className="page-eyebrow mb-1">Sign in</div>
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
+              <h1 className="text-2xl font-semibold">Welcome back</h1>
               <CardDescription>
                 Access your proposals, interviews, and contracts.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-5">
-              <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              <form className="space-y-4" noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" aria-invalid={!!errors.email} {...register('email')} />
-                  {errors.email ? <p className="text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
+                  <Input id="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} type="email" placeholder="you@example.com" autoComplete="email"  {...register('email')} />
+                  {errors.email ? <p id="email-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Input
-                      id="password"
+                      id="password" aria-invalid={!!errors.password} aria-describedby={errors.password ? "password-error" : undefined}
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
-                      className="pr-10"
+                      className="pr-14"
                       autoComplete="current-password"
-                      aria-invalid={!!errors.password}
+
                       {...register('password')}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-ink-dark-muted dark:hover:bg-white/10 dark:hover:text-white"
+                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-600 dark:text-ink-300"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPassword}
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
-                  {errors.password ? <p className="text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
+                  {errors.password ? <p id="password-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
                 </div>
 
                 <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
@@ -156,7 +157,7 @@ const Login: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

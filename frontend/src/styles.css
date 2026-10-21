@@ -7,10 +7,12 @@
 @layer base {
   :root {
     color-scheme: light;
+    --ring-track: #edeef3;
   }
 
   .dark {
     color-scheme: dark;
+    --ring-track: #282830;
   }
 
   * {
@@ -34,17 +36,40 @@
       linear-gradient(180deg, rgba(20, 20, 25, 0.88), rgba(10, 10, 14, 0) 18rem);
   }
 
+  /* Element defaults stay at element-level specificity (via :where) so their
+     dark/hover variants never outrank utility classes, e.g. a Button rendered
+     as <Link className="text-white"> or <p className="text-white"> on a brand panel. */
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight text-ink-900 dark:text-ink-dark-text;
+    @apply tracking-tight text-ink-900;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   p {
-    @apply leading-7 text-ink-600 dark:text-ink-400;
+    @apply leading-7 text-ink-600;
   }
 
   a {
-    @apply text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300;
+    @apply text-brand-600 transition-colors;
+  }
+
+  a:where(:hover) {
+    @apply text-brand-700;
+  }
+
+  :where(.dark) :is(h1, h2, h3, h4, h5, h6) {
+    @apply text-ink-dark-text;
+  }
+
+  :where(.dark) p {
+    @apply text-ink-400;
+  }
+
+  :where(.dark) a {
+    @apply text-brand-400;
+  }
+
+  :where(.dark) a:where(:hover) {
+    @apply text-brand-300;
   }
 
   button, [role='button'] {
@@ -170,6 +195,47 @@
   }
 }
 
+/* Recharts sets inline/attribute colors tuned for light backgrounds */
+.dark .recharts-default-tooltip {
+  background-color: #141419 !important;
+  border-color: #282830 !important;
+  border-radius: 0.75rem;
+  color: #f3f3f6;
+}
+.dark .recharts-tooltip-item,
+.dark .recharts-tooltip-label {
+  color: #f3f3f6 !important;
+}
+.dark .recharts-tooltip-cursor {
+  fill: rgba(255, 255, 255, 0.06);
+}
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #82828e;
+}
+.dark .recharts-pie-sector path {
+  stroke: #141419;
+}
+
+/* react-day-picker: brand accent + undo the global dark border color on day cells */
+.rdp-root {
+  --rdp-accent-color: #4f46e5;
+  --rdp-accent-background-color: #eef0ff;
+}
+.dark .rdp-root {
+  --rdp-accent-color: #818cf8;
+  --rdp-accent-background-color: rgba(99, 102, 241, 0.18);
+}
+.rdp-root .rdp-day_button {
+  border-color: transparent;
+}
+.rdp-root .rdp-selected .rdp-day_button {
+  border-color: var(--rdp-accent-color);
+}
+.dark .rdp-root .rdp-range_start .rdp-day_button,
+.dark .rdp-root .rdp-range_end .rdp-day_button {
+  color: #fff;
+}
+
 @keyframes waveform {
   0%, 100% { transform: scaleY(0.35); }
   50% { transform: scaleY(1); }
@@ -193,4 +259,47 @@
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* Accessibility: keyboard focus, sticky navigation clearance, motion preferences. */
+:root { --focus-color: #4338ca; }
+.dark { --focus-color: #a5b4fc; }
+:focus-visible {
+  outline: 3px solid var(--focus-color) !important;
+  outline-offset: 3px !important;
+}
+:where(a, button, input, select, textarea, [tabindex]) {
+  scroll-margin-block: 6rem 9rem;
+}
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10000;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #312e81;
+  font-weight: 700;
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight !important; }
+  button, input, select, textarea { border: 1px solid ButtonText; }
+}
+
+@layer utilities {
+  /* Muted copy remains readable when a component inherits its dark surface. */
+  :where(.dark) .text-ink-500 { color: theme('colors.ink.dark.muted'); }
 }

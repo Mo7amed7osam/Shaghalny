@@ -110,11 +110,14 @@ const AdminPayments: React.FC = () => {
           Withdrawals
         </Button>
         <div className="ml-auto w-full sm:w-52">
-          <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Payment status</span>
+              <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="DECLINED">Declined</option>
           </Select>
+            </label>
         </div>
       </div>
 
@@ -170,12 +173,15 @@ const AdminPayments: React.FC = () => {
                               </Button>
                             </div>
 
-                            <Textarea
+                            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Decline reason</span>
+              <Textarea
                               rows={2}
                               placeholder="Decline reason"
                               value={declineReasons[item._id] || ''}
                               onChange={(e) => setDeclineReasons((prev) => ({ ...prev, [item._id]: e.target.value }))}
                             />
+            </label>
 
                             <Button
                               size="sm"

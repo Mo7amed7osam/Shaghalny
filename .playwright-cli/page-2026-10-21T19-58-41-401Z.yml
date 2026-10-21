@@ -1,0 +1,179 @@
+- generic [ref=f2e2]:
+  - link "Skip to main content" [ref=f2e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f2e4]:
+    - banner [ref=f2e5]:
+      - generic [ref=f2e6]:
+        - link "shaghalny" [ref=f2e7] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f2e14]:
+          - button "Toggle theme" [ref=f2e15] [cursor=pointer]
+          - link "Sign in" [ref=f2e18] [cursor=pointer]:
+            - /url: /login
+          - link "Create account" [ref=f2e19] [cursor=pointer]:
+            - /url: /register
+    - main [ref=f2e20]:
+      - generic [ref=f2e23]:
+        - generic [ref=f2e24]:
+          - generic [ref=f2e25]: Student freelancing marketplace
+          - heading "Hire verified student talent. Without the trust gap." [level=1] [ref=f2e28]
+          - paragraph [ref=f2e29]: Shaghalny connects clients with early-career freelancers who have completed structured AI interviews. Real verification, clean workflows, one platform.
+          - generic [ref=f2e30]:
+            - link "Create account" [ref=f2e32] [cursor=pointer]:
+              - /url: /register
+            - link "Sign in" [ref=f2e36] [cursor=pointer]:
+              - /url: /login
+          - generic [ref=f2e37]:
+            - generic [ref=f2e38]: AI-verified profiles
+            - generic [ref=f2e42]: Structured contracts
+            - generic [ref=f2e46]: One platform, end-to-end
+        - generic [ref=f2e51]:
+          - generic [ref=f2e52]: shaghalny.app
+          - generic [ref=f2e58]:
+            - generic [ref=f2e59]:
+              - generic [ref=f2e60]: Student Profile
+              - generic [ref=f2e63]:
+                - generic [ref=f2e64]: VS
+                - generic [ref=f2e66]:
+                  - generic [ref=f2e67]:
+                    - generic [ref=f2e68]: Verified student
+                    - generic [ref=f2e69]: Verified
+                  - paragraph [ref=f2e73]: React Developer · Score 94/100
+                - generic [ref=f2e74]: "4.9"
+            - generic [ref=f2e78]:
+              - generic [ref=f2e79]: Job Post
+              - generic [ref=f2e82]:
+                - paragraph [ref=f2e83]: Build e-commerce landing page
+                - generic [ref=f2e84]:
+                  - generic [ref=f2e85]: 300 EGP budget
+                  - generic [ref=f2e89]: Posted 2h ago
+                - generic [ref=f2e93]: React · Tailwind · TypeScript
+            - generic [ref=f2e94]:
+              - generic [ref=f2e95]: Proposal
+              - generic [ref=f2e98]:
+                - generic [ref=f2e99]:
+                  - paragraph [ref=f2e100]: Proposal received
+                  - generic [ref=f2e101]: New
+                - paragraph [ref=f2e102]: "\"I can deliver in 5 days with full responsive design.\""
+                - generic [ref=f2e103]:
+                  - generic [ref=f2e104]: 280 EGP
+                  - generic [ref=f2e105]: · 5 day delivery
+            - generic [ref=f2e106]:
+              - generic [ref=f2e107]: AI Verified
+              - generic [ref=f2e110]:
+                - paragraph [ref=f2e114]: Shaghalny AI — Interview Complete
+                - generic [ref=f2e115]:
+                  - generic [ref=f2e116]:
+                    - paragraph [ref=f2e117]: React
+                    - paragraph [ref=f2e118]: 94/100
+                  - generic [ref=f2e119]:
+                    - paragraph [ref=f2e120]: CSS
+                    - paragraph [ref=f2e121]: 88/100
+            - generic [ref=f2e122]:
+              - generic [ref=f2e123]: Contract
+              - generic [ref=f2e126]:
+                - generic [ref=f2e131]:
+                  - paragraph [ref=f2e132]: Contract Active
+                  - paragraph [ref=f2e133]: 280 EGP in escrow · Day 2 of 5
+                - generic [ref=f2e134]: Live
+      - generic [ref=f2e136]:
+        - generic [ref=f2e137]:
+          - paragraph [ref=f2e138]: Platform
+          - heading "What makes Shaghalny different" [level=2] [ref=f2e139]
+        - generic [ref=f2e140]:
+          - generic [ref=f2e141]:
+            - heading "Built for student talent" [level=3] [ref=f2e146]
+            - paragraph [ref=f2e147]: "A marketplace where early-career work gets structure: verified profiles, clear proposals, and contracts that hold."
+          - generic [ref=f2e148]:
+            - heading "AI verification with Shaghalny AI" [level=3] [ref=f2e153]
+            - paragraph [ref=f2e154]: Students complete structured interviews before proposals move forward. Clients see evidence, not claims.
+          - generic [ref=f2e155]:
+            - heading "End-to-end workflow" [level=3] [ref=f2e159]
+            - paragraph [ref=f2e160]: Jobs, proposals, contracts, and wallet top-ups stay connected. Nothing lives in a separate tool.
+      - generic [ref=f2e162]:
+        - generic [ref=f2e163]:
+          - paragraph [ref=f2e164]: For every role
+          - heading "One platform, two sides of hiring" [level=2] [ref=f2e165]
+        - generic [ref=f2e166]:
+          - generic [ref=f2e167]:
+            - generic [ref=f2e173]:
+              - paragraph [ref=f2e174]: Students
+              - heading "Turn coursework into paid work." [level=3] [ref=f2e175]
+              - paragraph [ref=f2e176]: Build a verifiable profile, pass a structured AI interview, and apply to jobs with a proposal that stands on evidence.
+            - link "Create student account" [ref=f2e177] [cursor=pointer]:
+              - /url: /register
+          - generic [ref=f2e178]:
+            - generic [ref=f2e185]:
+              - paragraph [ref=f2e186]: Clients
+              - heading "Hire with fewer trust gaps." [level=3] [ref=f2e187]
+              - paragraph [ref=f2e188]: Post roles, review proposals ranked by verified skill scores, and move straight to contracts without the usual back-and-forth.
+            - link "Post your first job" [ref=f2e189] [cursor=pointer]:
+              - /url: /register
+        - generic [ref=f2e196]:
+          - paragraph [ref=f2e197]: Admins
+          - heading "Manage the whole marketplace from one control center." [level=3] [ref=f2e198]
+          - paragraph [ref=f2e199]: Review payment approvals, manage events, and oversee verification status without switching tools.
+      - generic [ref=f2e201]:
+        - generic [ref=f2e202]:
+          - paragraph [ref=f2e203]: How it works
+          - heading "Structured hiring, start to finish." [level=2] [ref=f2e204]
+        - generic [ref=f2e205]:
+          - generic [ref=f2e206]:
+            - paragraph [ref=f2e208]: "01"
+            - heading "Create a profile" [level=3] [ref=f2e213]
+            - paragraph [ref=f2e214]: Students list their skills, experience, and portfolio. Clients set up their hiring workspace.
+          - generic [ref=f2e215]:
+            - paragraph [ref=f2e217]: "02"
+            - heading "Verify capability" [level=3] [ref=f2e222]
+            - paragraph [ref=f2e223]: Shaghalny AI runs a structured AI interview. Scores are attached to the profile before any proposal is sent.
+          - generic [ref=f2e224]:
+            - paragraph [ref=f2e226]: "03"
+            - heading "Review and shortlist" [level=3] [ref=f2e230]
+            - paragraph [ref=f2e231]: Clients compare budgets, verified skill data, and proposal history in one view.
+          - generic [ref=f2e232]:
+            - paragraph [ref=f2e234]: "04"
+            - heading "Close confidently" [level=3] [ref=f2e239]
+            - paragraph [ref=f2e240]: Contracts and wallet flows carry the deal through delivery without leaving the platform.
+      - generic [ref=f2e243]:
+        - generic [ref=f2e244]:
+          - generic [ref=f2e245]: Shaghalny AI verification
+          - heading "Skills that are proven, not promised." [level=2] [ref=f2e249]
+          - paragraph [ref=f2e250]: Every student on Shaghalny has completed a structured AI interview with Shaghalny AI before their proposals reach clients. No unverified claims, no noise in your candidate shortlist.
+          - generic [ref=f2e251]:
+            - generic [ref=f2e252]: Structured question sets per skill
+            - generic [ref=f2e257]: Scores attached to the profile
+            - generic [ref=f2e262]: Visible before clients review proposals
+        - generic [ref=f2e268]:
+          - generic [ref=f2e273]:
+            - paragraph [ref=f2e274]: Shaghalny AI Score
+            - paragraph [ref=f2e275]: AI-powered assessment
+          - generic [ref=f2e277]:
+            - generic [ref=f2e278]: React.js
+            - generic [ref=f2e279]: "94"
+          - generic [ref=f2e282]:
+            - generic [ref=f2e283]: TypeScript
+            - generic [ref=f2e284]: "88"
+          - generic [ref=f2e287]:
+            - generic [ref=f2e288]: CSS / Tailwind
+            - generic [ref=f2e289]: "91"
+          - generic [ref=f2e291]: Verified — Ready to hire
+      - generic [ref=f2e298]:
+        - generic [ref=f2e299]:
+          - heading "Ready to get started?" [level=2] [ref=f2e300]
+          - paragraph [ref=f2e301]: Join students and clients already using Shaghalny for verified, structured freelancing.
+        - generic [ref=f2e302]:
+          - link "Create account" [ref=f2e304] [cursor=pointer]:
+            - /url: /register
+          - link "Sign in" [ref=f2e307] [cursor=pointer]:
+            - /url: /login
+    - contentinfo [ref=f2e308]:
+      - generic [ref=f2e309]:
+        - generic [ref=f2e310]:
+          - generic [ref=f2e311]: shaghalny
+          - paragraph [ref=f2e317]: © 2026 Verified student talent.
+        - generic [ref=f2e318]:
+          - link "Sign in" [ref=f2e319] [cursor=pointer]:
+            - /url: /login
+          - link "Create account" [ref=f2e320] [cursor=pointer]:
+            - /url: /register
+  - region "Notifications alt+T"

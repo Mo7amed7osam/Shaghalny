@@ -232,38 +232,38 @@ const PostJob: React.FC = () => {
                 </div>
               ) : null}
               <div className="space-y-2">
-                                <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Internship title' : 'Job title'}</label>
-                <Input placeholder="UI designer for a student marketplace redesign" {...register('title')} />
-                {errors.title ? <p className="text-sm text-rose-600 dark:text-rose-300">{errors.title.message}</p> : null}
+                <label htmlFor="postjob-job-title" className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Internship title' : 'Job title'}</label>
+                <Input id="postjob-job-title" placeholder="UI designer for a student marketplace redesign" aria-invalid={!!errors.title} aria-describedby={errors.title ? "job-title-error" : undefined} {...register('title')} />
+                {errors.title ? <p id="job-title-error" role="alert" className="text-sm text-rose-600 dark:text-rose-300">{errors.title.message}</p> : null}
               </div>
 
               <div className="space-y-2">
-                                <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Internship description' : 'Project description'}</label>
-                <Textarea rows={6} placeholder="Describe the scope, deliverables, goals, and what a great outcome looks like." {...register('description')} />
-                {errors.description ? <p className="text-sm text-rose-600 dark:text-rose-300">{errors.description.message}</p> : null}
+                <label htmlFor="postjob-project-description" className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Internship description' : 'Project description'}</label>
+                <Textarea id="postjob-project-description" rows={6} placeholder="Describe the scope, deliverables, goals, and what a great outcome looks like." aria-invalid={!!errors.description} aria-describedby={errors.description ? "job-description-error" : undefined} {...register('description')} />
+                {errors.description ? <p id="job-description-error" role="alert" className="text-sm text-rose-600 dark:text-rose-300">{errors.description.message}</p> : null}
               </div>
 
-                            <div className="grid gap-4 md:grid-cols-3">
-               {!(isInternship && isUnpaid) ? (
+              <div className="grid gap-4 md:grid-cols-3">
+                {!(isInternship && isUnpaid) ? (
                   <>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Min stipend (EGP)' : 'Min budget (EGP)'}</label>
-                      <Input type="number" min={0} placeholder="12000" {...register('minBudget')} />
+                      <label htmlFor="postjob-min-budget-egp" className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Min stipend (EGP)' : 'Min budget (EGP)'}</label>
+                      <Input id="postjob-min-budget-egp" type="number" min={0} placeholder="12000" {...register('minBudget')} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Max stipend (EGP)' : 'Max budget (EGP)'}</label>
-                      <Input type="number" min={0} placeholder="22000" {...register('maxBudget')} />
+                      <label htmlFor="postjob-max-budget-egp" className="text-sm font-semibold text-ink-700 dark:text-ink-200">{isInternship ? 'Max stipend (EGP)' : 'Max budget (EGP)'}</label>
+                      <Input id="postjob-max-budget-egp" type="number" min={0} placeholder="22000" {...register('maxBudget')} />
                     </div>
                   </>
                 ) : null}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Duration</label>
-                  <Input placeholder="2 weeks" {...register('duration')} />
+                  <label htmlFor="postjob-duration" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Duration</label>
+                  <Input id="postjob-duration" placeholder="2 weeks" {...register('duration')} />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-ink-700 dark:text-ink-200">Required skills</label>
+              <div role="group" aria-labelledby="required-skills-label" aria-describedby={errors.requiredSkills ? "required-skills-error" : undefined} className="space-y-3">
+                <p id="required-skills-label" className="text-sm font-semibold text-ink-700 dark:text-ink-200">Required skills</p>
                 {isLoading ? (
                   <Skeleton className="h-24 w-full rounded-xl" />
                 ) : (skills || []).length === 0 ? (
@@ -292,12 +292,13 @@ const PostJob: React.FC = () => {
                                 <button
                                   key={skill._id}
                                   type="button"
+                                  aria-pressed={active}
                                   onClick={() => toggleSkill(skill._id)}
                                   className={[
                                     'rounded-full border px-4 py-2 text-sm font-semibold transition',
                                     active
                                       ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-400/25 dark:bg-brand-400/10 dark:text-brand-200'
-                                      : 'border-ink-300 bg-white/90 text-ink-700 hover:border-ink-400 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-200 dark:hover:bg-white/15',
+                                      : 'border-ink-300 bg-white/90 text-ink-700 hover:border-ink-400 dark:hover:border-white/20 hover:bg-ink-50 dark:border-ink-dark-border dark:bg-white/10 dark:text-ink-200 dark:hover:bg-white/15',
                                   ].join(' ')}
                                 >
                                   {skill.name}
@@ -311,7 +312,7 @@ const PostJob: React.FC = () => {
                   </div>
                 )}
 
-                {errors.requiredSkills ? <p className="text-sm text-rose-600 dark:text-rose-300">Select at least one skill.</p> : null}
+                {errors.requiredSkills ? <p id="required-skills-error" role="alert" className="text-sm text-rose-600 dark:text-rose-300">Select at least one skill.</p> : null}
 
                 {selectedSkills.length > 0 ? (
                   <div className="flex flex-wrap gap-2">

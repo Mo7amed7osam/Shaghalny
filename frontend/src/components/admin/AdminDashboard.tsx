@@ -337,22 +337,22 @@ const filteredStats = useMemo(() => [
       {/* Analytics Stats */}
       <motion.div variants={fadeUp} className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="glass-panel min-w-0 space-y-1 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Total Interviews</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Total Interviews</p>
           <p className="text-2xl font-bold text-ink-900 dark:text-white">{(allInterviews || []).length}</p>
           <p className="text-xs text-ink-500">All time</p>
         </div>
         <div className="glass-panel min-w-0 space-y-1 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Pass Rate</p>
-          <p className="text-2xl font-bold text-emerald-600">{passRate}%</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Pass Rate</p>
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{passRate}%</p>
           <p className="text-xs text-ink-500">Selected period</p>
         </div>
         <div className="glass-panel min-w-0 space-y-1 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Passed</p>
-          <p className="text-2xl font-bold text-emerald-600">{filteredStats[1].value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Passed</p>
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{filteredStats[1].value}</p>
           <p className="text-xs text-ink-500">Selected period</p>
         </div>
         <div className="glass-panel min-w-0 space-y-1 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-400">Failed</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">Failed</p>
           <p className="text-2xl font-bold text-rose-500">{filteredStats[2].value}</p>
           <p className="text-xs text-ink-500">Selected period</p>
         </div>
@@ -363,8 +363,8 @@ const filteredStats = useMemo(() => [
         <h2 className="text-xl font-semibold">🏆 Top Skills</h2>
         <div className="space-y-3">
           {topSkills.map((skill, index) => (
-            <div key={skill.name} className="grid min-w-0 grid-cols-[1rem_minmax(0,7rem)_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[1rem_8rem_minmax(0,1fr)_4rem_4rem] sm:gap-4">
-              <span className="text-xs font-bold text-ink-400 w-4">{index + 1}</span>
+            <div key={skill.name} className="grid min-w-0 grid-cols-[1rem_minmax(0,7rem)_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[1rem_8rem_minmax(0,1fr)_auto_4rem] sm:gap-4">
+              <span className="text-xs font-bold text-ink-500 w-4">{index + 1}</span>
               <span className="truncate text-sm font-semibold text-ink-900 dark:text-white">{skill.name}</span>
               <div className="h-2 overflow-hidden rounded-full bg-ink-100 dark:bg-white/10">
                 <div
@@ -372,13 +372,13 @@ const filteredStats = useMemo(() => [
                   style={{ width: `${(skill.total / (topSkills[0]?.total || 1)) * 100}%` }}
                 />
               </div>
-              <span className="hidden text-xs text-ink-500 sm:block">{skill.total} interviews</span>
-              <span className={`hidden text-xs font-semibold sm:block ${skill.passRate >= 70 ? 'text-emerald-600' : skill.passRate >= 50 ? 'text-amber-500' : 'text-rose-500'}`}>
+              <span className="hidden shrink-0 whitespace-nowrap text-xs text-ink-500 dark:text-ink-dark-muted sm:block">{skill.total} interviews</span>
+              <span className={`hidden text-xs font-semibold sm:block ${skill.passRate >= 70 ? 'text-emerald-600 dark:text-emerald-400' : skill.passRate >= 50 ? 'text-amber-500 dark:text-amber-400' : 'text-rose-500 dark:text-rose-400'}`}>
                 {skill.passRate}% pass
               </span>
             </div>
           ))}
-          {topSkills.length === 0 && <p className="text-sm text-ink-400">No data yet</p>}
+          {topSkills.length === 0 && <p className="text-sm text-ink-500">No data yet</p>}
         </div>
       </motion.div>
       <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -406,11 +406,14 @@ const filteredStats = useMemo(() => [
                 <p className="text-sm text-ink-500 dark:text-ink-400">Review pending AI interview sessions.</p>
               </div>
               <div className="w-full max-w-[200px]">
-                <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+                <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Verification status</span>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
                   <option value="SUBMITTED">Submitted</option>
                   <option value="PASSED">Passed</option>
                   <option value="FAILED">Failed</option>
                 </Select>
+            </label>
               </div>
             </div>
             {interviewsLoading ? (
@@ -568,19 +571,25 @@ const filteredStats = useMemo(() => [
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="mt-4 space-y-3">
-                  <Input
+                  <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Skill name</span>
+              <Input
                     placeholder="Skill name (e.g. React)"
                     value={skillName}
                     onChange={(e) => setSkillName(e.target.value)}
                   />
-                                    <Input
+            </label>
+                  <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+              <span>Short description</span>
+              <Input
                     placeholder="Short description (optional)"
                     value={skillDescription}
                     onChange={(e) => setSkillDescription(e.target.value)}
                   />
-                                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Category</label>
-                    <Select value={skillCategory} onChange={(e) => setSkillCategory(e.target.value)}>
+            </label>
+                  <div className="space-y-1.5">
+                    <label htmlFor="admin-skill-category" className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-400">Category</label>
+                    <Select id="admin-skill-category" value={skillCategory} onChange={(e) => setSkillCategory(e.target.value)}>
                       {categoryChoices.map((key) => (
                         <option key={key} value={key}>{key}</option>
                       ))}
@@ -589,6 +598,7 @@ const filteredStats = useMemo(() => [
                   </div>
                   {skillCategory === NEW_CATEGORY_VALUE ? (
                     <Input
+                      aria-label="New category name"
                       placeholder="New category name (e.g. Marketing)"
                       value={newCategoryName}
                       maxLength={30}
@@ -625,7 +635,7 @@ const filteredStats = useMemo(() => [
                   ) : sortedSkills.length === 0 ? (
                     <EmptyState title="No skills yet" description="Add the first skill track above." />
                   ) : (
-                                        <div className="space-y-5">
+                    <div className="space-y-5">
                       {groupSkillsByCategory(sortedSkills).map(({ meta, skills: groupSkills }) => (
                         <div key={meta.key} className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -640,15 +650,16 @@ const filteredStats = useMemo(() => [
                               <div key={skill._id} className="flex items-center gap-1">
                                 <Badge variant="subtle">{skill.name}</Badge>
                                 <button
-  onClick={() => openEdit(skill)}
-  aria-label={`Change category of ${skill.name}`}
-  className="flex h-5 w-5 items-center justify-center rounded text-ink-400 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
->
-  <Pencil size={11} />
-</button>
+                                  onClick={() => openEdit(skill)}
+                                  aria-label={`Change category of ${skill.name}`}
+                                  className="flex h-5 w-5 items-center justify-center rounded text-ink-500 transition-colors hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                                >
+                                  <Pencil size={11} />
+                                </button>
                                 <button
                                   onClick={() => setConfirmDeleteSkill({ id: skill._id, name: skill.name })}
-                                  className="flex h-5 w-5 items-center justify-center rounded text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                                  aria-label={`Delete ${skill.name}`}
+                                  className="flex h-5 w-5 items-center justify-center rounded text-ink-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                                   disabled={deleteSkillMutation.isPending}
                                 >
                                   <Trash2 size={11} />

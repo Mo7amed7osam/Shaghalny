@@ -129,7 +129,7 @@ const ProductPreview: React.FC = () => {
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-accent-600 dark:text-accent-400">280 EGP</span>
-            <span className="text-xs text-ink-400">· 5 day delivery</span>
+            <span className="text-xs text-ink-500">· 5 day delivery</span>
           </div>
         </div>
       ),
@@ -199,7 +199,7 @@ const ProductPreview: React.FC = () => {
             <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
             <span className="h-2.5 w-2.5 rounded-full bg-accent-400" />
           </div>
-          <span className="mx-auto text-xs font-medium text-ink-400 dark:text-ink-dark-muted">shaghalny.app</span>
+          <span className="mx-auto text-xs font-medium text-ink-500 dark:text-ink-dark-muted">shaghalny.app</span>
         </div>
 
         {/* Workflow items */}
@@ -214,7 +214,7 @@ const ProductPreview: React.FC = () => {
             >
               <div className="mb-1.5 flex items-center gap-1.5">
                 <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-400 dark:text-ink-dark-muted">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-500 dark:text-ink-dark-muted">
                   {item.label}
                 </span>
               </div>
@@ -348,6 +348,7 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
+      <main id="main-content" tabIndex={-1}>
       {/* ── Hero ── */}
       <section
         className="relative overflow-hidden text-ink-950 dark:text-white"
@@ -358,7 +359,7 @@ const LandingPage: React.FC = () => {
       >
         {/* Dark mode gradient */}
         <div className="pointer-events-none absolute inset-0 hidden dark:block"
-          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgb(30 58 138 / 0.2) 0%, #0b0a14 60%)' }}
+          style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgb(30 58 138 / 0.28) 0%, transparent 60%), #0a0a0e' }}
         />
 
         <div className="page-container relative py-12 sm:py-16">
@@ -529,7 +530,7 @@ const LandingPage: React.FC = () => {
                     <role.icon size={20} />
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-500 dark:text-ink-dark-muted">
                       {role.label}
                     </p>
                     <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">
@@ -557,7 +558,7 @@ const LandingPage: React.FC = () => {
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-400 dark:text-ink-dark-muted">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-500 dark:text-ink-dark-muted">
                   Admins
                 </p>
                 <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">
@@ -602,8 +603,8 @@ const LandingPage: React.FC = () => {
                 className="rounded-xl border border-ink-200 bg-white p-4 dark:border-ink-dark-border dark:bg-ink-dark-bg"
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-2xl font-bold text-brand-200 dark:text-brand-800">{step.n}</p>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-50 text-ink-400 dark:bg-ink-dark-surface dark:text-ink-500">
+                  <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">{step.n}</p>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-50 text-ink-500 dark:bg-ink-dark-surface dark:text-ink-dark-muted">
                     <step.icon size={15} />
                   </div>
                 </div>
@@ -723,8 +724,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* ── Footer ── */}
+      </main>
       <footer className="border-t border-ink-100 dark:border-ink-dark-border">
-        <div className="page-container flex flex-col items-center justify-between gap-4 py-8 text-sm text-ink-400 md:flex-row dark:text-ink-dark-muted">
+        <div className="page-container flex flex-col items-center justify-between gap-4 py-8 text-sm text-ink-500 md:flex-row dark:text-ink-dark-muted">
           <div className="flex items-center gap-2.5">
             <Logo markClassName="h-6 w-6" className="opacity-90" />
             <p>© {new Date().getFullYear()} Verified student talent.</p>
