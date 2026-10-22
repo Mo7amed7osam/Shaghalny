@@ -15,9 +15,13 @@ const toHistory = (messages: CompanionMessage[]) =>
     .slice(-HISTORY_LIMIT)
     .map((m) => {
       const cards = m.response?.cards || [];
-      const note = cards.length
-        ? `\n[Job cards shown: ${cards.map((c, i) => `${i + 1}) ${c.title} (id ${c.id})`).join('; ')}]`
-        : '';
+      const review = m.response?.cvReview;
+      const proposal = m.response?.proposal;
+      const note = [
+        cards.length ? `[Job cards shown: ${cards.map((c, i) => `${i + 1}) ${c.title} (id ${c.id})`).join('; ')}]` : '',
+        proposal ? `[Proposal draft shown for job id ${proposal.jobId}:\n${proposal.text.slice(0, 1200)}]` : '',
+        review ? `[CV review shown: ${review.strengths.length} strengths, ${review.issues.length} issues: ${review.issues.map((i) => i.problem).join(' | ').slice(0, 600)}]` : '',
+      ].filter(Boolean).map((n) => `\n${n}`).join('');
       return { role: m.role, content: (m.content + note).slice(0, 4000) };
     });
 

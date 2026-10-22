@@ -229,7 +229,13 @@ const writeProposal = async ({ req, collector }) => {
       },
     ],
   });
-  const text = cleanReply(message.content).slice(0, 3000);
+  // Keep only links the student already has on their profile.
+  const ownLinks = new Set(profileSummary(student).portfolioLinks);
+  const text = String(message.content || "")
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/https?:\/\/\S+/gi, (url) => (ownLinks.has(url.replace(/[.,;)]+$/, "")) ? url : ""))
+    .trim()
+    .slice(0, 3000);
   if (!text) throw new ProviderError("provider_error", "Empty proposal.");
   const intro = job.card.sourceType === "external"
     ? (s ? "هذه مسودة يمكنك تعديلها. التقديم على هذه الوظيفة يتم في الموقع الأصلي." : "Here's a draft to edit. This listing is applied to on the original site.")

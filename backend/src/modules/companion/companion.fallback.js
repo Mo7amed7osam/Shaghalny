@@ -25,6 +25,17 @@ const T = {
     roadmap: "The Career Roadmap page builds a learning plan from a goal you type, such as 'frontend developer'.",
     payments: "I can't quote fees, payout dates or refund rules: they aren't defined in what I can see. Check the Wallet page for what is available on your account.",
     profile: "Your profile holds your bio, university, portfolio links, CV upload and verified skills. Clients see it when you apply.",
+    skillGap: (card) => {
+      if (!card.requiredSkills.length) return `"${card.title}" doesn't list required skills.`;
+      if (card.sourceType === "external") {
+        return card.missingVerifiedSkills.length
+          ? `"${card.title}" lists ${card.missingVerifiedSkills.join(", ")}, which you haven't verified on Shaghalny. It's an external listing, so the employer decides eligibility on their site.`
+          : `You've verified every skill "${card.title}" lists. It's an external listing, so apply on the original site.`;
+      }
+      return card.missingVerifiedSkills.length
+        ? `To apply to "${card.title}" you still need to verify: ${card.missingVerifiedSkills.join(", ")}. Internal jobs accept proposals only when every required skill is verified.`
+        : `All required skills for "${card.title}" are verified, so you can apply from the Job Board.`;
+    },
   },
   ar: {
     jobsFound: (q, skills) => `هذه وظائف متاحة على شغّلني${q ? ` مرتبطة بـ ${q}` : skills ? " تناسب مهاراتك الموثّقة" : "، الأحدث أولًا"}. الملاحظات على كل بطاقة فحوص آلية من ملفك، وليست تحليلًا بالذكاء الاصطناعي.`,
@@ -42,6 +53,17 @@ const T = {
     roadmap: "صفحة خارطة المسار المهني تبني خطة تعلم من هدف تكتبه، مثل «مطور واجهات أمامية».",
     payments: "لا أستطيع ذكر رسوم أو مواعيد صرف أو سياسات استرداد لأنها غير محددة فيما أراه. راجع صفحة المحفظة لمعرفة المتاح في حسابك.",
     profile: "ملفك يحتوي على نبذتك وجامعتك وروابط أعمالك وسيرتك الذاتية ومهاراتك الموثّقة، ويراه العملاء عند تقديمك.",
+    skillGap: (card) => {
+      if (!card.requiredSkills.length) return `وظيفة «${card.title}» لا تذكر مهارات مطلوبة.`;
+      if (card.sourceType === "external") {
+        return card.missingVerifiedSkills.length
+          ? `وظيفة «${card.title}» تذكر ${card.missingVerifiedSkills.join("، ")} وهي غير موثّقة لديك على شغّلني. هذه وظيفة خارجية، وصاحب العمل يحدد الأهلية على موقعه.`
+          : `وثّقت كل المهارات التي تذكرها «${card.title}». هذه وظيفة خارجية، فقدّم في الموقع الأصلي.`;
+      }
+      return card.missingVerifiedSkills.length
+        ? `للتقديم على «${card.title}» ما زلت تحتاج توثيق: ${card.missingVerifiedSkills.join("، ")}. الوظائف الداخلية تقبل العروض فقط عند توثيق كل المهارات المطلوبة.`
+        : `كل المهارات المطلوبة لـ «${card.title}» موثّقة، يمكنك التقديم من لوحة الوظائف.`;
+    },
   },
 };
 
@@ -179,6 +201,12 @@ const guidance = (text, lang) => {
 /** Demo response for one turn. Never claims an AI produced it. */
 const demoRespond = async ({ student, intent, text, lang, cvText, jobId }) => {
   const s = t(lang);
+  if (intent === "chat" && jobId && /missing|skills?|require|verif|ناقص|مهار|مطلوب/i.test(text)) {
+    const job = await getJobForStudent(student, jobId);
+    if (!job) return { reply: s.jobGone, actions: ["jobs"] };
+    return { reply: s.skillGap(job.card), cards: [job.card], actions: job.card.missingVerifiedSkills.length ? ["skill_verification"] : [] };
+  }
+
   const resolved = intent === "chat" ? detectIntent(text) : intent;
 
   if (resolved === "find_jobs") return demoJobs({ student, text, lang });
