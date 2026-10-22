@@ -5,6 +5,7 @@ import { Moon, Sun } from 'lucide-react';
 
 import { Logo } from '@/components/brand/Logo';
 import { getTheme, setTheme } from '@/lib/theme';
+import { TileBackground } from './TileBackground';
 
 const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
 
@@ -26,13 +27,9 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
   };
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f5f7ff] px-4 py-10 dark:bg-[#07060f]">
-      {/* Gradient mesh */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="auth-blob absolute -left-[10%] -top-[15%] h-[55vmax] w-[55vmax] rounded-full bg-brand-400/45 blur-[90px] dark:bg-brand-600/40" />
-        <div className="auth-blob auth-blob-2 absolute -bottom-[20%] -right-[10%] h-[50vmax] w-[50vmax] rounded-full bg-violet-400/40 blur-[100px] dark:bg-violet-600/30" />
-        <div className="auth-blob auth-blob-3 absolute left-[35%] top-[45%] h-[35vmax] w-[35vmax] rounded-full bg-accent-300/35 blur-[90px] dark:bg-accent-500/20" />
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(15,23,42,0.07)_1px,transparent_1px)] [background-size:22px_22px] dark:bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)]" />
-      </div>
+      {/* Interactive tile grid that lights up around the pointer */}
+      <TileBackground />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(245,247,255,0.85)_100%)] dark:bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(7,6,15,0.9)_100%)]" />
 
       <button
         type="button"
