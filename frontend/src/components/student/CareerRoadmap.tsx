@@ -1,21 +1,24 @@
 import React, { useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
+  AlertTriangle,
+  ArrowRight,
   BookOpen,
   BriefcaseBusiness,
   CheckCircle2,
   Compass,
+  Flag,
   Lightbulb,
+  Loader2,
+  RotateCcw,
   Rocket,
   Sparkles,
   Target,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
-import { PageHeader } from '@/components/ui/page-header';
+import { cn } from '@/lib/utils';
 import { API_BASE_URL } from '@/utils/constants';
 
 type RoadmapBlock = {
@@ -33,8 +36,14 @@ type RoadmapContent = {
   sections: RoadmapSection[];
 };
 
+const stripEmoji = (text: string) =>
+  text
+    .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\uFE0F\u200D]/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
 const cleanLine = (line: string) =>
-  line
+  stripEmoji(line)
     .replace(/^[\s•*\-–—]+/, '')
     .replace(/^\d+\)\s*/, '')
     .replace(/^\d+\.\s*/, '')
@@ -145,64 +154,74 @@ const parseRoadmap = (roadmap: string): RoadmapContent | null => {
         ];
 
   return {
-    heroTitle: isDecorativeLine(heroTitle) ? 'Your personalized career roadmap' : heroTitle,
+    heroTitle: isDecorativeLine(heroTitle) ? 'Your personalized career roadmap' : stripEmoji(heroTitle),
     sections,
   };
 };
+
+const EASE_OUT: [number, number, number, number] = [0.23, 1, 0.32, 1];
+
+/** Frosted-glass surface matching the auth screens. */
+const glassClass =
+  'rounded-[28px] border border-white/70 bg-white/65 shadow-[0_40px_120px_-40px_rgba(30,41,99,0.35),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_40px_120px_-40px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.08)]';
+
+// Mirrors the auth screens' input/button styling.
+const inputClass =
+  'h-12 rounded-2xl border-ink-200/80 bg-white/80 ps-11 shadow-none focus:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:focus:bg-white/[0.09]';
+
+const buttonClass =
+  'group h-12 w-full rounded-2xl bg-gradient-to-r from-brand-600 via-brand-500 to-violet-500 text-[15px] shadow-[0_14px_34px_-12px_rgba(79,70,229,0.75)] transition hover:brightness-110 active:scale-[0.99]';
+
+const GOAL_SUGGESTIONS = ['Backend Developer', 'UI/UX Designer', 'Data Analyst', 'Mobile Developer', 'DevOps Engineer'];
 
 const getSectionMeta = (title: string) => {
   const normalized = title.toLowerCase();
 
   if (normalized.includes('skill')) {
-    return {
-      icon: Target,
-      badge: 'Core skills',
-      tone: 'brand' as const,
-    };
+    return { icon: Target, badge: 'Core skills', accent: 'from-brand-500 to-indigo-500' };
   }
 
   if (normalized.includes('learning') || normalized.includes('plan')) {
-    return {
-      icon: BookOpen,
-      badge: 'Study plan',
-      tone: 'warning' as const,
-    };
+    return { icon: BookOpen, badge: 'Study plan', accent: 'from-violet-500 to-fuchsia-500' };
   }
 
   if (normalized.includes('project')) {
-    return {
-      icon: Rocket,
-      badge: 'Portfolio',
-      tone: 'success' as const,
-    };
+    return { icon: Rocket, badge: 'Portfolio', accent: 'from-sky-500 to-cyan-500' };
   }
 
   if (normalized.includes('job') || normalized.includes('freelance')) {
-    return {
-      icon: BriefcaseBusiness,
-      badge: 'Getting hired',
-      tone: 'success' as const,
-    };
+    return { icon: BriefcaseBusiness, badge: 'Getting hired', accent: 'from-emerald-500 to-teal-500' };
   }
 
-  return {
-    icon: Compass,
-    badge: 'Roadmap step',
-    tone: 'subtle' as const,
-  };
+  return { icon: Compass, badge: 'Roadmap step', accent: 'from-indigo-500 to-violet-500' };
 };
 
 const CareerRoadmap: React.FC = () => {
+  const reduce = useReducedMotion();
   const [goal, setGoal] = useState('');
+  const [submittedGoal, setSubmittedGoal] = useState('');
   const [roadmap, setRoadmap] = useState('');
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const parsedRoadmap = useMemo(() => parseRoadmap(roadmap), [roadmap]);
+  const totalItems = useMemo(
+    () =>
+      parsedRoadmap?.sections.reduce(
+        (sum, section) => sum + section.blocks.reduce((acc, block) => acc + block.items.length, 0),
+        0
+      ) ?? 0,
+    [parsedRoadmap]
+  );
 
-  const generateRoadmap = async () => {
-    if (!goal.trim()) return;
+  const generateRoadmap = async (target = goal) => {
+    const trimmed = target.trim();
+    if (!trimmed || isLoading) return;
+    setGoal(trimmed);
+    setSubmittedGoal(trimmed);
     setIsLoading(true);
     setRoadmap('');
+    setError('');
 
     try {
       const token = localStorage.getItem('token');
@@ -212,225 +231,278 @@ const CareerRoadmap: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ goal }),
+        body: JSON.stringify({ goal: trimmed }),
       });
       const data = await response.json();
-      setRoadmap(data.roadmap || 'Could not generate roadmap.');
+      if (!response.ok || !data.roadmap) {
+        setError(data.message || 'Could not generate a roadmap for that goal.');
+      } else {
+        setRoadmap(data.roadmap);
+      }
     } catch {
-      setRoadmap('Something went wrong. Please try again.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const fadeUp = (delay = 0) =>
+    reduce
+      ? {}
+      : {
+          initial: { opacity: 0, y: 16 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.5, ease: EASE_OUT, delay },
+        };
+
   return (
-    <div className="space-y-5">
-      <PageHeader
-        eyebrow="AI Career Assistant"
-        title="Career Roadmap"
-        description="Tell us your career goal and our AI will generate a personalized roadmap for you."
-        actions={goal ? <Badge variant="brand">Goal: {goal}</Badge> : undefined}
-      />
+    <div className="space-y-6">
+      {/* Hero + goal input */}
+      <motion.section {...fadeUp()} className={cn(glassClass, 'relative overflow-hidden p-6 sm:p-9')}>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-gradient-to-br from-brand-500/25 to-violet-500/25 blur-3xl"
+        />
+        <div className="relative mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-200/70 bg-white/70 px-3 py-1 text-xs font-semibold text-brand-700 dark:border-white/10 dark:bg-white/[0.06] dark:text-brand-200">
+            <Sparkles size={13} />
+            AI Career Assistant
+          </span>
+          <h1 className="mt-4 text-[1.9rem] font-semibold tracking-[-0.02em] text-ink-900 sm:text-[2.4rem] dark:text-white">
+            Map your path to{' '}
+            <span className="bg-gradient-to-r from-brand-600 via-brand-500 to-violet-500 bg-clip-text text-transparent dark:from-brand-300 dark:via-brand-200 dark:to-violet-300">
+              your next role
+            </span>
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
+            Name a specific role and get a step-by-step plan: skills, study path, portfolio projects, and how to land work.
+          </p>
 
-      <Card className="overflow-hidden p-0">
-        <CardContent className="relative space-y-4 p-4 lg:p-5">
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-brand-50 via-transparent to-accent-50 dark:from-brand-900/20 dark:to-accent-900/10" />
-
-          <div className="relative flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300">
-              <Sparkles size={22} />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold">Generate a focused roadmap</h2>
-              <p className="max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
-                Use a specific role or niche like &quot;backend developer&quot;, &quot;UI/UX designer&quot;, or
-                &quot;data analyst&quot; to get a stronger plan.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative flex flex-col gap-3 lg:flex-row">
-            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
-              <span>Career goal</span>
-              <Input
-              placeholder="e.g. I want to become a Backend Developer"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isLoading && goal.trim()) {
-                  generateRoadmap();
-                }
-              }}
-              disabled={isLoading}
-              className="h-12 rounded-xl border-ink-200 bg-white/90 px-4 text-sm shadow-none dark:border-ink-dark-border dark:bg-ink-dark-surface"
-            />
+          <form
+            className="mt-7 flex flex-col gap-3 sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              generateRoadmap();
+            }}
+          >
+            <label htmlFor="career-goal" className="sr-only">
+              Career goal
             </label>
-
+            <div className="relative flex-1">
+              <Flag
+                size={17}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400"
+                aria-hidden="true"
+              />
+              <Input
+                id="career-goal"
+                placeholder="e.g. I want to become a Backend Developer"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                disabled={isLoading}
+                className={inputClass}
+              />
+            </div>
             <Button
-              onClick={generateRoadmap}
+              type="submit"
+              size="lg"
               disabled={isLoading || !goal.trim()}
-              size="xl"
-              className="min-w-[160px] rounded-xl"
+              className={cn(buttonClass, 'sm:w-auto sm:min-w-[170px]')}
             >
-              <Sparkles size={16} className={isLoading ? 'animate-pulse' : ''} />
-              {isLoading ? 'Generating...' : 'Generate'}
+              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              {isLoading ? 'Generating…' : 'Generate'}
+              {!isLoading ? (
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+              ) : null}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </form>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <Card className="overflow-hidden border-0 bg-gradient-to-br from-brand-600 to-brand-700 p-0 text-white shadow-soft">
-            <CardContent className="space-y-3 p-4">
-              <div className="h-3 w-28 animate-pulse rounded-full bg-white/20" />
-              <div className="h-8 w-2/3 animate-pulse rounded-full bg-white/15" />
-              <div className="grid gap-3 md:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="h-20 animate-pulse rounded-2xl bg-white/10" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 xl:grid-cols-3">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="space-y-3 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 animate-pulse rounded-2xl bg-muted" />
-                    <div className="space-y-2">
-                      <div className="h-4 w-28 animate-pulse rounded bg-muted" />
-                      <div className="h-6 w-48 animate-pulse rounded bg-muted" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {Array.from({ length: 4 }).map((__, itemIndex) => (
-                      <div key={itemIndex} className="h-14 animate-pulse rounded-2xl bg-muted" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Suggested goals">
+            {GOAL_SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                disabled={isLoading}
+                onClick={() => generateRoadmap(suggestion)}
+                className="rounded-full border border-ink-200/70 bg-white/60 px-3 py-1.5 text-xs font-medium text-ink-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-ink-300 dark:hover:border-brand-400/50 dark:hover:text-white"
+              >
+                {suggestion}
+              </button>
             ))}
           </div>
         </div>
+      </motion.section>
+
+      {isLoading ? (
+        <div className="space-y-4" aria-busy="true" aria-live="polite">
+          <p className="sr-only">Generating your roadmap…</p>
+          <div className={cn(glassClass, 'space-y-3 p-6')}>
+            <div className="h-3 w-32 animate-pulse rounded-full bg-ink-200/70 dark:bg-white/10" />
+            <div className="h-7 w-2/3 animate-pulse rounded-full bg-ink-200/70 dark:bg-white/10" />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-16 animate-pulse rounded-2xl bg-ink-100/80 dark:bg-white/[0.06]" />
+              ))}
+            </div>
+          </div>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className={cn(glassClass, 'flex gap-4 p-6')}>
+              <div className="h-12 w-12 shrink-0 animate-pulse rounded-2xl bg-ink-200/70 dark:bg-white/10" />
+              <div className="flex-1 space-y-3">
+                <div className="h-5 w-48 animate-pulse rounded-full bg-ink-200/70 dark:bg-white/10" />
+                <div className="h-12 animate-pulse rounded-2xl bg-ink-100/80 dark:bg-white/[0.06]" />
+                <div className="h-12 animate-pulse rounded-2xl bg-ink-100/80 dark:bg-white/[0.06]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <motion.div {...fadeUp()} role="alert" className={cn(glassClass, 'flex flex-col items-center gap-3 p-8 text-center')}>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+            <AlertTriangle size={22} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-ink-900 dark:text-white">Couldn&apos;t build your roadmap</h2>
+            <p className="mt-1 text-sm text-ink-500 dark:text-ink-dark-muted">{error}</p>
+          </div>
+          <Button variant="outline" className="rounded-2xl" onClick={() => generateRoadmap(submittedGoal)}>
+            <RotateCcw size={15} />
+            Try again
+          </Button>
+        </motion.div>
       ) : parsedRoadmap ? (
-        <div className="space-y-4">
-          <Card className="p-0">
-            <CardContent className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="brand">Personalized AI roadmap</Badge>
-                  <Badge variant="subtle">{parsedRoadmap.sections.length} sections</Badge>
-                </div>
-                <h2 className="text-lg font-semibold text-ink-900 dark:text-ink-dark-text">
+        <div className="space-y-6">
+          {/* Summary */}
+          <motion.section {...fadeUp()} className={cn(glassClass, 'p-6 sm:p-7')}>
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 space-y-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-600 dark:text-brand-300">
+                  <Sparkles size={13} />
+                  Personalized roadmap
+                </span>
+                <h2 className="text-xl font-semibold tracking-[-0.01em] text-ink-900 sm:text-2xl dark:text-white">
                   {parsedRoadmap.heroTitle}
                 </h2>
-                <p className="max-w-2xl text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
-                  A structured plan built around your goal with a clear learning path, portfolio work, and freelance
-                  next steps.
-                </p>
               </div>
+              <dl className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3">
+                {[
+                  { label: 'Goal', value: submittedGoal },
+                  { label: 'Steps', value: parsedRoadmap.sections.length },
+                  { label: 'Actions', value: totalItems },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="min-w-0 rounded-2xl border border-ink-200/70 bg-white/70 px-4 py-3 dark:border-white/10 dark:bg-white/[0.05]"
+                  >
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">
+                      {stat.label}
+                    </dt>
+                    <dd className="mt-1 max-w-[180px] truncate text-sm font-semibold text-ink-900 dark:text-white" title={String(stat.value)}>
+                      {stat.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </motion.section>
 
-              <div className="flex flex-wrap gap-3 lg:justify-end">
-                <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">
-                    Goal
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-ink-900 dark:text-ink-dark-text">{goal}</p>
-                </div>
-                <div className="rounded-2xl border border-ink-200 bg-ink-50 px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">
-                    Focus
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-ink-900 dark:text-ink-dark-text">
-                    Skills, projects, and job readiness
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 xl:grid-cols-3">
+          {/* Timeline of steps */}
+          <ol className="relative space-y-5">
+            <span
+              aria-hidden="true"
+              className="absolute bottom-6 left-[27px] top-6 hidden w-px bg-gradient-to-b from-brand-400/60 via-violet-400/40 to-transparent sm:block"
+            />
             {parsedRoadmap.sections.map((section, index) => {
               const meta = getSectionMeta(section.title);
               const Icon = meta.icon;
 
               return (
-                <Card key={section.title + index} className="interactive-card overflow-hidden border-ink-200/80 p-0 dark:border-ink-dark-border">
-                  <CardContent className="space-y-4 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300">
-                          <Icon size={22} />
-                        </div>
-                        <div className="space-y-2">
-                          <Badge variant={meta.tone}>{meta.badge}</Badge>
-                          <div className="space-y-1">
-                            <h3 className="text-xl font-semibold">{section.title}</h3>
-                            <p className="text-sm text-ink-500 dark:text-ink-dark-muted">
-                              Step {String(index + 1).padStart(2, '0')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                <motion.li
+                  key={section.title + index}
+                  {...fadeUp(0.08 + index * 0.07)}
+                  className="relative sm:pl-[76px]"
+                >
+                  <div
+                    className={cn(
+                      'absolute left-0 top-6 hidden h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-[0_14px_34px_-12px_rgba(79,70,229,0.6)] ring-4 ring-ink-50 sm:flex dark:ring-ink-dark-bg',
+                      meta.accent
+                    )}
+                  >
+                    <Icon size={22} />
+                  </div>
 
-                      <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-500 dark:bg-white/5 dark:text-ink-dark-muted sm:flex">
-                        <span className="text-sm font-semibold">{index + 1}</span>
+                  <article className={cn(glassClass, 'p-5 sm:p-7')}>
+                    <header className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white sm:hidden',
+                          meta.accent
+                        )}
+                      >
+                        <Icon size={20} />
                       </div>
-                    </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500 dark:text-ink-dark-muted">
+                          Step {String(index + 1).padStart(2, '0')} · {meta.badge}
+                        </p>
+                        <h3 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-ink-900 sm:text-xl dark:text-white">
+                          {section.title}
+                        </h3>
+                      </div>
+                    </header>
 
-                    <div className="space-y-4">
+                    <div className="mt-5 space-y-5">
                       {section.blocks.map((block, blockIndex) => (
-                        <div key={`${section.title}-${blockIndex}`} className="space-y-3">
+                        <div key={`${section.title}-${blockIndex}`} className="space-y-2.5">
                           {block.heading ? (
                             <div className="flex items-center gap-2">
-                              <Lightbulb size={15} className="text-brand-500" />
-                              <h4 className="text-sm font-semibold text-ink-900 dark:text-ink-dark-text">
-                                {block.heading}
-                              </h4>
+                              <Lightbulb size={15} className="text-brand-500 dark:text-brand-300" />
+                              <h4 className="text-sm font-semibold text-ink-900 dark:text-white">{block.heading}</h4>
                             </div>
                           ) : null}
 
-                          <div className="space-y-2">
+                          <ul className="grid gap-2 md:grid-cols-2">
                             {block.items.map((item, itemIndex) => (
-                              <div
+                              <li
                                 key={`${section.title}-${blockIndex}-${itemIndex}`}
-                                className={
-                                  block.heading
-                                    ? 'flex items-start gap-3 rounded-xl border border-ink-200/80 bg-white px-4 py-3 dark:border-ink-dark-border dark:bg-ink-dark-surface'
-                                    : 'muted-panel flex items-start gap-3 rounded-2xl px-4 py-3'
-                                }
+                                className="flex items-start gap-3 rounded-2xl border border-ink-200/60 bg-white/70 px-4 py-3 transition hover:border-brand-300/70 hover:bg-white dark:border-white/[0.08] dark:bg-white/[0.04] dark:hover:border-brand-400/40 dark:hover:bg-white/[0.07]"
                               >
                                 {block.heading ? (
-                                  <CheckCircle2
-                                    size={18}
-                                    className="mt-1 shrink-0 text-brand-500 dark:text-brand-300"
-                                  />
+                                  <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-brand-500 dark:text-brand-300" />
                                 ) : (
-                                  <div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300">
+                                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-semibold text-brand-700 dark:bg-brand-400/15 dark:text-brand-200">
                                     {itemIndex + 1}
-                                  </div>
+                                  </span>
                                 )}
-                                <p className="text-sm leading-6 text-ink-700 dark:text-ink-300">{item}</p>
-                              </div>
+                                <p className="text-sm leading-6 text-ink-700 dark:text-ink-200">{item}</p>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
+                  </article>
+                </motion.li>
               );
             })}
-          </div>
+          </ol>
         </div>
       ) : (
-        <EmptyState
-          icon={Compass}
-          title="No roadmap yet"
-          description="Enter a career goal above and generate a roadmap to see a polished learning plan here."
-        />
+        <motion.div {...fadeUp(0.1)} className="grid gap-4 sm:grid-cols-3">
+          {[
+            { icon: Target, title: 'Core skills', text: 'The exact skills employers expect for your role.', accent: 'from-brand-500 to-indigo-500' },
+            { icon: BookOpen, title: 'Study plan', text: 'A week-by-week path with what to learn first.', accent: 'from-violet-500 to-fuchsia-500' },
+            { icon: Rocket, title: 'Portfolio & hiring', text: 'Projects to build and how to land paid work.', accent: 'from-sky-500 to-cyan-500' },
+          ].map((feature) => (
+            <div key={feature.title} className={cn(glassClass, 'p-5')}>
+              <div className={cn('flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br text-white', feature.accent)}>
+                <feature.icon size={20} />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-ink-900 dark:text-white">{feature.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">{feature.text}</p>
+            </div>
+          ))}
+        </motion.div>
       )}
     </div>
   );
