@@ -10,6 +10,8 @@ interface CompanionCharacterProps {
   blink?: boolean;
   /** An animation frame to show instead of the pose (e.g. the wave). */
   frameSrc?: string | null;
+  /** Extra transparent margin of `frameSrc` beyond the pose canvas (fractions). */
+  frameBleed?: { x: number; y: number } | null;
   className?: string;
   /** Decorative by default; the surrounding control carries the label. */
   label?: string;
@@ -20,15 +22,24 @@ const loaded = new Set<string>();
 const failed = new Set<string>();
 let preloadStarted = false;
 const listeners = new Set<() => void>();
-function preloadAll() {
-  if (preloadStarted || typeof window === 'undefined') return;
-  preloadStarted = true;
-  ALL_POSE_SOURCES.forEach((src) => {
+const requested = new Set<string>();
+/** Decode frames ahead of time; animations only show frames that are ready. */
+export function preloadFrames(sources: string[]) {
+  if (typeof window === 'undefined') return;
+  sources.forEach((src) => {
+    if (requested.has(src)) return;
+    requested.add(src);
     const img = new Image();
     img.onload = () => { loaded.add(src); listeners.forEach((l) => l()); };
     img.onerror = () => { failed.add(src); listeners.forEach((l) => l()); };
     img.src = src;
   });
+}
+export const framesReady = (sources: string[]) => sources.every((s) => loaded.has(s));
+function preloadAll() {
+  if (preloadStarted) return;
+  preloadStarted = true;
+  preloadFrames(ALL_POSE_SOURCES);
 }
 
 /** Lightweight stand-in used until artwork loads or when a file is missing. */
@@ -52,7 +63,7 @@ function PlaceholderRobot() {
   );
 }
 
-export function CompanionCharacter({ state, size = 56, blink = false, frameSrc = null, className, label }: CompanionCharacterProps) {
+export function CompanionCharacter({ state, size = 56, blink = false, frameSrc = null, frameBleed = null, className, label }: CompanionCharacterProps) {
   const [, force] = useState(0);
   useEffect(() => {
     preloadAll();
@@ -82,7 +93,7 @@ export function CompanionCharacter({ state, size = 56, blink = false, frameSrc =
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      <span className="shaghol-char__body block h-full w-full">
+      <span className="shaghol-char__body relative block h-full w-full">
         {showArt ? (
           <img
             // Pose changes fade in; blinks and wave frames swap instantly.
@@ -91,6 +102,20 @@ export function CompanionCharacter({ state, size = 56, blink = false, frameSrc =
             alt=""
             draggable={false}
             className={cn('shaghol-char__img pointer-events-none h-full w-full select-none', framed ? 'object-cover' : 'object-contain')}
+            // Bleed frames are drawn larger and offset so the robot itself
+            // lands exactly where the pose art is; extras spill outside.
+            style={
+              animating && frameBleed
+                ? {
+                    position: 'absolute',
+                    left: `${-frameBleed.x * 100}%`,
+                    top: `${-frameBleed.y * 100}%`,
+                    width: `${(1 + 2 * frameBleed.x) * 100}%`,
+                    height: `${(1 + 2 * frameBleed.y) * 100}%`,
+                    maxWidth: 'none',
+                  }
+                : undefined
+            }
           />
         ) : (
           <span className="block h-full w-full p-[14%]">

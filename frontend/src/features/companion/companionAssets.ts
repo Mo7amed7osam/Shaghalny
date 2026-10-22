@@ -61,6 +61,27 @@ export function hasBlink(state: CompanionState): boolean {
 export const WAVE_FRAMES = Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-wave-${i + 1}.webp`);
 export const WAVE_FRAME_MS = 150;
 
+/**
+ * Idle activities: occasional playful sequences while nobody interacts.
+ * Frames sit on a larger 400×396 canvas (40px transparent bleed on every side
+ * of the 320×316 pose canvas) so mugs, arms and sparkles fit; feet and scale
+ * match the idle pose. `durations` are per-frame (ms), with comedic holds.
+ */
+export const ACTIVITY_BLEED = { x: 40 / 320, y: 40 / 316 };
+export type IdleActivityName = 'sleepy' | 'coffee';
+export const IDLE_ACTIVITIES: Record<IdleActivityName, { frames: string[]; durations: number[] }> = {
+  // Drowsy, nods off (long hold), startles awake, looks around, back to idle.
+  sleepy: {
+    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-sleepy-${i + 1}.webp`),
+    durations: [300, 380, 420, 700, 160, 340, 340, 300],
+  },
+  // Grabs a mug, long contented sip (hold), a happy "ah!", puts it away.
+  coffee: {
+    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-coffee-${i + 1}.webp`),
+    durations: [200, 300, 300, 450, 650, 500, 300, 250],
+  },
+};
+
 export const ALL_POSE_SOURCES = Array.from(
   new Set(
     [
