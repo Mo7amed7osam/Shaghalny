@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { AuthShell, authButtonClass, authInputClass } from './AuthShell';
+import { useI18n } from '@/lib/i18n';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -30,6 +31,7 @@ const roles = [
 const Register: React.FC = () => {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -46,11 +48,11 @@ const Register: React.FC = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       const user = await registerUser(values as { name: string; email: string; password: string; role: string });
-      toast.success('Account created successfully');
+      toast.success(t('Account created successfully'));
       if (user?.role === 'Client') navigate('/client/dashboard');
       else navigate('/student/dashboard');
     } catch {
-      toast.error('Registration failed. Please try again.');
+      toast.error(t('Registration failed. Please try again.'));
     }
   };
 
@@ -62,13 +64,13 @@ const Register: React.FC = () => {
     type = 'text',
   ) => (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="sr-only">{placeholder}</Label>
+      <Label htmlFor={id} className="sr-only">{t(placeholder)}</Label>
       <div className="relative">
-        <Icon size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+        <Icon size={17} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
         <Input
           id={id}
           type={type}
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           autoComplete={autoComplete}
           className={authInputClass}
           aria-invalid={!!errors[id]}
@@ -76,7 +78,7 @@ const Register: React.FC = () => {
           {...register(id)}
         />
       </div>
-      {errors[id] ? <p id={`${id}-error`} role="alert" className="pl-1 text-xs text-rose-600 dark:text-rose-400">{errors[id]?.message}</p> : null}
+      {errors[id] ? <p id={`${id}-error`} role="alert" className="ps-1 text-xs text-rose-600 dark:text-rose-400">{t(errors[id]?.message || '')}</p> : null}
     </div>
   );
 
@@ -84,11 +86,11 @@ const Register: React.FC = () => {
     <AuthShell
       title="Create your account"
       subtitle="Join as a student or a client"
-      footer={<>Already have an account? <Link className="font-semibold text-brand-600 hover:underline dark:text-brand-300" to="/login">Sign in</Link></>}
+      footer={<>{t('Already have an account?')} <Link className="font-semibold text-brand-600 hover:underline dark:text-brand-300" to="/login">{t('Sign in')}</Link></>}
     >
       <form className="space-y-4" noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
         <fieldset>
-          <legend className="sr-only">Account type</legend>
+          <legend className="sr-only">{t('Account type')}</legend>
           <div className="grid grid-cols-2 gap-2.5">
             {roles.map((item) => {
               const active = role === item.value;
@@ -107,8 +109,8 @@ const Register: React.FC = () => {
                     <item.icon size={17} />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-ink-900 dark:text-white">{item.title}</span>
-                    <span className="block text-xs text-ink-500 dark:text-ink-dark-muted">{item.body}</span>
+                    <span className="block text-sm font-semibold text-ink-900 dark:text-white">{t(item.title)}</span>
+                    <span className="block text-xs text-ink-500 dark:text-ink-dark-muted">{t(item.body)}</span>
                   </span>
                 </label>
               );
@@ -120,15 +122,15 @@ const Register: React.FC = () => {
         {field('email', Mail, 'Email address', 'email', 'email')}
 
         <div className="space-y-1.5">
-          <Label htmlFor="password" className="sr-only">Password</Label>
+          <Label htmlFor="password" className="sr-only">{t('Password')}</Label>
           <div className="relative">
-            <Lock size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <Lock size={17} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Password (6+ characters)"
+              placeholder={t('Password (6+ characters)')}
               autoComplete="new-password"
-              className={cn(authInputClass, 'pr-12')}
+              className={cn(authInputClass, 'pe-12')}
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? 'password-error' : undefined}
               {...register('password')}
@@ -136,20 +138,20 @@ const Register: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-ink-400 transition hover:bg-ink-100/70 hover:text-ink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 dark:hover:text-white"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute end-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-ink-400 transition hover:bg-ink-100/70 hover:text-ink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 dark:hover:text-white"
+              aria-label={t(showPassword ? 'Hide password' : 'Show password')}
               aria-pressed={showPassword}
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          {errors.password ? <p id="password-error" role="alert" className="pl-1 text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
+          {errors.password ? <p id="password-error" role="alert" className="ps-1 text-xs text-rose-600 dark:text-rose-400">{t(errors.password.message || '')}</p> : null}
         </div>
 
         <Button type="submit" size="lg" disabled={isSubmitting} className={cn(authButtonClass, 'mt-2')}>
           {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-          {isSubmitting ? 'Creating account…' : 'Create account'}
-          {!isSubmitting ? <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" /> : null}
+          {t(isSubmitting ? 'Creating account…' : 'Create account')}
+          {!isSubmitting ? <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" /> : null}
         </Button>
       </form>
     </AuthShell>

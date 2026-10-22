@@ -8,6 +8,7 @@ const NotificationSchema = new Schema({
   type: { type: String, default: 'event' },
   isRead: { type: Boolean, default: false },
   eventId: { type: Schema.Types.ObjectId, ref: 'Event' },
+  link: { type: String, trim: true, maxlength: 300 },
   createdAt: { type: Date, default: Date.now },
 });
 
