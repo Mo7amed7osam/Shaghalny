@@ -38,39 +38,43 @@ export function useLivingPose(state: CompanionState, { greetKey = 0, idleVariety
     };
   }, [reduce]);
 
-  // Wave when greeted (first appearance, hover), at most every 8 seconds.
-  // Plays the 8 wave frames once; reduced motion gets the still greeting pose.
+  // Wave every time it's greeted (first appearance, each hover). A wave that's
+  // already playing finishes instead of restarting, so quick re-hovers don't
+  // stutter. Reduced motion gets the still greeting pose instead.
+  const waveTimer = useRef<number>();
   useEffect(() => {
     if (!greetKey || state !== 'idle' || paused) return;
     const now = Date.now();
-    if (now - lastGreet.current < 8000) return;
+    const busyFor = reduce ? 1600 : WAVE_FRAMES.length * WAVE_FRAME_MS;
+    if (now - lastGreet.current < busyFor) return;
     lastGreet.current = now;
+    window.clearInterval(waveTimer.current);
     if (reduce) {
       setOverride('greeting');
-      const t = window.setTimeout(() => setOverride(null), 1600);
-      return () => window.clearTimeout(t);
+      waveTimer.current = window.setTimeout(() => setOverride(null), 1600);
+      return;
     }
     let frame = 0;
     setWaveFrame(0);
-    const timer = window.setInterval(() => {
+    waveTimer.current = window.setInterval(() => {
       frame += 1;
       if (frame >= WAVE_FRAMES.length) {
-        window.clearInterval(timer);
+        window.clearInterval(waveTimer.current);
         setWaveFrame(null);
       } else {
         setWaveFrame(frame);
       }
     }, WAVE_FRAME_MS);
-    return () => {
-      window.clearInterval(timer);
-      setWaveFrame(null);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [greetKey]);
+  useEffect(() => () => window.clearInterval(waveTimer.current), []);
 
   // A task state or a drag always wins over the wave.
   useEffect(() => {
-    if (state !== 'idle' || paused) setWaveFrame(null);
+    if (state !== 'idle' || paused) {
+      window.clearInterval(waveTimer.current);
+      setWaveFrame(null);
+    }
   }, [state, paused]);
 
   // A rare, quiet glance while idle so the character doesn't feel frozen.
