@@ -6,6 +6,7 @@ const Job = require("../models/Job");
 const Skill = require("../models/Skill");
 const { NORMALIZERS, dedupeJobs } = require("../utils/externalJobs");
 const { linkPasses } = require("./fetchExternalJobs");
+const { notifyImportedJobs } = require("../services/jobAlertService");
 
 async function importExternalJobs() {
   const [database, snapshotFile] = process.argv.slice(2);
@@ -60,13 +61,16 @@ async function importExternalJobs() {
       } });
     }
     const result = await Job.bulkWrite(writes, { ordered: true });
+    // upsertedIds is keyed by write index, and writes follow the jobs order.
+    const newJobs = Object.keys(result.upsertedIds || {}).map((index) => jobs[Number(index)]).filter(Boolean);
+    const alertsSent = await notifyImportedJobs(newJobs);
     const bySource = {}; const byCategory = {};
     for (const job of jobs) {
       bySource[job.sourceName] = (bySource[job.sourceName] || 0) + 1;
       byCategory[job.category] = byCategory[job.category] || { freelance: 0, internship: 0 };
       byCategory[job.category][job.type] += 1;
     }
-    console.log(JSON.stringify({ database, snapshotFetchedAt: fetchedAt, matched: result.matchedCount, inserted: result.upsertedCount, modified: result.modifiedCount, listings: jobs.length, bySource, byCategory }, null, 2));
+    console.log(JSON.stringify({ database, snapshotFetchedAt: fetchedAt, matched: result.matchedCount, inserted: result.upsertedCount, alertsSent, modified: result.modifiedCount, listings: jobs.length, bySource, byCategory }, null, 2));
   } finally { await mongoose.disconnect(); }
 }
 

@@ -1,6 +1,9 @@
 const router = require("express").Router();
 const axios = require("axios");
 const { authenticate } = require("../middleware/auth");
+const { checkRole } = require("../middleware/roleCheck");
+const { aiLimiter } = require("../middleware/rateLimiter");
+const Skill = require("../models/Skill");
 
 const OPENROUTER_MODEL =
   process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
@@ -107,6 +110,78 @@ Rules:
       .json({ message: "Failed to generate roadmap", error: error.message });
   }
 });
+// Drafts a full job post from a one-line idea. Skills are limited to the
+// platform taxonomy; budgets are suggestions the client must review.
+router.post("/job-brief", aiLimiter, authenticate, checkRole("Client"), async (req, res) => {
+  const idea = typeof req.body?.idea === "string" ? req.body.idea.trim() : "";
+  if (idea.length < 8 || idea.length > 500) {
+    return res.status(400).json({ message: "Describe the job in 8 to 500 characters." });
+  }
+  if (!process.env.OPENROUTER_API_KEY) {
+    return res.status(503).json({ message: "AI writer is not configured." });
+  }
+  try {
+    const skills = await Skill.find().select("name category").lean();
+    const skillNames = skills.map((skill) => skill.name);
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: OPENROUTER_MODEL,
+        max_tokens: 700,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `You write clear job posts for Shaghalny, an Egyptian marketplace where clients hire university students.
+Return only a JSON object with these keys:
+- "title": short job title, max 70 characters
+- "description": 80-160 words: goal, deliverables as short lines starting with "- ", and what the student will receive or learn. Plain text, no markdown headings, no emojis.
+- "skills": 1-4 names chosen ONLY from this list: ${JSON.stringify(skillNames)}
+- "type": "freelance" or "internship"
+- "budgetMin" and "budgetMax": realistic EGP amounts for Egyptian student freelancers (numbers), or null for an unpaid internship
+- "duration": e.g. "1 week", "2 weeks", "1 month"
+Never invent facts about the client.`,
+          },
+          { role: "user", content: idea },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 45000,
+      },
+    );
+    const raw = response.data?.choices?.[0]?.message?.content || "";
+    const parsed = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+    const byName = new Map(skills.map((skill) => [skill.name.toLowerCase(), skill]));
+    const matchedSkills = (Array.isArray(parsed.skills) ? parsed.skills : [])
+      .map((name) => byName.get(String(name).toLowerCase()))
+      .filter(Boolean)
+      .slice(0, 4)
+      .map((skill) => ({ _id: skill._id, name: skill.name, category: skill.category }));
+    const money = (value) => (Number.isFinite(Number(value)) && Number(value) >= 0 ? Math.round(Number(value)) : null);
+    let budgetMin = money(parsed.budgetMin);
+    let budgetMax = money(parsed.budgetMax);
+    if (budgetMin !== null && budgetMax !== null && budgetMin > budgetMax) [budgetMin, budgetMax] = [budgetMax, budgetMin];
+    const brief = {
+      title: stripDecorativeCharacters(String(parsed.title || "")).slice(0, 80),
+      description: stripDecorativeCharacters(String(parsed.description || "")).slice(0, 3000),
+      skills: matchedSkills,
+      type: parsed.type === "internship" ? "internship" : "freelance",
+      budgetMin,
+      budgetMax,
+      duration: String(parsed.duration || "").slice(0, 40),
+    };
+    if (brief.title.length < 3 || brief.description.length < 20) throw new Error("Incomplete draft");
+    return res.status(200).json(brief);
+  } catch (error) {
+    console.error("JOB BRIEF ERROR:", error.response?.data?.error?.message || error.message);
+    return res.status(502).json({ message: "The AI writer could not draft this job. Please try again." });
+  }
+});
+
 router.post("/match-score", authenticate, async (req, res) => {
   try {
     const { proposal, job } = req.body;
