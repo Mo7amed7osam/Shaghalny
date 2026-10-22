@@ -1,6 +1,7 @@
 // Provider selection for Shaghol only. COMPANION_PROVIDER picks the backend
 // ("gemini" by default, or "openrouter"); there is no automatic switch to
-// another provider or model on failure — failures go to the demo fallback.
+// another provider. Gemini retries on its fallback models when out of quota;
+// anything still failing goes to the demo fallback.
 // API keys stay server-side and are never logged.
 
 class ProviderError extends Error {

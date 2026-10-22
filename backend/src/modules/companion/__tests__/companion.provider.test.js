@@ -111,6 +111,36 @@ describe('Gemini conversation', () => {
     warn.mockRestore();
   });
 
+  test('falls back to a lower model when the main one is out of quota, then skips it', async () => {
+    load();
+    const gemini = require('../companion.provider.gemini');
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGenerate.mockImplementation(async ({ model }) => {
+      if (model === 'gemini-3.6-flash') throw Object.assign(new Error('RESOURCE_EXHAUSTED: quota exceeded'), { status: 429 });
+      return { candidates: [{ content: { parts: [{ text: `from ${model}` }] } }] };
+    });
+    const first = await gemini.createConversation({ system: 's', messages: [{ role: 'user', content: 'x' }] }).send();
+    expect(first.text).toBe('from gemini-3.5-flash-lite');
+    expect(mockGenerate.mock.calls.map((c) => c[0].model)).toEqual(['gemini-3.6-flash', 'gemini-3.5-flash-lite']);
+    mockGenerate.mockClear();
+    await gemini.createConversation({ system: 's', messages: [{ role: 'user', content: 'y' }] }).send();
+    expect(mockGenerate.mock.calls.map((c) => c[0].model)).toEqual(['gemini-3.5-flash-lite']); // exhausted model cools down
+  });
+
+  test('does not switch models on non-quota errors or when fallbacks are disabled', async () => {
+    process.env.COMPANION_GEMINI_FALLBACK_MODELS = '';
+    load();
+    const gemini = require('../companion.provider.gemini');
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGenerate.mockRejectedValue(Object.assign(new Error('quota exceeded'), { status: 429 }));
+    await expect(gemini.createConversation({ system: 's', messages: [{ role: 'user', content: 'x' }] }).send()).rejects.toMatchObject({ code: 'quota' });
+    expect(mockGenerate).toHaveBeenCalledTimes(1);
+    delete process.env.COMPANION_GEMINI_FALLBACK_MODELS;
+    mockGenerate.mockReset().mockRejectedValue(Object.assign(new Error('API key not valid'), { status: 403 }));
+    await expect(gemini.createConversation({ system: 's', messages: [{ role: 'user', content: 'x' }] }).send()).rejects.toMatchObject({ code: 'provider_error' });
+    expect(mockGenerate).toHaveBeenCalledTimes(1);
+  });
+
   test('empty or blocked responses are provider errors', async () => {
     load();
     const gemini = require('../companion.provider.gemini');
