@@ -20,6 +20,14 @@ export const COMPANION_ART = {
   basePath: '/companion/',
 };
 
+/**
+ * Bump when artwork changes. File names stay the same, so without a version
+ * browsers, proxies and the service worker can keep serving old pixels
+ * (e.g. the opaque framed art after the switch to transparent cut-outs).
+ */
+export const COMPANION_ASSET_VERSION = '2026-10-22-transparent';
+const asset = (file: string) => `${COMPANION_ART.basePath}${file}?v=${COMPANION_ASSET_VERSION}`;
+
 export const COMPANION_POSES: Record<CompanionState, CompanionPose> = {
   idle: { src: 'shaghol-idle.webp', blink: 'shaghol-idle-blink.webp' },
   greeting: { src: 'shaghol-greeting.webp' },
@@ -47,7 +55,7 @@ export function resolvePoseSrc(state: CompanionState, blink = false): string | n
   const pose = resolvePose(state);
   if (!pose?.src) return null;
   const file = blink && pose.blink ? pose.blink : pose.src;
-  return `${COMPANION_ART.basePath}${file}`;
+  return asset(file);
 }
 
 export function hasBlink(state: CompanionState): boolean {
@@ -58,7 +66,7 @@ export function hasBlink(state: CompanionState): boolean {
  * Frame-by-frame wave (8 frames from the waving sheet), aligned to the idle
  * pose on the same 320×316 canvas. Played once over ~1.2s.
  */
-export const WAVE_FRAMES = Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-wave-${i + 1}.webp`);
+export const WAVE_FRAMES = Array.from({ length: 8 }, (_, i) => asset(`shaghol-wave-${i + 1}.webp`));
 export const WAVE_FRAME_MS = 150;
 
 /**
@@ -72,12 +80,12 @@ export type IdleActivityName = 'sleepy' | 'coffee';
 export const IDLE_ACTIVITIES: Record<IdleActivityName, { frames: string[]; durations: number[] }> = {
   // Drowsy, nods off (long hold), startles awake, looks around, back to idle.
   sleepy: {
-    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-sleepy-${i + 1}.webp`),
+    frames: Array.from({ length: 8 }, (_, i) => asset(`shaghol-sleepy-${i + 1}.webp`)),
     durations: [300, 380, 420, 700, 160, 340, 340, 300],
   },
   // Grabs a mug, long contented sip (hold), a happy "ah!", puts it away.
   coffee: {
-    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-coffee-${i + 1}.webp`),
+    frames: Array.from({ length: 8 }, (_, i) => asset(`shaghol-coffee-${i + 1}.webp`)),
     durations: [200, 300, 300, 450, 650, 500, 300, 250],
   },
 };
