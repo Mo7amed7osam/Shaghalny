@@ -17,9 +17,11 @@ const toHistory = (messages: CompanionMessage[]) =>
       const cards = m.response?.cards || [];
       const review = m.response?.cvReview;
       const proposal = m.response?.proposal;
+      const plan = m.response?.careerPlan;
       const note = [
         cards.length ? `[Job cards shown: ${cards.map((c, i) => `${i + 1}) ${c.title} (id ${c.id})`).join('; ')}]` : '',
         proposal ? `[Proposal draft shown for job id ${proposal.jobId}:\n${proposal.text.slice(0, 1200)}]` : '',
+        plan ? `[Career plan shown: ${plan.steps.map((st, i) => `${i + 1}) ${st.title}`).join('; ')}]` : '',
         review ? `[CV review shown: ${review.strengths.length} strengths, ${review.issues.length} issues: ${review.issues.map((i) => i.problem).join(' | ').slice(0, 600)}]` : '',
       ].filter(Boolean).map((n) => `\n${n}`).join('');
       return { role: m.role, content: (m.content + note).slice(0, 4000) };
@@ -52,7 +54,7 @@ export async function sendCompanionMessage(input: CompanionRequestInput, options
   if (options.retryOf) {
     base = messages.filter((m) => m.id !== options.retryOf);
   } else {
-    base = [...messages, { id: newId(), role: 'user', content: options.displayText || input.text, createdAt: Date.now(), intent: input.intent }];
+    base = [...messages, { id: newId(), role: 'user', content: options.displayText || input.text, createdAt: Date.now(), intent: input.intent, task: input.task }];
   }
   store.set({ messages: base, pending: input.intent, flash: null });
 
@@ -73,6 +75,7 @@ export async function sendCompanionMessage(input: CompanionRequestInput, options
         lang,
         jobId: input.jobId || undefined,
         cvText: input.cvText || undefined,
+        preferences: input.preferences || undefined,
         context: { path: window.location.pathname, jobId: store.get().pageJob?.id || undefined },
       },
       { signal: controller.signal, timeout: 90000 }
@@ -83,10 +86,11 @@ export async function sendCompanionMessage(input: CompanionRequestInput, options
     store.set((s) => ({
       pending: null,
       flash: produced ? 'success' : null,
-      composer: response.needs === 'cv_text' ? 'cv' : s.composer,
+      // Free-text requests that need a CV or a job land in the matching workspace.
+      view: response.needs === 'cv_text' ? 'cv' : response.needs === 'job' ? 'proposal' : s.view,
       messages: [
         ...s.messages,
-        { id: newId(), role: 'assistant', content: reply, createdAt: Date.now(), intent: input.intent, response, request: input },
+        { id: newId(), role: 'assistant', content: reply, createdAt: Date.now(), intent: input.intent, task: input.task, response, request: input },
       ],
     }));
   } catch (error: any) {
@@ -97,7 +101,7 @@ export async function sendCompanionMessage(input: CompanionRequestInput, options
       flash: 'error',
       messages: [
         ...s.messages,
-        { id: newId(), role: 'assistant', content: '', createdAt: Date.now(), intent: input.intent, error: err, request: input },
+        { id: newId(), role: 'assistant', content: '', createdAt: Date.now(), intent: input.intent, task: input.task, error: err, request: input },
       ],
     }));
   } finally {

@@ -6,7 +6,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { CompanionStrings } from './companionI18n';
-import type { CompanionJobCard, CompanionMessage, CompanionPage, CvReview, ProposalDraft } from './types';
+import type { CareerPlan, CompanionJobCard, CompanionMessage, CompanionPage, CvReview, ProposalDraft } from './types';
 
 export interface CompanionCardHandlers {
   onViewApply: (card: CompanionJobCard) => void;
@@ -17,6 +17,9 @@ export interface CompanionCardHandlers {
   onOpenPage: (page: CompanionPage) => void;
   onRetry: (message: CompanionMessage) => void;
   selectedJobId: string | null;
+  /** Edited proposal drafts survive navigation between tasks. */
+  proposalText: (messageId: string, original: string) => string;
+  onProposalEdit: (messageId: string, text: string) => void;
 }
 
 async function copyText(text: string, t: CompanionStrings) {
@@ -140,7 +143,7 @@ export function JobCardView({ card, t, handlers }: { card: CompanionJobCard; t: 
         <div className="flex items-start gap-1.5">
           <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400" aria-hidden />
           <dt className="sr-only">{t.card.budget}</dt>
-          <dd className="[overflow-wrap:anywhere]">{budgetLabel(card, t)}</dd>
+          <dd className="[overflow-wrap:anywhere]"><bdi dir="ltr">{budgetLabel(card, t)}</bdi></dd>
         </div>
         {where && (
           <div className="flex items-start gap-1.5">
@@ -270,7 +273,8 @@ function CvReviewView({ review, t }: { review: CvReview; t: CompanionStrings }) 
 }
 
 function ProposalView({ draft, card, t, handlers, messageId }: { draft: ProposalDraft; card?: CompanionJobCard; t: CompanionStrings; handlers: CompanionCardHandlers; messageId: string }) {
-  const [text, setText] = useState(draft.text);
+  const text = handlers.proposalText(messageId, draft.text);
+  const setText = (value: string) => handlers.onProposalEdit(messageId, value);
   const fieldId = `shaghol-proposal-${messageId}`;
   const hasPlaceholders = /\[[^\]]+\]/.test(text);
   return (
@@ -310,6 +314,43 @@ function ProposalView({ draft, card, t, handlers, messageId }: { draft: Proposal
   );
 }
 
+function CareerPlanView({ plan, t, handlers }: { plan: CareerPlan; t: CompanionStrings; handlers: CompanionCardHandlers }) {
+  return (
+    <section className="space-y-3 rounded-xl border border-ink-200 bg-white p-3 dark:border-ink-dark-border dark:bg-white/[0.04]">
+      {plan.example && <p className="text-[11.5px] font-semibold text-amber-700 dark:text-amber-300">{t.panel.planExample}</p>}
+      {plan.goal && <h4 dir="auto" className="text-[13.5px] font-semibold text-ink-900 dark:text-ink-dark-text">{plan.goal}</h4>}
+      {plan.summary && <p dir="auto" className="text-[13px] leading-6">{plan.summary}</p>}
+      <ol className="space-y-2.5">
+        {plan.steps.map((step, i) => (
+          <li key={i} className="flex gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-[12px] font-bold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200" aria-hidden>
+              {i + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p dir="auto" className="text-[13.5px] font-semibold leading-5 text-ink-900 dark:text-ink-dark-text">
+                <span className="sr-only">{t.panel.step} {i + 1}: </span>{step.title}
+              </p>
+              {step.detail && <p dir="auto" className="mt-0.5 text-[12.5px] leading-5 text-ink-600 dark:text-ink-400">{step.detail}</p>}
+              {step.page && (
+                <button type="button" onClick={() => handlers.onOpenPage(step.page!)} className="mt-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300">
+                  {t.openPage} {t.pages[step.page]}
+                  <ArrowUpRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden />
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+      {plan.missingFacts.length > 0 && (
+        <div>
+          <h5 className="text-[12px] font-bold text-ink-900 dark:text-ink-dark-text">{t.cv.missingFacts}</h5>
+          <ul className="mt-1 list-disc space-y-0.5 ps-5 text-[12.5px]">{plan.missingFacts.map((f, i) => <li key={i} dir="auto">{f}</li>)}</ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function MessageView({ message, t, handlers, isLast }: { message: CompanionMessage; t: CompanionStrings; handlers: CompanionCardHandlers; isLast: boolean }) {
   if (message.role === 'user') {
     return (
@@ -339,21 +380,26 @@ export function MessageView({ message, t, handlers, isLast }: { message: Compani
   return (
     <div className="space-y-2">
       {r?.mode === 'demo' && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11.5px] text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          <span className="font-bold">{t.demoBadge}</span>
-          <span className="flex-1">{t.demoNotice[r.notice || 'not_configured']}</span>
+        // Visible but secondary: a small note with the reason and a retry.
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] leading-5 text-ink-500 dark:text-ink-400">
+          <span className="inline-flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+            {t.panel.demoNote}
+          </span>
+          <span>{t.panel.demoReason[r.notice || 'not_configured']}</span>
           {isLast && message.request && (
-            <Button size="sm" variant="outline" className="min-h-7 px-2" onClick={() => handlers.onRetry(message)}>
+            <button type="button" onClick={() => handlers.onRetry(message)} className="inline-flex items-center gap-1 font-semibold text-brand-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300">
               <RotateCcw className="h-3 w-3" aria-hidden />{t.retry}
-            </Button>
+            </button>
           )}
-        </div>
+        </p>
       )}
       {message.content && (
-        <div className="max-w-[95%] rounded-2xl rounded-ss-md bg-ink-100 px-3 py-2 text-ink-900 [overflow-wrap:anywhere] dark:bg-white/[0.07] dark:text-ink-dark-text">
+        <div className="text-[13.5px] text-ink-800 [overflow-wrap:anywhere] dark:text-ink-200">
           <RichText text={message.content} />
         </div>
       )}
+      {r?.careerPlan && <CareerPlanView plan={r.careerPlan} t={t} handlers={handlers} />}
       {r?.cvReview && <CvReviewView review={r.cvReview} t={t} />}
       {r?.proposal && <ProposalView draft={r.proposal} card={proposalCard} t={t} handlers={handlers} messageId={message.id} />}
       {cards.length > 0 && (
@@ -361,7 +407,7 @@ export function MessageView({ message, t, handlers, isLast }: { message: Compani
           {cards.map((card) => <JobCardView key={card.id} card={card} t={t} handlers={handlers} />)}
         </div>
       )}
-      {r?.actions && r.actions.length > 0 && (
+      {r?.actions && r.actions.length > 0 && !r.careerPlan && (
         <div className="flex flex-wrap gap-1.5">
           {r.actions.map((page) => (
             <Button key={page} size="sm" variant="soft" onClick={() => handlers.onOpenPage(page)}>

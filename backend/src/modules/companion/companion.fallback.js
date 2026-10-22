@@ -247,9 +247,7 @@ const demoPlan = async ({ student, text, lang }) => {
     page: "career_roadmap",
   });
   return {
-    reply: ar
-      ? "خطة آلية (ردود تجريبية) مبنية على مهاراتك الموثّقة والوظائف المتاحة فعلًا، وليست تحليلًا بالذكاء الاصطناعي."
-      : "Rule-based plan (demo responses) built from your verified skills and the jobs actually open now, not AI analysis.",
+    reply: ar ? "هذه خطوات مبنية على مهاراتك الموثّقة والوظائف المتاحة الآن." : "Here are steps based on your verified skills and the jobs open right now.",
     cards: search.jobs.slice(0, 3),
     careerPlan: { example: true, goal: text.slice(0, 200), summary: null, steps, missingFacts: [] },
   };
