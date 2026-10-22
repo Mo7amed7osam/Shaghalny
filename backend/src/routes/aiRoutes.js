@@ -2,6 +2,7 @@ const router = require("express").Router();
 const axios = require("axios");
 const { authenticate } = require("../middleware/auth");
 const { checkRole } = require("../middleware/roleCheck");
+const { aiLimiter } = require("../middleware/rateLimiter");
 const Skill = require("../models/Skill");
 
 const OPENROUTER_MODEL =
@@ -111,7 +112,7 @@ Rules:
 });
 // Drafts a full job post from a one-line idea. Skills are limited to the
 // platform taxonomy; budgets are suggestions the client must review.
-router.post("/job-brief", authenticate, checkRole("Client"), async (req, res) => {
+router.post("/job-brief", aiLimiter, authenticate, checkRole("Client"), async (req, res) => {
   const idea = typeof req.body?.idea === "string" ? req.body.idea.trim() : "";
   if (idea.length < 8 || idea.length > 500) {
     return res.status(400).json({ message: "Describe the job in 8 to 500 characters." });
