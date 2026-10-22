@@ -33,7 +33,7 @@ function normalizeLogoUrl(value: string) {
 }
 
 export function getCompanyName(job: any) {
-  return job?.employer?.name || job?.clientId?.name || job?.client?.name || job?.company || 'Client';
+  return job?.employer?.name || job?.clientId?.name || job?.client?.name || job?.sourceCompanyName || job?.company || 'Client';
 }
 
 export function getCompanyLogoUrl(job: any) {

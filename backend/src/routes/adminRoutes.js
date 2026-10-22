@@ -2,6 +2,7 @@ const { userLimiter } = require("../middleware/rateLimiter");
 const router = require("express").Router();
 const { authenticate } = require("../middleware/auth");
 const { checkAdmin } = require("../middleware/roleCheck");
+const { requirePayments } = require("../middleware/payments");
 const {
   reviewInterview,
   getSubmittedInterviews,
@@ -56,6 +57,7 @@ router.post(
   "/payments/topups/:id/approve",
   authenticate,
   checkAdmin,
+  requirePayments,
   approveTopUp,
 );
 router.post(
@@ -69,6 +71,7 @@ router.post(
   "/payments/withdrawals/:id/approve",
   authenticate,
   checkAdmin,
+  requirePayments,
   approveWithdrawal,
 );
 router.post(

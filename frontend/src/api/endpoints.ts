@@ -5,6 +5,7 @@ export const API = {
     me: '/auth/me',
   },
   wallet: {
+    demoTopups: '/wallet/demo-topups',
     balance: '/wallet/balance',
     topups: '/wallet/topups',
     topupScreenshot: (id: string) => `/wallet/topups/${id}/screenshot`,

@@ -3,15 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, BadgeCheck, Eye, EyeOff, Loader2, ShieldCheck, Sparkles, Video } from 'lucide-react';
+import { ArrowRight, Briefcase, Eye, EyeOff, GraduationCap, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Logo } from '@/components/brand/Logo';
 import useAuth from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { AuthShell, authButtonClass, authInputClass } from './AuthShell';
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -20,11 +20,14 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-const highlights = [
-  { icon: BadgeCheck, text: 'Verified student talent and trusted profiles' },
-  { icon: Video, text: 'AI interview verification with Shaghalny AI' },
-  { icon: ShieldCheck, text: 'Structured proposals, contracts, and payments' },
-];
+// Presentation shortcuts fill the email only; passwords are always typed.
+const demoAccounts = import.meta.env.VITE_DEMO_MODE === 'true'
+  ? [
+      { label: 'Student', email: 'student@shaghalny.test', icon: GraduationCap },
+      { label: 'Client', email: 'client@shaghalny.test', icon: Briefcase },
+      { label: 'Admin', email: 'admin@shaghalny.test', icon: ShieldCheck },
+    ]
+  : [];
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -34,10 +37,14 @@ const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    setFocus,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+  const currentEmail = watch('email');
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
@@ -51,114 +58,95 @@ const Login: React.FC = () => {
     }
   };
 
+  const pickDemoAccount = (email: string) => {
+    setValue('email', email, { shouldValidate: true });
+    setFocus('password');
+  };
+
   return (
-    <div className="flex min-h-screen bg-ink-50 dark:bg-ink-dark-bg">
-      {/* Left: brand panel */}
-      <div className="relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden bg-brand-700 p-8 lg:flex">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_8%,rgba(255,255,255,0.22),transparent_23rem),linear-gradient(180deg,rgba(255,255,255,0.08),transparent_48%)]" />
-        <div className="pointer-events-none absolute inset-x-10 top-24 h-px bg-white/18" />
-        <Link to="/" className="relative flex items-center text-white no-underline" aria-label="Shaghalny home">
-          <Logo tone="inverted" />
-        </Link>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to continue to your workspace"
+      footer={<>New to Shaghalny? <Link className="font-semibold text-brand-600 hover:underline dark:text-brand-300" to="/register">Create an account</Link></>}
+    >
+      {demoAccounts.length ? (
+        <div className="mb-6 flex rounded-2xl border border-ink-200/70 bg-white/50 p-1 dark:border-white/10 dark:bg-white/[0.04]" role="group" aria-label="Demo accounts">
+          {demoAccounts.map((account) => {
+            const active = currentEmail === account.email;
+            return (
+              <button
+                key={account.label}
+                type="button"
+                onClick={() => pickDemoAccount(account.email)}
+                aria-pressed={active}
+                className={cn(
+                  'flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+                  active
+                    ? 'bg-white text-brand-700 shadow-sm dark:bg-white/15 dark:text-white'
+                    : 'text-ink-500 hover:text-ink-800 dark:text-ink-300 dark:hover:text-white'
+                )}
+              >
+                <account.icon size={14} />
+                {account.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
 
-        <div className="relative space-y-5">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
-              <Sparkles size={12} />
-              Student marketplace
-            </div>
-            <h2 className="text-balance text-3xl font-semibold text-white">
-              Freelancing infrastructure built for students.
-            </h2>
-            <p className="text-sm leading-6 text-brand-100">
-              Manage proposals, verified interviews, contracts, and hiring workflows from one workspace.
-            </p>
+      <form className="space-y-4" noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="sr-only">Email</Label>
+          <div className="relative">
+            <Mail size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email address"
+              autoComplete="email"
+              className={authInputClass}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+              {...register('email')}
+            />
           </div>
-
-          <div className="space-y-2.5">
-            {highlights.map((item) => (
-              <div key={item.text} className="flex items-center gap-3 rounded-2xl border border-white/18 bg-white/[0.12] px-3 py-2.5 shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] backdrop-blur">
-                <item.icon size={16} className="shrink-0 text-brand-100" />
-                <p className="text-sm text-white">{item.text}</p>
-              </div>
-            ))}
-          </div>
+          {errors.email ? <p id="email-error" role="alert" className="pl-1 text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
         </div>
 
-        <p className="relative text-xs text-brand-200">© {new Date().getFullYear()} Shaghalny</p>
-      </div>
-
-      {/* Right: form */}
-      <main id="main-content" tabIndex={-1} className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
-        <div className="w-full max-w-md">
-          <div className="mb-6 lg:hidden">
-            <Link to="/" className="flex items-center text-ink-900 no-underline dark:text-ink-dark-text" aria-label="Shaghalny home">
-              <Logo />
-            </Link>
+        <div className="space-y-1.5">
+          <Label htmlFor="password" className="sr-only">Password</Label>
+          <div className="relative">
+            <Lock size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              autoComplete="current-password"
+              className={cn(authInputClass, 'pr-12')}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? 'password-error' : undefined}
+              {...register('password')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-ink-400 transition hover:bg-ink-100/70 hover:text-ink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 dark:hover:text-white"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
-
-          <Card className="border-white/80 bg-white/90 shadow-elevated">
-            <CardHeader>
-              <div className="page-eyebrow mb-1">Sign in</div>
-              <h1 className="text-2xl font-semibold">Welcome back</h1>
-              <CardDescription>
-                Access your proposals, interviews, and contracts.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-5">
-              <form className="space-y-4" noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} type="email" placeholder="you@example.com" autoComplete="email"  {...register('email')} />
-                  {errors.email ? <p id="email-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.email.message}</p> : null}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password" aria-invalid={!!errors.password} aria-describedby={errors.password ? "password-error" : undefined}
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      className="pr-14"
-                      autoComplete="current-password"
-
-                      {...register('password')}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-600 dark:text-ink-300"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        aria-pressed={showPassword}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  {errors.password ? <p id="password-error" role="alert" className="text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
-                </div>
-
-                <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-                  {isSubmitting ? 'Signing in...' : 'Sign in'}
-                  {!isSubmitting ? <ArrowRight size={16} /> : null}
-                </Button>
-              </form>
-
-              <div className="rounded-xl border border-ink-100 bg-ink-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/5">
-                <p className="text-xs text-ink-500 dark:text-ink-dark-muted">
-                  New to the platform?{' '}
-                  <Link className="font-semibold text-brand-600 dark:text-brand-400" to="/register">
-                    Create an account
-                  </Link>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {errors.password ? <p id="password-error" role="alert" className="pl-1 text-xs text-rose-600 dark:text-rose-400">{errors.password.message}</p> : null}
         </div>
-      </main>
-    </div>
+
+        <Button type="submit" size="lg" disabled={isSubmitting} className={cn(authButtonClass, 'mt-2')}>
+          {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
+          {isSubmitting ? 'Signing in…' : 'Sign in'}
+          {!isSubmitting ? <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" /> : null}
+        </Button>
+      </form>
+    </AuthShell>
   );
 };
 

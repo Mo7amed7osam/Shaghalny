@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { getClientJobs, getClientProposals } from '@/services/api';
 import { getCategoryMeta, getSkillCategory } from '@/lib/skillCategories';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,10 +45,6 @@ const proposalVariant: Record<string, 'success' | 'brand' | 'warning' | 'danger'
   rejected: 'danger',
 };
 
-function getInitials(name?: string) {
-  if (!name) return '?';
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-}
 function getJobCategoryKeys(job: any): string[] {
   const skills = Array.isArray(job?.requiredSkills) ? job.requiredSkills : [];
   return Array.from(new Set<string>(skills.map((s: any) => getCategoryMeta(getSkillCategory(s)).key)));
@@ -273,9 +269,7 @@ const ClientDashboard: React.FC = () => {
                     className="flex cursor-pointer items-center gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-card"
                     onClick={() => navigate(`/client/view-proposals?jobId=${proposal.jobId?._id}`)}
                   >
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarFallback>{getInitials(proposal.studentId?.name)}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar user={proposal.studentId} className="h-10 w-10" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
                       <p className="truncate text-xs text-ink-500 dark:text-ink-400">{proposal.jobId?.title || 'Job'}</p>

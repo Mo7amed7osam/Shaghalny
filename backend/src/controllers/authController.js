@@ -18,6 +18,7 @@ const register = async (req, res) => {
 
         // Create new user
         const newUser = new User({
+            isDemo: process.env.DEMO_MODE === 'true',
             name,
             email,
             password: hashedPassword,

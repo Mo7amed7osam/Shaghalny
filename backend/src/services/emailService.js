@@ -29,6 +29,7 @@ class EmailService {
     }
 
     async sendNewEventEmail(to, name, event) {
+        if (process.env.DEMO_MODE === 'true') return;
         if (!process.env.SMTP_USER) {
             console.log('Email skipped (SMTP not configured).');
             return;
@@ -125,6 +126,7 @@ class EmailService {
 
     // Function to send an email notification
     async sendEmail(to, subject, text) {
+        if (process.env.DEMO_MODE === 'true') return;
         if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
             console.log(`Email skipped (SMTP not configured). Intended for ${to}: ${subject}`);
             return;

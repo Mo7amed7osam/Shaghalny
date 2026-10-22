@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import {
   createTopUpRequest,
+  createDemoTopUpRequest,
   downloadTopUpScreenshot,
   getTopUpRequests,
   getWalletBalance,
@@ -48,8 +49,11 @@ const ClientWallet: React.FC = () => {
     enabled: !!userId,
   });
 
+  const isDemo = balanceData?.demoMode === true || import.meta.env.VITE_DEMO_MODE === 'true';
+  // Without a configured payment provider no money can be added; never show payment instructions.
+  const paymentsUnavailable = !balanceLoading && !isDemo && (balanceData?.paymentsEnabled !== true || !balanceData?.instapayReceiver);
   const topupMutation = useMutation({
-    mutationFn: (payload: { amount: number; screenshot: File; note?: string }) => createTopUpRequest(payload),
+    mutationFn: (payload: { amount: number; screenshot: File; note?: string }) => isDemo ? createDemoTopUpRequest(payload.amount) : createTopUpRequest(payload),
     onSuccess: () => {
       toast.success('Top-up request submitted.');
       setAmount('');
@@ -68,7 +72,7 @@ const ClientWallet: React.FC = () => {
       toast.error('Enter a valid amount.');
       return;
     }
-    if (!screenshot) {
+    if (!screenshot && !isDemo) {
       toast.error('Screenshot is required.');
       return;
     }
@@ -90,7 +94,7 @@ const ClientWallet: React.FC = () => {
     }
   };
 
-  const instapayReceiver = balanceData?.instapayReceiver || '01146370900';
+  const instapayReceiver = balanceData?.instapayReceiver || '';
 
   return (
     <div className="space-y-5">
@@ -109,18 +113,18 @@ const ClientWallet: React.FC = () => {
         />
 
         <div className="glass-panel xl:col-span-2 p-4">
-          <h2 className="text-2xl font-semibold">Instapay instructions</h2>
+          <h2 className="text-2xl font-semibold">{paymentsUnavailable ? 'Payments not available yet' : isDemo ? 'Simulated wallet funding' : 'Instapay instructions'}</h2>
           <p className="mt-2 text-sm text-ink-500 dark:text-ink-300">
-            Transfer the exact amount to <span className="font-semibold text-ink-900 dark:text-white">{instapayReceiver}</span>, then upload the payment screenshot below.
+            {paymentsUnavailable ? 'Shaghalny has no payment provider configured, so wallet funding, escrow and payouts are switched off. Do not send money to anyone for Shaghalny work. Unpaid internships can still be posted and run on the platform.' : isDemo ? 'Request test credits below. A clearly marked demo receipt is attached automatically; admin approval funds the demo wallet. Do not transfer real money.' : <>Transfer the exact amount to <span className="font-semibold text-ink-900 dark:text-white">{instapayReceiver}</span>, then upload the payment screenshot below.</>}
           </p>
         </div>
       </div>
 
-      <div className="glass-panel p-4">
+      {paymentsUnavailable ? null : <div className="glass-panel p-4">
         <div className="space-y-4">
           <div>
             <h2 className="text-2xl font-semibold">Submit top-up request</h2>
-            <p className="text-sm text-ink-500 dark:text-ink-300">Add the transfer amount, attach proof, and include any useful reference note.</p>
+            <p className="text-sm text-ink-500 dark:text-ink-300">{isDemo ? 'Choose a test amount, then approve the request from the admin Payments page.' : 'Add the transfer amount, attach proof, and include any useful reference note.'}</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -128,10 +132,10 @@ const ClientWallet: React.FC = () => {
               <span>Amount (EGP)</span>
               <Input type="number" min={0} placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={topupMutation.isPending} />
             </label>
-            <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
+            {!isDemo ? <label className="block space-y-1.5 text-sm font-medium text-ink-700 dark:text-ink-200">
               <span>Payment screenshot</span>
               <Input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={(e) => setScreenshot(e.target.files?.[0] || null)} disabled={topupMutation.isPending} />
-            </label>
+            </label> : null}
           </div>
 
           {screenshot ? <p className="text-sm text-ink-500 dark:text-ink-300">{screenshot.name}</p> : null}
@@ -145,7 +149,7 @@ const ClientWallet: React.FC = () => {
             {topupMutation.isPending ? 'Submitting…' : 'Submit top-up'}
           </Button>
         </div>
-      </div>
+      </div>}
 
       <section className="space-y-4">
         <div>

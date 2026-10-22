@@ -11,3 +11,9 @@ ai-interview/state.json
 backend/.DS_Store
 .DS_Store
 .DS_Store
+.vercel
+.env*
+
+# Raw third-party job feed snapshots: keep outside the public repo (source terms)
+output/job-import/sources-*.json
+output/job-import/superseded/

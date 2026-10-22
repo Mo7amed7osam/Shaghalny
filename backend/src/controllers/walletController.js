@@ -3,6 +3,7 @@ const fs = require('fs');
 const User = require('../models/User');
 const TopUpRequest = require('../models/TopUpRequest');
 const WithdrawalRequest = require('../models/WithdrawalRequest');
+const { paymentsEnabled } = require('../middleware/payments');
 
 const getWalletBalance = async (req, res) => {
     try {
@@ -11,14 +12,32 @@ const getWalletBalance = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const payload = { balance: Number(user.balance || 0) };
+        const demoMode = process.env.DEMO_MODE === 'true';
+        const payload = { balance: Number(user.balance || 0), demoMode, paymentsEnabled: paymentsEnabled() };
         if (user.role === 'Client') {
-            payload.instapayReceiver = process.env.INSTAPAY_RECEIVER_NUMBER || '';
+            payload.instapayReceiver = demoMode || !payload.paymentsEnabled ? '' : process.env.INSTAPAY_RECEIVER_NUMBER || '';
         }
 
         res.status(200).json(payload);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching balance', error });
+    }
+};
+
+const createDemoTopUpRequest = async (req, res) => {
+    if (process.env.DEMO_MODE !== 'true') return res.status(404).json({ message: 'Not found' });
+    const amount = Number(req.body?.amount);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) {
+        return res.status(400).json({ message: 'Demo amount must be between 0 and 100,000 credits.' });
+    }
+    try {
+        const topup = await TopUpRequest.create({
+            clientId: req.user.id, amount, screenshotPath: 'assets/demo-payment.svg',
+            note: 'DEMO ONLY — simulated top-up. No real transfer or receipt.',
+        });
+        return res.status(201).json(topup);
+    } catch {
+        return res.status(500).json({ message: 'Could not create demo top-up.' });
     }
 };
 
@@ -135,6 +154,7 @@ const listWithdrawalRequests = async (req, res) => {
 };
 
 module.exports = {
+    createDemoTopUpRequest,
     getWalletBalance,
     createTopUpRequest,
     listTopUpRequests,

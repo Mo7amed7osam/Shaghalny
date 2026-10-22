@@ -7,7 +7,11 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "jobs:fetch": "node src/scripts/fetchExternalJobs.js",
+    "jobs:import": "node src/scripts/importExternalJobs.js",
+    "db:prepare-live": "node src/scripts/prepareLiveDatabase.js",
+    "seed:nexus-demo": "node src/scripts/seedNexusDemo.js"
   },
   "dependencies": {
     "@faker-js/faker": "^10.4.0",

@@ -1,0 +1,12 @@
+/backend/
+/ai-interview/
+/monitoring/
+/output/
+/tmp/
+/Shaghalny Student Freelancing Platform/
+/.agents/
+/.claude/
+/.github/
+/.playwright-cli/
+**/node_modules/
+**/.env*

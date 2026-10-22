@@ -148,7 +148,7 @@ export const InterviewResult: React.FC<InterviewResultProps> = ({ result }) => {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(compact ? 15 : 21);
       doc.setTextColor(...BRAND_COLOR);
-      doc.text('SKILL VERIFICATION REPORT', PAGE_MARGIN, layout.titleY);
+      doc.text(result.isDemo ? 'DEMO ASSESSMENT - SAMPLE DATA' : 'SKILL VERIFICATION REPORT', PAGE_MARGIN, layout.titleY);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(compact ? 8.5 : 10);
@@ -189,7 +189,7 @@ export const InterviewResult: React.FC<InterviewResultProps> = ({ result }) => {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(...MUTED_TEXT_COLOR);
-      doc.text(`${APP_BRAND_NAME} • Skill Verification Report`, PAGE_MARGIN, footerY);
+      doc.text(`${APP_BRAND_NAME} • ${result.isDemo ? 'DEMO - synthetic assessment' : 'Skill Verification Report'}`, PAGE_MARGIN, footerY);
       doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - PAGE_MARGIN, footerY, { align: 'right' });
     };
 
@@ -660,11 +660,12 @@ export const InterviewResult: React.FC<InterviewResultProps> = ({ result }) => {
       drawFooter(pageNumber, totalPages);
     }
 
-    doc.save(`${result.skill}-verification-report.pdf`);
+    doc.save(`${result.isDemo ? 'DEMO-' : ''}${result.skill}-verification-report.pdf`);
   };
 
   return (
     <div className="space-y-6">
+      {result.isDemo ? <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">Sample interview: answers and scores are synthetic demonstration data, not a real candidate assessment.</p> : null}
       <PageHeader
         eyebrow="Interview result"
         title={`${result.skill} verification`}

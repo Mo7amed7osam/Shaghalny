@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, FileText } from 'lucide-react';
 
 import { getContracts } from '@/services/api';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,10 +20,6 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } },
 };
 
-function getInitials(name?: string) {
-  if (!name) return '?';
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-}
 
 const ClientContracts: React.FC = () => {
   const navigate = useNavigate();
@@ -72,9 +68,7 @@ const ClientContracts: React.FC = () => {
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-ink-900 dark:text-white">{contract.jobId?.title || 'Contract'}</p>
                       <div className="mt-1 flex min-w-0 items-center gap-1.5">
-                        <Avatar className="h-4 w-4">
-                          <AvatarFallback className="text-[8px]">{getInitials(contract.studentId?.name)}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar user={contract.studentId} className="h-4 w-4" fallbackClassName="text-[8px]" />
                         <span className="truncate text-xs text-ink-500 dark:text-ink-400">{contract.studentId?.name || 'Student'}</span>
                       </div>
                     </div>

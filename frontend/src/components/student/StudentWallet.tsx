@@ -115,6 +115,7 @@ const StudentWallet: React.FC = () => {
   }, [withdrawals]);
 
   const balance = balanceData?.balance ?? 0;
+  const paymentsUnavailable = !balanceLoading && balanceData?.demoMode !== true && balanceData?.paymentsEnabled !== true;
 
   const handleChangePayoutMethod = () => {
     setIsWithdrawOpen(true);
@@ -127,8 +128,13 @@ const StudentWallet: React.FC = () => {
         <div>
           <h1 className="sh-page-title">Wallet</h1>
           <p className="mt-1 text-sm text-ink-500 dark:text-ink-dark-muted">Earnings, pending payments, and withdrawals.</p>
+          {paymentsUnavailable ? (
+            <p role="status" className="mt-2 max-w-2xl rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+              Payments are not available yet: no payment provider is configured, so paid contracts, escrow and withdrawals are switched off. Unpaid internships still work.
+            </p>
+          ) : null}
         </div>
-        <Button onClick={() => setIsWithdrawOpen(true)} disabled={withdrawMutation.isPending}>
+        <Button onClick={() => setIsWithdrawOpen(true)} disabled={withdrawMutation.isPending || paymentsUnavailable}>
           Withdraw funds
         </Button>
       </div>

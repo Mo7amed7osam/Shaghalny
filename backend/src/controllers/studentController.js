@@ -27,7 +27,7 @@ const getStudentProfile = async (req, res) => {
     const student = await User.findById(studentId)
       .populate("verifiedSkills.skill", "name category")
       .select(
-        "name email description university portfolioLinks profilePhotoUrl coverPhotoUrl verifiedSkills reviews jobsCompleted cvUrl role balance",
+        "name email description university portfolioLinks profilePhotoUrl coverPhotoUrl verifiedSkills reviews jobsCompleted cvUrl role balance isDemo",
       );
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
@@ -282,7 +282,15 @@ const uploadStudentCV = async (req, res) => {
 // Browse available jobs
 const browseJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ status: "open" })
+    const now = new Date();
+    const jobs = await Job.find({
+      status: "open",
+      // Same visibility rules as GET /jobs for imported listings.
+      $and: [
+        { $or: [{ sourceType: { $ne: "external" } }, { sourceLastSeenAt: { $gte: new Date(now.getTime() - 14 * 86400000) } }] },
+        { $or: [{ sourceExpiresAt: null }, { sourceExpiresAt: { $gt: now } }] },
+      ],
+    })
       .populate("employer", "name website companyLogoUrl isVerified")
       .populate("requiredSkills", "name category");
     res.status(200).json(jobs);

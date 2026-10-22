@@ -455,6 +455,7 @@ const LandingPage: React.FC = () => {
               className="mx-auto lg:mx-0"
             >
               <ProductPreview />
+              <p className="mt-2 text-center text-xs text-ink-500 dark:text-ink-dark-muted">Illustrative interface example, not a real profile or listing.</p>
             </motion.div>
           </div>
         </div>
@@ -660,7 +661,7 @@ const LandingPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-brand-100">Shaghalny AI Score</p>
-                    <p className="text-[10px] text-brand-200">AI-powered assessment</p>
+                    <p className="text-[10px] text-brand-200">Illustrative example</p>
                   </div>
                 </div>
                 <Separator className="mb-4 bg-white/20" />
@@ -703,7 +704,7 @@ const LandingPage: React.FC = () => {
                 Ready to get started?
               </h2>
               <p className="max-w-lg text-base text-ink-500 dark:text-ink-dark-muted">
-                Join students and clients already using Shaghalny for verified, structured freelancing.
+                Create an account to verify your skills and browse sourced freelance projects and student opportunities.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

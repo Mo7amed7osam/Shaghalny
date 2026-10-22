@@ -73,6 +73,9 @@ const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 app.use('/uploads', express.static(getUploadsRoot()));
 app.use('/api/uploads', express.static(getUploadsRoot()));
+if (process.env.DEMO_MODE === 'true') {
+    app.use('/api/demo-assets', express.static(path.join(__dirname, '../assets/demo')));
+}
 app.get('/', (req, res) => {
     console.log("server is working");
     res.status(200).send('ok');

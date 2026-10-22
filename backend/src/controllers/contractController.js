@@ -14,8 +14,8 @@ const getContract = async (req, res) => {
         "jobId",
         "title status type isUnpaid workMode budgetMin budgetMax duration",
       )
-      .populate("clientId", "name email")
-      .populate("studentId", "name email");
+      .populate("clientId", "name email profilePhotoUrl companyLogoUrl")
+      .populate("studentId", "name email profilePhotoUrl");
     if (!contract) {
       return res.status(404).json({ message: "Contract not found" });
     }
@@ -60,8 +60,8 @@ const listContracts = async (req, res) => {
 
     const contracts = await Contract.find(query)
       .populate("jobId", "title status type isUnpaid")
-      .populate("clientId", "name email")
-      .populate("studentId", "name email")
+      .populate("clientId", "name email profilePhotoUrl companyLogoUrl")
+      .populate("studentId", "name email profilePhotoUrl")
       .sort({ updatedAt: -1 });
 
     res.status(200).json(contracts);

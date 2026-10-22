@@ -17,7 +17,7 @@ const listTopUps = async (req, res) => {
         const status = normalizeStatus(req.query.status);
         const query = status ? { status } : {};
         const topups = await TopUpRequest.find(query)
-            .populate('clientId', 'name email')
+            .populate('clientId', 'name email profilePhotoUrl companyLogoUrl')
             .populate('adminId', 'name email')
             .sort({ createdAt: -1 });
         res.status(200).json(topups);
@@ -104,7 +104,7 @@ const listWithdrawals = async (req, res) => {
         const status = normalizeStatus(req.query.status);
         const query = status ? { status } : {};
         const withdrawals = await WithdrawalRequest.find(query)
-            .populate('studentId', 'name email')
+            .populate('studentId', 'name email profilePhotoUrl')
             .populate('adminId', 'name email')
             .sort({ createdAt: -1 });
         res.status(200).json(withdrawals);

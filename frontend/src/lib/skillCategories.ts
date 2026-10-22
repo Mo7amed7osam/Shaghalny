@@ -4,6 +4,7 @@ import {
   Code,
   Film,
   GraduationCap,
+  Languages,
   HeartPulse,
   Layers,
   Megaphone,
@@ -57,6 +58,12 @@ export const SKILL_CATEGORIES: SkillCategoryMeta[] = [
     label: 'Media',
     icon: Film,
     badge: 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300',
+  },
+  {
+    key: 'Translation',
+    label: 'Translation',
+    icon: Languages,
+    badge: 'border-sky-100 bg-sky-50 text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-300',
   },
   {
     key: 'Other',

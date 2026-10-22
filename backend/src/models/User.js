@@ -23,6 +23,7 @@ const ReviewSchema = new Schema({
 });
 
 const UserSchema = new Schema({
+  isDemo: { type: Boolean, default: false },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },

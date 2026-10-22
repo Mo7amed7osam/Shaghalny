@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import {
   acceptProposal, getClientJobs, getClientProposals, getJobProposals, getSkills,
 } from '@/services/api';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -27,10 +27,6 @@ const fadeUp = {
 };
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
 
-function getInitials(name?: string) {
-  if (!name) return '?';
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-}
 
 const statusVariant: Record<string, 'success' | 'brand' | 'danger' | 'warning'> = {
   accepted: 'success',
@@ -170,9 +166,7 @@ const fetchMatchScore = async (proposal: any, job: any) => {
                   <CardHeader className="gap-0 space-y-0 px-4 pb-3 pt-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <Avatar className="h-11 w-11 shrink-0">
-                          <AvatarFallback>{getInitials(proposal.studentId?.name)}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar user={proposal.studentId} className="h-11 w-11" />
                         <div className="min-w-0">
                           <p className="truncate font-bold text-ink-900 dark:text-white">{proposal.studentId?.name || 'Student'}</p>
                           <p className="truncate text-xs text-ink-500 dark:text-ink-400">{proposal.studentId?.email || '—'}</p>

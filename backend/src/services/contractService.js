@@ -1,3 +1,4 @@
+const { paymentsEnabled, PAYMENTS_DISABLED_MESSAGE } = require("../middleware/payments");
 const mongoose = require("mongoose");
 const Proposal = require("../models/Proposal");
 const Job = require("../models/Job");
@@ -30,6 +31,11 @@ const acceptProposalWithEscrow = async ({
     if (!job) {
       const error = new Error("Job not found");
       error.status = 404;
+      throw error;
+    }
+    if (job.sourceType === "external") {
+      const error = new Error("External listings cannot create Shaghalny contracts.");
+      error.status = 409;
       throw error;
     }
     if (job.employer.toString() !== clientId) {
@@ -69,6 +75,11 @@ const acceptProposalWithEscrow = async ({
 
     const isUnpaidInternship =
       job.type === "internship" && job.isUnpaid === true;
+    if (!isUnpaidInternship && !paymentsEnabled()) {
+      const error = new Error(PAYMENTS_DISABLED_MESSAGE);
+      error.status = 503;
+      throw error;
+    }
 
     let contract;
     let escrow = null;
