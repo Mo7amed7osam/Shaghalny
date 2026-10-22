@@ -54,8 +54,18 @@ export function hasBlink(state: CompanionState): boolean {
   return Boolean(resolvePose(state)?.blink);
 }
 
+/**
+ * Frame-by-frame wave (8 frames from the waving sheet), aligned to the idle
+ * pose on the same 320×316 canvas. Played once over ~1.2s.
+ */
+export const WAVE_FRAMES = Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-wave-${i + 1}.webp`);
+export const WAVE_FRAME_MS = 150;
+
 export const ALL_POSE_SOURCES = Array.from(
   new Set(
-    Object.keys(COMPANION_POSES).flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true)]).filter(Boolean) as string[]
+    [
+      ...Object.keys(COMPANION_POSES).flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true)]),
+      ...WAVE_FRAMES,
+    ].filter(Boolean) as string[]
   )
 );

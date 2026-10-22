@@ -70,7 +70,7 @@ export function CompanionWidget() {
   const listRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState('');
   const [aiStatus, setAiStatus] = useState<{ aiConfigured: boolean; fallbackEnabled: boolean } | null>(null);
-  const [greetingFlash, setGreetingFlash] = useState(false);
+  const [headerGreet, setHeaderGreet] = useState(0);
   const [bubble, setBubble] = useState<string | null>(null);
   const [greetKey, setGreetKey] = useState(0);
 
@@ -146,8 +146,8 @@ export function CompanionWidget() {
     return () => cancelAnimationFrame(id);
   }, [s.open, s.composer]);
 
-  const charState: CompanionState = s.pending ? pendingState[s.pending] : s.flash || (greetingFlash ? 'greeting' : 'idle');
-  const headerLife = useLivingPose(charState);
+  const charState: CompanionState = s.pending ? pendingState[s.pending] : s.flash || 'idle';
+  const headerLife = useLivingPose(charState, { greetKey: headerGreet });
   const focusJob = s.selectedJob || s.pageJob;
   const demoActive = useMemo(() => {
     const lastAssistant = [...s.messages].reverse().find((m) => m.role === 'assistant' && m.response);
@@ -159,10 +159,8 @@ export function CompanionWidget() {
     setBubble(null);
     const firstOpen = !companionStore.get().greeted;
     companionStore.set({ open: true, dismissed: false, greeted: true });
-    if (firstOpen) {
-      setGreetingFlash(true);
-      setTimeout(() => setGreetingFlash(false), 1600);
-    }
+    // Wave hello the first time the panel opens.
+    if (firstOpen) setHeaderGreet((k) => k + 1);
   }, []);
 
   const minimize = useCallback(() => {
@@ -314,7 +312,7 @@ export function CompanionWidget() {
           }
         >
           <header className="flex items-center gap-3 border-b border-ink-200 px-3 py-2.5 dark:border-ink-dark-border">
-            <CompanionCharacter state={headerLife.pose} blink={headerLife.blink} size={52} />
+            <CompanionCharacter state={headerLife.pose} blink={headerLife.blink} frameSrc={headerLife.frameSrc} size={52} />
             <div className="min-w-0 flex-1">
               <h2 id={titleId} className="flex items-center gap-2 text-[15px] font-semibold leading-5">
                 {t.name}

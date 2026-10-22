@@ -8,6 +8,8 @@ interface CompanionCharacterProps {
   size?: number;
   /** Show the eyes-closed frame for this pose, when one exists. */
   blink?: boolean;
+  /** An animation frame to show instead of the pose (e.g. the wave). */
+  frameSrc?: string | null;
   className?: string;
   /** Decorative by default; the surrounding control carries the label. */
   label?: string;
@@ -50,7 +52,7 @@ function PlaceholderRobot() {
   );
 }
 
-export function CompanionCharacter({ state, size = 56, blink = false, className, label }: CompanionCharacterProps) {
+export function CompanionCharacter({ state, size = 56, blink = false, frameSrc = null, className, label }: CompanionCharacterProps) {
   const [, force] = useState(0);
   useEffect(() => {
     preloadAll();
@@ -61,7 +63,9 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
 
   const base = resolvePoseSrc(state);
   const blinkSrc = blink ? resolvePoseSrc(state, true) : null;
-  const src = blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
+  // Animation frames only show once decoded, so a slow network never flashes.
+  const src = frameSrc && loaded.has(frameSrc) ? frameSrc : blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
+  const animating = src === frameSrc;
   const showArt = Boolean(src && loaded.has(src) && !failed.has(src));
   const framed = COMPANION_ART.framed;
 
@@ -81,8 +85,8 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
       <span className="shaghol-char__body block h-full w-full">
         {showArt ? (
           <img
-            // Pose changes fade in; blinks swap instantly within the same pose.
-            key={base || undefined}
+            // Pose changes fade in; blinks and wave frames swap instantly.
+            key={animating ? 'frames' : base || undefined}
             src={src!}
             alt=""
             draggable={false}

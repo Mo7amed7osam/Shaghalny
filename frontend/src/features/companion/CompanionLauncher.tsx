@@ -94,7 +94,7 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     return () => window.clearTimeout(timer);
   }, [pinnedControls]);
 
-  const { pose, blink } = useLivingPose(dragging ? 'idle' : state, { greetKey: greetKey + hoverGreet, idleVariety: true });
+  const { pose, blink, frameSrc } = useLivingPose(state, { greetKey: greetKey + hoverGreet, idleVariety: true, paused: dragging });
 
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
@@ -118,8 +118,12 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     if (!d.moved) {
       d.moved = true;
       window.clearTimeout(d.timer);
-      e.currentTarget.setPointerCapture(e.pointerId);
       setDragging(true);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer already released */
+      }
     }
     setAnchor(clamp({ right: d.right - dx, bottom: d.bottom - dy }));
   };
@@ -237,7 +241,7 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
         )}
         style={{ touchAction: 'none' }}
       >
-        <CompanionCharacter state={pose} blink={blink} size={size} />
+        <CompanionCharacter state={dragging ? 'idle' : pose} blink={blink} frameSrc={frameSrc} size={size} />
         <span id={`${panelId}-drag-hint`} className="sr-only">{t.dragHint}</span>
       </button>
 
