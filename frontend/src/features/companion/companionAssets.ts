@@ -10,6 +10,8 @@ import type { CompanionState } from './types';
  */
 export interface CompanionPose {
   src?: string;
+  /** Same pose with eyes closed, used for occasional blinks. */
+  blink?: string;
   aliasOf?: CompanionState;
 }
 
@@ -19,28 +21,41 @@ export const COMPANION_ART = {
 };
 
 export const COMPANION_POSES: Record<CompanionState, CompanionPose> = {
-  idle: { src: 'shaghol-idle.webp' },
+  idle: { src: 'shaghol-idle.webp', blink: 'shaghol-idle-blink.webp' },
   greeting: { src: 'shaghol-greeting.webp' },
-  thinking: { src: 'shaghol-thinking.webp' },
+  thinking: { src: 'shaghol-thinking.webp', blink: 'shaghol-thinking-blink.webp' },
   searching: { src: 'shaghol-searching.webp' },
   reviewing_cv: { src: 'shaghol-reviewing_cv.webp' },
-  writing_proposal: { src: 'shaghol-writing_proposal.webp' },
+  writing_proposal: { src: 'shaghol-writing_proposal.webp', blink: 'shaghol-writing_proposal-blink.webp' },
   success: { src: 'shaghol-success.webp' },
-  error: { src: 'shaghol-error.webp' },
+  error: { src: 'shaghol-error.webp', blink: 'shaghol-error-blink.webp' },
 };
 
-export function resolvePoseSrc(state: CompanionState): string | null {
+function resolvePose(state: CompanionState): CompanionPose | null {
   const seen = new Set<CompanionState>();
   let current: CompanionState | undefined = state;
   while (current && !seen.has(current)) {
     seen.add(current);
     const pose: CompanionPose | undefined = COMPANION_POSES[current];
-    if (pose?.src) return `${COMPANION_ART.basePath}${pose.src}`;
+    if (pose?.src) return pose;
     current = pose?.aliasOf;
   }
   return null;
 }
 
+export function resolvePoseSrc(state: CompanionState, blink = false): string | null {
+  const pose = resolvePose(state);
+  if (!pose?.src) return null;
+  const file = blink && pose.blink ? pose.blink : pose.src;
+  return `${COMPANION_ART.basePath}${file}`;
+}
+
+export function hasBlink(state: CompanionState): boolean {
+  return Boolean(resolvePose(state)?.blink);
+}
+
 export const ALL_POSE_SOURCES = Array.from(
-  new Set(Object.keys(COMPANION_POSES).map((s) => resolvePoseSrc(s as CompanionState)).filter(Boolean) as string[])
+  new Set(
+    Object.keys(COMPANION_POSES).flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true)]).filter(Boolean) as string[]
+  )
 );

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/auth/AuthProvider';
 import { CompanionCharacter } from './CompanionCharacter';
+import { CompanionLauncher, type LauncherHandle } from './CompanionLauncher';
+import { useLivingPose } from './useLivingPose';
 import { MessageView, type CompanionCardHandlers } from './CompanionMessages';
 import { abortCompanionRequest, fetchCompanionStatus, sendCompanionMessage } from './companionApi';
 import { COMPANION_STRINGS, PAGE_ROUTES } from './companionI18n';
@@ -40,8 +42,7 @@ function useVisualViewport(active: boolean) {
   return vv;
 }
 
-function useIsMobile() {
-  const query = '(max-width: 639px)';
+function useMedia(query: string) {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
   useEffect(() => {
     const mq = window.matchMedia(query);
@@ -58,18 +59,20 @@ export function CompanionWidget() {
   const navigate = useNavigate();
   const s = useCompanion((x) => x);
   const t = COMPANION_STRINGS[s.lang];
-  const isMobile = useIsMobile();
+  const isMobile = useMedia('(max-width: 639px)');
+  const hasTabBar = useMedia('(max-width: 767px)');
   const vv = useVisualViewport(s.open && isMobile);
   const panelId = useId();
   const titleId = useId();
-  const launcherRef = useRef<HTMLButtonElement>(null);
+  const launcherRef = useRef<LauncherHandle>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const cvRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState('');
   const [aiStatus, setAiStatus] = useState<{ aiConfigured: boolean; fallbackEnabled: boolean } | null>(null);
   const [greetingFlash, setGreetingFlash] = useState(false);
-  const [showPeek, setShowPeek] = useState(false);
+  const [bubble, setBubble] = useState<string | null>(null);
+  const [greetKey, setGreetKey] = useState(0);
 
   const role = user?.role;
   const userId: string | null = user ? String(user._id || user.id) : null;
@@ -100,12 +103,30 @@ export function CompanionWidget() {
     return () => clearTimeout(timer);
   }, [s.flash]);
 
-  // Gentle one-time hint next to the launcher, once per session.
+  // Wave once when the companion first appears on a page load.
+  useEffect(() => {
+    if (loading) return;
+    const timer = setTimeout(() => setGreetKey((k) => k + 1), 900);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Temporary speech bubbles beside the character while the panel is closed:
+  // a one-time hint, progress while working, and a nudge when results land.
   useEffect(() => {
     if (s.open || s.dismissed || s.greeted || loading) return;
-    const timer = setTimeout(() => setShowPeek(true), 2500);
+    const timer = setTimeout(() => setBubble(t.peek), 2500);
     return () => clearTimeout(timer);
-  }, [s.open, s.dismissed, s.greeted, loading]);
+  }, [s.open, s.dismissed, s.greeted, loading, t.peek]);
+  useEffect(() => {
+    if (s.open || s.dismissed) return;
+    if (s.pending) setBubble(s.pending === 'find_jobs' ? t.searching : s.pending === 'review_cv' ? t.reviewing : s.pending === 'write_proposal' ? t.writing : t.thinking);
+    else if (s.flash === 'success') setBubble(t.ready);
+  }, [s.open, s.dismissed, s.pending, s.flash, t]);
+  useEffect(() => {
+    if (!bubble || s.pending) return;
+    const timer = setTimeout(() => setBubble(null), 7000);
+    return () => clearTimeout(timer);
+  }, [bubble, s.pending]);
 
   // Keep the newest turn in view: long answers (job cards, reviews) scroll to
   // their start rather than their end.
@@ -126,6 +147,7 @@ export function CompanionWidget() {
   }, [s.open, s.composer]);
 
   const charState: CompanionState = s.pending ? pendingState[s.pending] : s.flash || (greetingFlash ? 'greeting' : 'idle');
+  const headerLife = useLivingPose(charState);
   const focusJob = s.selectedJob || s.pageJob;
   const demoActive = useMemo(() => {
     const lastAssistant = [...s.messages].reverse().find((m) => m.role === 'assistant' && m.response);
@@ -134,7 +156,7 @@ export function CompanionWidget() {
   }, [s.messages, aiStatus]);
 
   const openPanel = useCallback(() => {
-    setShowPeek(false);
+    setBubble(null);
     const firstOpen = !companionStore.get().greeted;
     companionStore.set({ open: true, dismissed: false, greeted: true });
     if (firstOpen) {
@@ -149,6 +171,7 @@ export function CompanionWidget() {
   }, []);
 
   const dismiss = useCallback(() => {
+    setBubble(null);
     companionStore.set({ open: false, dismissed: true });
   }, []);
 
@@ -246,48 +269,30 @@ export function CompanionWidget() {
   if (hidden) return null;
 
   const dir = s.lang === 'ar' ? 'rtl' : 'ltr';
-  const launcherBottom = isStudent ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-6' : 'bottom-[calc(1rem+env(safe-area-inset-bottom))] md:bottom-6';
   const pendingLabel = s.pending === 'find_jobs' ? t.searching : s.pending === 'review_cv' ? t.reviewing : s.pending === 'write_proposal' ? t.writing : t.thinking;
-
-  if (s.dismissed && !s.open) {
-    return (
-      <button
-        type="button"
-        onClick={openPanel}
-        className={cn('fixed right-0 z-[45] flex items-center gap-1 rounded-s-xl border border-e-0 border-ink-200 bg-white py-1.5 pe-1 ps-1.5 shadow-elevated dark:border-ink-dark-border dark:bg-ink-dark-surface', launcherBottom)}
-        aria-label={t.reopen}
-        title={t.reopen}
-      >
-        <CompanionCharacter state="idle" size={30} />
-      </button>
-    );
-  }
 
   return (
     <>
       {!s.open && (
-        <div className={cn('fixed right-4 z-[45] flex items-end gap-2 md:right-6', launcherBottom)}>
-          {showPeek && (
-            <div dir={dir} className="shaghol-panel-enter mb-3 hidden max-w-[220px] items-start gap-1 rounded-2xl rounded-ee-md border border-ink-200 bg-white px-3 py-2 text-[13px] text-ink-800 shadow-elevated dark:border-ink-dark-border dark:bg-ink-dark-surface dark:text-ink-dark-text sm:flex">
-              <button type="button" className="text-start" onClick={openPanel}>{t.peek}</button>
-              <button type="button" onClick={() => { setShowPeek(false); companionStore.set({ greeted: true }); }} className="-me-1 rounded p-0.5 text-ink-400 hover:text-ink-700" aria-label={t.minimize}>
-                <X className="h-3.5 w-3.5" aria-hidden />
-              </button>
-            </div>
-          )}
-          <button
-            ref={launcherRef}
-            type="button"
-            onClick={openPanel}
-            aria-label={t.openLabel}
-            aria-expanded={false}
-            aria-controls={panelId}
-            className="group relative rounded-[22px] p-1 shadow-glass ring-1 ring-brand-500/25 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:ring-offset-ink-dark-bg bg-white dark:bg-ink-dark-surface motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-          >
-            <CompanionCharacter state={s.pending ? charState : 'idle'} size={60} />
-            {s.pending && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-brand-500 dark:border-ink-dark-surface" aria-hidden />}
-          </button>
-        </div>
+        <CompanionLauncher
+          ref={launcherRef}
+          t={t}
+          dir={dir}
+          state={charState}
+          size={isMobile ? 76 : 92}
+          bottomInset={isStudent && hasTabBar ? 76 : 0}
+          dismissed={s.dismissed}
+          bubble={bubble}
+          greetKey={greetKey}
+          panelId={panelId}
+          onOpen={openPanel}
+          onHide={dismiss}
+          onRestore={() => companionStore.set({ dismissed: false })}
+          onBubbleDismiss={() => {
+            setBubble(null);
+            companionStore.set({ greeted: true });
+          }}
+        />
       )}
 
       {s.open && (
@@ -309,7 +314,7 @@ export function CompanionWidget() {
           }
         >
           <header className="flex items-center gap-3 border-b border-ink-200 px-3 py-2.5 dark:border-ink-dark-border">
-            <CompanionCharacter state={charState} size={48} />
+            <CompanionCharacter state={headerLife.pose} blink={headerLife.blink} size={52} />
             <div className="min-w-0 flex-1">
               <h2 id={titleId} className="flex items-center gap-2 text-[15px] font-semibold leading-5">
                 {t.name}

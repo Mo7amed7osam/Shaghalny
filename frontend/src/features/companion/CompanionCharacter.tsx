@@ -1,14 +1,32 @@
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { COMPANION_ART, resolvePoseSrc } from './companionAssets';
+import { ALL_POSE_SOURCES, COMPANION_ART, resolvePoseSrc } from './companionAssets';
 import type { CompanionState } from './types';
 
 interface CompanionCharacterProps {
   state: CompanionState;
   size?: number;
+  /** Show the eyes-closed frame for this pose, when one exists. */
+  blink?: boolean;
   className?: string;
   /** Decorative by default; the surrounding control carries the label. */
   label?: string;
+}
+
+// Decode every pose once so pose switches and blinks never flash.
+const loaded = new Set<string>();
+const failed = new Set<string>();
+let preloadStarted = false;
+const listeners = new Set<() => void>();
+function preloadAll() {
+  if (preloadStarted || typeof window === 'undefined') return;
+  preloadStarted = true;
+  ALL_POSE_SOURCES.forEach((src) => {
+    const img = new Image();
+    img.onload = () => { loaded.add(src); listeners.forEach((l) => l()); };
+    img.onerror = () => { failed.add(src); listeners.forEach((l) => l()); };
+    img.src = src;
+  });
 }
 
 /** Lightweight stand-in used until artwork loads or when a file is missing. */
@@ -32,30 +50,26 @@ function PlaceholderRobot() {
   );
 }
 
-export function CompanionCharacter({ state, size = 56, className, label }: CompanionCharacterProps) {
-  const src = resolvePoseSrc(state);
-  const [failed, setFailed] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState<Record<string, boolean>>({});
-
+export function CompanionCharacter({ state, size = 56, blink = false, className, label }: CompanionCharacterProps) {
+  const [, force] = useState(0);
   useEffect(() => {
-    if (!src || loaded[src] || failed[src]) return;
-    const img = new Image();
-    img.onload = () => setLoaded((p) => ({ ...p, [src]: true }));
-    img.onerror = () => setFailed((p) => ({ ...p, [src]: true }));
-    img.src = src;
-  }, [src, loaded, failed]);
+    preloadAll();
+    const l = () => force((n) => n + 1);
+    listeners.add(l);
+    return () => { listeners.delete(l); };
+  }, []);
 
-  const showArt = Boolean(src && loaded[src] && !failed[src]);
+  const base = resolvePoseSrc(state);
+  const blinkSrc = blink ? resolvePoseSrc(state, true) : null;
+  const src = blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
+  const showArt = Boolean(src && loaded.has(src) && !failed.has(src));
+  const framed = COMPANION_ART.framed;
 
   return (
     <span
       className={cn(
-        'shaghol-char relative inline-flex shrink-0 items-center justify-center overflow-hidden',
-        showArt
-          ? COMPANION_ART.framed
-            ? 'rounded-[28%] bg-[#160f2e] ring-1 ring-brand-500/30'
-            : 'overflow-visible'
-          : 'rounded-[28%] bg-brand-50 dark:bg-brand-500/15',
+        'shaghol-char relative inline-flex shrink-0 items-center justify-center',
+        framed && showArt && 'overflow-hidden rounded-[28%] bg-[#160f2e] ring-1 ring-brand-500/30',
         className
       )}
       data-state={state}
@@ -67,11 +81,12 @@ export function CompanionCharacter({ state, size = 56, className, label }: Compa
       <span className="shaghol-char__body block h-full w-full">
         {showArt ? (
           <img
-            key={src}
+            // Pose changes fade in; blinks swap instantly within the same pose.
+            key={base || undefined}
             src={src!}
             alt=""
             draggable={false}
-            className={cn('shaghol-char__img h-full w-full', COMPANION_ART.framed ? 'object-cover' : 'object-contain')}
+            className={cn('shaghol-char__img pointer-events-none h-full w-full select-none', framed ? 'object-cover' : 'object-contain')}
           />
         ) : (
           <span className="block h-full w-full p-[14%]">
