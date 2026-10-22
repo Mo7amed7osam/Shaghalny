@@ -1,4 +1,5 @@
-const CACHE_NAME = 'shaghalny-student-v2';
+// Bump to drop every older cache on activation.
+const CACHE_NAME = 'shaghalny-student-v3';
 const APP_SHELL = ['/', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/favicon.png'];
 
 self.addEventListener('install', (event) => {
@@ -45,29 +46,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const cacheCopy = (response) => {
+    if (response && response.status === 200 && response.type === 'basic') {
+      const responseClone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+    }
+    return response;
+  };
+  const offline = () => {
+    if (request.destination === 'document') {
+      return caches.match('/offline.html');
+    }
+    return new Response('', { status: 504, statusText: 'Offline' });
+  };
+
+  // Vite's hashed build files never change under the same URL: cache-first.
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => cachedResponse || fetch(request).then(cacheCopy).catch(offline))
+    );
+    return;
+  }
+
+  // Everything else (e.g. /companion artwork, icons) can change in place:
+  // network-first so updates show up, with the cache only as an offline fallback.
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(request)
-        .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
-          }
-
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          return networkResponse;
-        })
-        .catch(() => {
-          if (request.destination === 'document') {
-            return caches.match('/offline.html');
-          }
-
-          return new Response('', { status: 504, statusText: 'Offline' });
-        });
-    })
+    fetch(request)
+      .then(cacheCopy)
+      .catch(() => caches.match(request).then((cachedResponse) => cachedResponse || offline()))
   );
 });
