@@ -1,6 +1,6 @@
-const { createChatCompletion, isConfigured, ProviderError } = require("./companion.provider");
-const { toolDeclarations, executeTool, loadStudent, profileSummary, PAGES, ToolArgumentError } = require("./companion.tools");
-const { getJobForStudent } = require("./companion.jobs");
+const { getProvider, isConfigured, providerInfo, ProviderError } = require("./companion.provider");
+const { toolSchemas, executeTool, loadStudent, profileSummary, PAGES, ToolArgumentError } = require("./companion.tools");
+const { getJobForStudent, searchJobsForStudent } = require("./companion.jobs");
 const { fallbackEnabled, demoRespond } = require("./companion.fallback");
 
 const LIMITS = {
@@ -13,7 +13,7 @@ const LIMITS = {
   maxCards: 6,
 };
 
-const INTENTS = ["chat", "find_jobs", "review_cv", "write_proposal"];
+const INTENTS = ["chat", "find_jobs", "review_cv", "write_proposal", "plan_career"];
 const OBJECT_ID = /^[a-fA-F0-9]{24}$/;
 const SAFE_PATH = /^\/[\w\-/]{0,200}$/;
 
@@ -52,7 +52,15 @@ const parseRequest = (body = {}) => {
     cvText = body.cvText.trim() || null;
   }
 
-  return { messages, intent, lang, path, jobId, cvText, text: last.content };
+  // Optional job-search preferences chosen in the panel (all allowlisted).
+  const prefs = body.preferences && typeof body.preferences === "object" ? body.preferences : {};
+  const preferences = {
+    type: ["freelance", "internship"].includes(prefs.type) ? prefs.type : null,
+    workMode: ["online", "onsite", "hybrid"].includes(prefs.workMode) ? prefs.workMode : null,
+    source: ["internal", "external"].includes(prefs.source) ? prefs.source : null,
+  };
+
+  return { messages, intent, lang, path, jobId, cvText, preferences, text: last.content };
 };
 
 const PLATFORM_FACTS = `Platform facts (from the Shaghalny codebase; do not add others):
@@ -63,7 +71,12 @@ const PLATFORM_FACTS = `Platform facts (from the Shaghalny codebase; do not add 
 - The Career Roadmap page creates a learning plan from a goal the student types.
 - You do not know fees, commissions, payout dates, refund rules or verification outcomes. If asked, say so and point to the relevant page.`;
 
-const systemPrompt = ({ lang, path, jobId }) => `You are Shaghol (شغّول), the friendly career companion inside Shaghalny, a freelancing marketplace for university students in Egypt and MENA.
+const prefLine = (p = {}) => {
+  const parts = [p.type && `type ${p.type}`, p.workMode && `work mode ${p.workMode}`, p.source && `${p.source} listings only`].filter(Boolean);
+  return parts.length ? ` Search preferences chosen by the student: ${parts.join(", ")}. Pass them to search_jobs.` : "";
+};
+
+const systemPrompt = ({ lang, path, jobId, preferences }) => `You are Shaghol (شغّول), the friendly career companion inside Shaghalny, a freelancing marketplace for university students in Egypt and MENA.
 You help the signed-in student find suitable jobs, improve their CV, draft proposals, understand missing skills, and navigate the platform.
 
 Rules:
@@ -79,7 +92,7 @@ Rules:
 
 ${PLATFORM_FACTS}
 
-Context: the student is on page ${path || "unknown"}${jobId ? `; selected job id ${jobId}` : ""}.`;
+Context: the student is on page ${path || "unknown"}${jobId ? `; selected job id ${jobId}` : ""}.${prefLine(preferences)}`;
 
 const asData = (value) => JSON.stringify({ untrusted_data: value }).slice(0, 12000);
 
@@ -107,33 +120,40 @@ const makeCollector = (user) => {
 };
 
 // Agentic loop for open chat and job search, bounded by LIMITS.toolIterations.
+const MAX_CALLS_PER_ROUND = 3;
 const runToolLoop = async ({ req, collector }) => {
-  const tools = toolDeclarations();
-  const convo = [{ role: "system", content: systemPrompt(req) }, ...req.messages];
+  const convo = getProvider().createConversation({ system: systemPrompt(req), messages: req.messages, tools: toolSchemas() });
   for (let i = 0; i <= LIMITS.toolIterations; i += 1) {
     const lastRound = i === LIMITS.toolIterations;
     const forceSearch = i === 0 && req.intent === "find_jobs";
-    const message = await createChatCompletion({
-      messages: convo,
-      tools: lastRound ? undefined : tools,
-      toolChoice: forceSearch ? { type: "function", function: { name: "search_jobs" } } : "auto",
-    });
-    const calls = Array.isArray(message.tool_calls) ? message.tool_calls.slice(0, 3) : [];
-    if (!calls.length) return cleanReply(message.content);
+    const res = await convo.send({ toolChoice: lastRound ? "none" : forceSearch ? { name: "search_jobs" } : "auto" });
+    // The last round never executes tools, even if the model asks for them.
+    if (!res.toolCalls.length || lastRound) return cleanReply(res.text);
 
-    convo.push({ role: "assistant", content: message.content || "", tool_calls: calls });
-    for (const call of calls) {
+    const results = [];
+    for (const [n, call] of res.toolCalls.entries()) {
       let result;
-      try {
-        result = await executeTool(call.function?.name, call.function?.arguments, collector.ctx);
-      } catch (error) {
-        if (!(error instanceof ToolArgumentError)) throw error;
-        result = { error: error.message };
+      if (n >= MAX_CALLS_PER_ROUND) {
+        result = { error: "Too many tool calls in one step." };
+      } else {
+        try {
+          result = await executeTool(call.name, call.args, collector.ctx);
+        } catch (error) {
+          if (!(error instanceof ToolArgumentError)) throw error;
+          result = { error: error.message };
+        }
       }
-      convo.push({ role: "tool", tool_call_id: call.id, content: asData(result) });
+      results.push({ call, content: asData(result) });
     }
+    convo.addToolResults(results);
   }
   return "";
+};
+
+/** One generation without tools (CV review, proposal, plan). */
+const generate = async ({ system, messages, json = false, maxTokens = 900, temperature = 0.4 }) => {
+  const res = await getProvider().createConversation({ system, messages }).send({ toolChoice: "none", json, maxTokens, temperature });
+  return res.text;
 };
 
 const CV_SCHEMA_HINT = `Return only a JSON object with these keys:
@@ -178,12 +198,12 @@ const reviewCv = async ({ req, collector }) => {
   const student = await collector.ctx.getStudent();
   const job = req.jobId ? await getJobForStudent(student, req.jobId) : null;
   if (job) collector.ctx.addCards([job.card]);
-  const message = await createChatCompletion({
+  const content = await generate({
     json: true,
     maxTokens: 1400,
     temperature: 0.3,
+    system: `${systemPrompt(req)}\n\nTask: review the student's CV.\n${CV_SCHEMA_HINT}\nWrite all values in ${s ? "Arabic" : "English"}, but keep "before" exactly as written in the CV.`,
     messages: [
-      { role: "system", content: `${systemPrompt(req)}\n\nTask: review the student's CV.\n${CV_SCHEMA_HINT}\nWrite all values in ${s ? "Arabic" : "English"}, but keep "before" exactly as written in the CV.` },
       {
         role: "user",
         content: [
@@ -195,8 +215,8 @@ const reviewCv = async ({ req, collector }) => {
       },
     ],
   });
-  const review = parseCvReview(message.content);
-  if (!review) return { reply: cleanReply(message.content) };
+  const review = parseCvReview(content);
+  if (!review) return { reply: cleanReply(content) };
   return {
     reply: s ? "هذه مراجعتي لسيرتك. لم أغيّر أي شيء في ملفك؛ انسخ ما يناسبك." : "Here's my review. Nothing was changed on your profile; copy what you want to use.",
     cvReview: review,
@@ -213,11 +233,11 @@ const writeProposal = async ({ req, collector }) => {
   const job = await getJobForStudent(student, req.jobId);
   if (!job) return { reply: s ? "هذه الوظيفة لم تعد متاحة." : "That job is no longer open." };
   collector.ctx.addCards([job.card]);
-  const message = await createChatCompletion({
+  const content = await generate({
     maxTokens: 900,
     temperature: 0.5,
+    system: `${systemPrompt(req)}\n\nTask: draft a job proposal (cover letter) the student will review and edit. Output only the proposal text, 120 to 220 words, in ${s ? "Arabic" : "English"}. Use only facts from the profile, the conversation and the job. For anything missing (projects, results, timeline, rate), insert a [bracketed placeholder]. No subject line, no links.`,
     messages: [
-      { role: "system", content: `${systemPrompt(req)}\n\nTask: draft a job proposal (cover letter) the student will review and edit. Output only the proposal text, 120 to 220 words, in ${s ? "Arabic" : "English"}. Use only facts from the profile, the conversation and the job. For anything missing (projects, results, timeline, rate), insert a [bracketed placeholder]. No subject line, no links.` },
       ...req.messages.slice(0, -1),
       {
         role: "user",
@@ -231,7 +251,7 @@ const writeProposal = async ({ req, collector }) => {
   });
   // Keep only links the student already has on their profile.
   const ownLinks = new Set(profileSummary(student).portfolioLinks);
-  const text = String(message.content || "")
+  const text = String(content || "")
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
     .replace(/https?:\/\/\S+/gi, (url) => (ownLinks.has(url.replace(/[.,;)]+$/, "")) ? url : ""))
     .trim()
@@ -243,6 +263,82 @@ const writeProposal = async ({ req, collector }) => {
   return { reply: intro, proposal: { jobId: job.card.id, text, example: false } };
 };
 
+const PLAN_SCHEMA_HINT = `Return only a JSON object:
+{"goal": string, "summary": string, "steps": [{"title": string, "detail": string, "page": one of ${JSON.stringify(PAGES)} or null}], "missingFacts": [string]}
+- 3 to 5 steps, ordered, each concrete and doable within weeks.
+- Ground steps in the data: verified skills, skills that matching open jobs require, and the student's stated goal.
+- Use "page" only when an existing Shaghalny page helps that step (e.g. skill_verification to verify a skill, jobs to apply).
+- Never invent courses, certificates, employers, salaries or guarantees. If the goal is unclear, say so in missingFacts.`;
+
+const PAGE_SET = new Set(PAGES);
+/** Validates model JSON into the career plan shape; returns null if unusable. */
+const parseCareerPlan = (content) => {
+  let data;
+  try {
+    const text = String(content || "").replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+    data = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+  } catch {
+    return null;
+  }
+  if (!data || typeof data !== "object") return null;
+  const steps = (Array.isArray(data.steps) ? data.steps : [])
+    .filter((x) => x && typeof x === "object" && typeof x.title === "string" && x.title.trim())
+    .slice(0, 6)
+    .map((x) => ({
+      title: x.title.slice(0, 160),
+      detail: typeof x.detail === "string" ? x.detail.slice(0, 600) : "",
+      page: PAGE_SET.has(x.page) ? x.page : null,
+    }));
+  if (!steps.length) return null;
+  return {
+    example: false,
+    goal: typeof data.goal === "string" ? data.goal.slice(0, 200) : null,
+    summary: typeof data.summary === "string" ? data.summary.slice(0, 600) : null,
+    steps,
+    missingFacts: strList(data.missingFacts, 4, 300),
+  };
+};
+
+/** Real data the plan is grounded in: profile plus open jobs matching the goal. */
+const careerContext = async (student, goal) => {
+  const search = await searchJobsForStudent(student, { query: goal, limit: 5 });
+  const demand = {};
+  for (const card of search.jobs) for (const s of card.missingVerifiedSkills) demand[s] = (demand[s] || 0) + 1;
+  return {
+    jobs: search.jobs,
+    missingSkillDemand: Object.entries(demand).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([skill, jobs]) => ({ skill, jobs })),
+  };
+};
+
+const planCareer = async ({ req, collector }) => {
+  const s = req.lang === "ar";
+  const student = await collector.ctx.getStudent();
+  const ctx = await careerContext(student, req.text);
+  collector.ctx.addCards(ctx.jobs.slice(0, 3));
+  const content = await generate({
+    json: true,
+    maxTokens: 1200,
+    temperature: 0.4,
+    system: `${systemPrompt(req)}\n\nTask: create a short, practical career plan for the student's stated goal.\n${PLAN_SCHEMA_HINT}\nWrite all values in ${s ? "Arabic" : "English"}.`,
+    messages: [
+      ...req.messages.slice(0, -1),
+      {
+        role: "user",
+        content: [
+          `Goal: ${req.text}`,
+          `Student profile: ${asData(profileSummary(student))}`,
+          `Open jobs matching the goal: ${asData(ctx.jobs.map((j) => ({ title: j.title, sourceType: j.sourceType, requiredSkills: j.requiredSkills, cautions: j.cautions.map((c) => c.code) })))}`,
+          `Skills these jobs require that the student has not verified: ${asData(ctx.missingSkillDemand)}`,
+        ].join("\n\n"),
+      },
+    ],
+  });
+  const plan = parseCareerPlan(content);
+  if (!plan) return { reply: cleanReply(content) };
+  plan.steps.forEach((step) => step.page && collector.ctx.addAction(step.page));
+  return { reply: s ? "هذه خطة عملية مبنية على هدفك وعلى الوظائف المتاحة حاليًا." : "Here's a practical plan based on your goal and the jobs open right now.", careerPlan: plan };
+};
+
 const finish = (collector, mode, result, notice) => ({
   mode,
   ...(notice ? { notice } : {}),
@@ -251,6 +347,7 @@ const finish = (collector, mode, result, notice) => ({
   actions: [...new Set([...collector.actions(), ...(result.actions || [])])].filter((p) => PAGES.includes(p)),
   cvReview: result.cvReview || null,
   proposal: result.proposal || null,
+  careerPlan: result.careerPlan || null,
   needs: result.needs || null,
 });
 
@@ -267,7 +364,7 @@ const respond = async ({ user, body }) => {
 
   const runDemo = async (notice) => {
     const fresh = makeCollector(user);
-    const result = await demoRespond({ student, intent: req.intent, text: req.text, lang: req.lang, cvText: req.cvText, jobId: req.jobId });
+    const result = await demoRespond({ student, intent: req.intent, text: req.text, lang: req.lang, cvText: req.cvText, jobId: req.jobId, preferences: req.preferences });
     return finish(fresh, "demo", result, notice);
   };
 
@@ -280,8 +377,9 @@ const respond = async ({ user, body }) => {
     let result;
     if (req.intent === "review_cv") result = await reviewCv({ req, collector });
     else if (req.intent === "write_proposal") result = await writeProposal({ req, collector });
+    else if (req.intent === "plan_career") result = await planCareer({ req, collector });
     else result = { reply: await runToolLoop({ req, collector }) };
-    if (!result.reply && !result.cvReview && !result.proposal && !collector.cards().length) {
+    if (!result.reply && !result.cvReview && !result.proposal && !result.careerPlan && !collector.cards().length) {
       throw new ProviderError("provider_error", "Empty response.");
     }
     return finish(collector, "ai", result);
@@ -291,6 +389,6 @@ const respond = async ({ user, body }) => {
   }
 };
 
-const status = () => ({ aiConfigured: isConfigured(), fallbackEnabled: fallbackEnabled() });
+const status = () => ({ aiConfigured: isConfigured(), fallbackEnabled: fallbackEnabled(), ...providerInfo() });
 
-module.exports = { respond, status, parseRequest, parseCvReview, CompanionInputError, LIMITS };
+module.exports = { respond, status, parseRequest, parseCvReview, parseCareerPlan, careerContext, CompanionInputError, LIMITS };

@@ -97,11 +97,17 @@ const skillTermsIn = async (text) => {
     .slice(0, 4);
 };
 
-const demoJobs = async ({ student, text, lang }) => {
+const demoJobs = async ({ student, text, lang, preferences = {} }) => {
   const s = t(lang);
   const terms = await skillTermsIn(text);
-  const type = /\bintern(ship)?s?\b|تدريب/i.test(text) ? "internship" : /\bfreelanc\w*\b|عمل حر/i.test(text) ? "freelance" : undefined;
-  const result = await searchJobsForStudent(student, { query: terms.join(" "), type, limit: 5 });
+  const type = preferences.type || (/\bintern(ship)?s?\b|تدريب/i.test(text) ? "internship" : /\bfreelanc\w*\b|عمل حر/i.test(text) ? "freelance" : undefined);
+  const result = await searchJobsForStudent(student, {
+    query: terms.join(" "),
+    type,
+    workMode: preferences.workMode || undefined,
+    source: preferences.source || "any",
+    limit: 5,
+  });
   const label = terms.join(", ");
   const hasSkills = (student.verifiedSkills || []).length > 0;
   const parts = [result.jobs.length ? s.jobsFound(label, hasSkills) : s.jobsNone(label)];
@@ -198,8 +204,59 @@ const guidance = (text, lang) => {
   return { reply: s.help, actions: [] };
 };
 
+// Rule-based plan from real data: the student's verified skills and the
+// skills that open jobs matching the goal actually require.
+const demoPlan = async ({ student, text, lang }) => {
+  const ar = lang === "ar";
+  const terms = await skillTermsIn(text);
+  const search = await searchJobsForStudent(student, { query: terms.join(" "), limit: 6 });
+  const demand = {};
+  for (const card of search.jobs) for (const sk of card.missingVerifiedSkills) demand[sk] = (demand[sk] || 0) + 1;
+  const gaps = Object.entries(demand).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const eligible = search.jobs.filter((c) => c.canApply).length;
+  const profile = profileSummary(student);
+  const steps = [];
+  if (gaps.length) {
+    steps.push({
+      title: ar ? `وثّق: ${gaps.map(([k]) => k).join("، ")}` : `Verify ${gaps.map(([k]) => k).join(", ")}`,
+      detail: ar
+        ? `هذه المهارات مطلوبة في ${gaps.map(([k, n]) => `${n} وظيفة لـ ${k}`).join("، ")} من الوظائف المطابقة ولم توثّقها بعد.`
+        : `Matching open jobs require these and you haven't verified them yet (${gaps.map(([k, n]) => `${k}: ${n} job${n > 1 ? "s" : ""}`).join(", ")}).`,
+      page: "skill_verification",
+    });
+  }
+  if (eligible) {
+    steps.push({
+      title: ar ? `قدّم على ${eligible} وظيفة مؤهل لها` : `Apply to the ${eligible} job${eligible > 1 ? "s" : ""} you're eligible for`,
+      detail: ar ? "كل مهاراتها المطلوبة موثّقة لديك. راجعها في لوحة الوظائف." : "All their required skills are already verified on your profile. Review them on the Job Board.",
+      page: "jobs",
+    });
+  }
+  if (!profile.portfolioLinks.length || !profile.hasUploadedCv) {
+    steps.push({
+      title: ar ? "أكمل ملفك" : "Complete your profile",
+      detail: ar
+        ? [!profile.portfolioLinks.length && "أضف رابطًا لأعمالك", !profile.hasUploadedCv && "ارفع سيرتك الذاتية"].filter(Boolean).join(" و") + "."
+        : [!profile.portfolioLinks.length && "add a portfolio link", !profile.hasUploadedCv && "upload your CV"].filter(Boolean).join(" and ").replace(/^./, (c) => c.toUpperCase()) + ".",
+      page: "profile",
+    });
+  }
+  steps.push({
+    title: ar ? "ابنِ خطة تعلم مفصلة" : "Build a detailed learning plan",
+    detail: ar ? "صفحة خارطة المسار المهني تنشئ خطة تعلم من هدفك." : "The Career Roadmap page creates a learning plan from your goal.",
+    page: "career_roadmap",
+  });
+  return {
+    reply: ar
+      ? "خطة آلية (ردود تجريبية) مبنية على مهاراتك الموثّقة والوظائف المتاحة فعلًا، وليست تحليلًا بالذكاء الاصطناعي."
+      : "Rule-based plan (demo responses) built from your verified skills and the jobs actually open now, not AI analysis.",
+    cards: search.jobs.slice(0, 3),
+    careerPlan: { example: true, goal: text.slice(0, 200), summary: null, steps, missingFacts: [] },
+  };
+};
+
 /** Demo response for one turn. Never claims an AI produced it. */
-const demoRespond = async ({ student, intent, text, lang, cvText, jobId }) => {
+const demoRespond = async ({ student, intent, text, lang, cvText, jobId, preferences }) => {
   const s = t(lang);
   if (intent === "chat" && jobId && /missing|skills?|require|verif|ناقص|مهار|مطلوب/i.test(text)) {
     const job = await getJobForStudent(student, jobId);
@@ -209,7 +266,8 @@ const demoRespond = async ({ student, intent, text, lang, cvText, jobId }) => {
 
   const resolved = intent === "chat" ? detectIntent(text) : intent;
 
-  if (resolved === "find_jobs") return demoJobs({ student, text, lang });
+  if (resolved === "find_jobs") return demoJobs({ student, text, lang, preferences });
+  if (resolved === "plan_career") return demoPlan({ student, text, lang });
 
   if (resolved === "review_cv") {
     if (!cvText) return { reply: s.cvAsk, needs: "cv_text" };

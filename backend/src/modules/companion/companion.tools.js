@@ -86,6 +86,24 @@ const validateArgs = (name, rawArgs) => {
   return clean;
 };
 
+/** Provider-neutral tool schemas ({ name, description, parameters }). */
+const toolSchemas = () =>
+  Object.entries(TOOL_SPECS).map(([name, spec]) => ({
+    name,
+    description: spec.description,
+    parameters: {
+      type: "object",
+      additionalProperties: false,
+      properties: Object.fromEntries(
+        Object.entries(spec.params).map(([key, rule]) => {
+          const { required, pattern, ...schema } = rule;
+          return [key, pattern === "objectId" ? { ...schema, description: "24-character job id" } : schema];
+        }),
+      ),
+      required: Object.entries(spec.params).filter(([, r]) => r.required).map(([k]) => k),
+    },
+  }));
+
 // OpenAI-compatible function declarations (OpenRouter `tools` parameter).
 const toolDeclarations = () =>
   Object.entries(TOOL_SPECS).map(([name, spec]) => ({
@@ -191,6 +209,7 @@ module.exports = {
   ToolArgumentError,
   validateArgs,
   toolDeclarations,
+  toolSchemas,
   executeTool,
   loadStudent,
   profileSummary,
