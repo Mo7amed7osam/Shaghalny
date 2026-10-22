@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/auth/AuthProvider';
 import { CompanionCharacter } from './CompanionCharacter';
 import { CompanionLauncher, type LauncherHandle } from './CompanionLauncher';
-import { useLivingPose } from './useLivingPose';
+import { GREET_DURATION_MS, useLivingPose } from './useLivingPose';
 import { MessageView, type CompanionCardHandlers } from './CompanionMessages';
 import { abortCompanionRequest, fetchCompanionStatus, sendCompanionMessage } from './companionApi';
 import { COMPANION_STRINGS, PAGE_ROUTES } from './companionI18n';
@@ -161,7 +161,7 @@ export function CompanionWidget() {
     companionStore.set({ open: true, dismissed: false, greeted: true });
     if (firstOpen) {
       setGreetingFlash(true);
-      setTimeout(() => setGreetingFlash(false), 1600);
+      setTimeout(() => setGreetingFlash(false), GREET_DURATION_MS);
     }
   }, []);
 

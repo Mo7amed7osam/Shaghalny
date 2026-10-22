@@ -94,7 +94,10 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     return () => window.clearTimeout(timer);
   }, [pinnedControls]);
 
-  const { pose, blink } = useLivingPose(dragging ? 'idle' : state, { greetKey: greetKey + hoverGreet, idleVariety: true });
+  const life = useLivingPose(dragging ? 'idle' : state, { greetKey: greetKey + hoverGreet, idleVariety: true });
+  // Dragging always shows the plain idle pose; a wave or glance in progress stops.
+  const pose = dragging ? 'idle' : life.pose;
+  const blink = life.blink;
 
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { ALL_POSE_SOURCES, COMPANION_ART, resolvePoseSrc } from './companionAssets';
+import { ALL_POSE_SOURCES, COMPANION_ART, WAVE_FRAMES, resolvePoseSrc, resolveWaveSrc } from './companionAssets';
 import type { CompanionState } from './types';
 
 interface CompanionCharacterProps {
@@ -59,8 +60,16 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
     return () => { listeners.delete(l); };
   }, []);
 
-  const base = resolvePoseSrc(state);
-  const blinkSrc = blink ? resolvePoseSrc(state, true) : null;
+  const reduce = useReducedMotion();
+  // The animated wave plays over the idle art, which stays mounted underneath
+  // so the hand-back to idle doesn't re-trigger the pose fade. Reduced motion
+  // or a strip that hasn't loaded falls back to the static greeting pose.
+  const waveSrc = reduce ? null : resolveWaveSrc(state);
+  const waving = Boolean(waveSrc && loaded.has(waveSrc) && !failed.has(waveSrc));
+  const shown: CompanionState = waving ? 'idle' : state;
+
+  const base = resolvePoseSrc(shown);
+  const blinkSrc = blink && !waving ? resolvePoseSrc(shown, true) : null;
   const src = blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
   const showArt = Boolean(src && loaded.has(src) && !failed.has(src));
   const framed = COMPANION_ART.framed;
@@ -86,11 +95,24 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
             src={src!}
             alt=""
             draggable={false}
-            className={cn('shaghol-char__img pointer-events-none h-full w-full select-none', framed ? 'object-cover' : 'object-contain')}
+            className={cn(
+              'shaghol-char__img pointer-events-none h-full w-full select-none',
+              framed ? 'object-cover' : 'object-contain',
+              waving && 'invisible'
+            )}
           />
         ) : (
           <span className="block h-full w-full p-[14%]">
             <PlaceholderRobot />
+          </span>
+        )}
+        {waving && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            {/* Same 320×316 canvas as the poses, letterboxed like object-contain. */}
+            <span
+              className="shaghol-char__img shaghol-wave pointer-events-none block w-full"
+              style={{ aspectRatio: '320 / 316', backgroundImage: `url(${waveSrc})`, backgroundSize: `${WAVE_FRAMES * 100}% 100%` }}
+            />
           </span>
         )}
       </span>

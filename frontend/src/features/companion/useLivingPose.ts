@@ -5,6 +5,10 @@ import type { CompanionState } from './types';
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
+/** Length of the one-shot wave; matches the sprite animation in companion.css. */
+export const GREET_DURATION_MS = 1200;
+const GREET_COOLDOWN_MS = 8000;
+
 /**
  * Small "alive" behaviours layered on top of the companion's task state:
  * occasional blinks, a wave when greeted, and a rare idle glance. Everything
@@ -38,15 +42,19 @@ export function useLivingPose(state: CompanionState, { greetKey = 0, idleVariety
   }, [reduce]);
 
   // Wave when greeted (first appearance, hover), at most every 8 seconds.
+  // The reset lives in a ref so a re-hover inside the cooldown, or a state
+  // change mid-wave, can't cancel it and leave the greeting pose stuck.
+  const greetReset = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (!greetKey || state !== 'idle') return;
     const now = Date.now();
-    if (now - lastGreet.current < 8000) return;
+    if (now - lastGreet.current < GREET_COOLDOWN_MS) return;
     lastGreet.current = now;
     setOverride('greeting');
-    const t = window.setTimeout(() => setOverride(null), 1600);
-    return () => window.clearTimeout(t);
+    window.clearTimeout(greetReset.current);
+    greetReset.current = window.setTimeout(() => setOverride((o) => (o === 'greeting' ? null : o)), GREET_DURATION_MS);
   }, [greetKey, state]);
+  useEffect(() => () => window.clearTimeout(greetReset.current), []);
 
   // A rare, quiet glance while idle so the character doesn't feel frozen.
   useEffect(() => {

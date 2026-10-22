@@ -12,6 +12,8 @@ export interface CompanionPose {
   src?: string;
   /** Same pose with eyes closed, used for occasional blinks. */
   blink?: string;
+  /** Horizontal strip of WAVE_FRAMES frames on the same canvas, played once. */
+  wave?: string;
   aliasOf?: CompanionState;
 }
 
@@ -22,7 +24,7 @@ export const COMPANION_ART = {
 
 export const COMPANION_POSES: Record<CompanionState, CompanionPose> = {
   idle: { src: 'shaghol-idle.webp', blink: 'shaghol-idle-blink.webp' },
-  greeting: { src: 'shaghol-greeting.webp' },
+  greeting: { src: 'shaghol-greeting.webp', wave: 'shaghol-wave.webp' },
   thinking: { src: 'shaghol-thinking.webp', blink: 'shaghol-thinking-blink.webp' },
   searching: { src: 'shaghol-searching.webp' },
   reviewing_cv: { src: 'shaghol-reviewing_cv.webp' },
@@ -50,12 +52,22 @@ export function resolvePoseSrc(state: CompanionState, blink = false): string | n
   return `${COMPANION_ART.basePath}${file}`;
 }
 
+/** Frames in a `wave` strip, left to right. */
+export const WAVE_FRAMES = 8;
+
+export function resolveWaveSrc(state: CompanionState): string | null {
+  const file = resolvePose(state)?.wave;
+  return file ? `${COMPANION_ART.basePath}${file}` : null;
+}
+
 export function hasBlink(state: CompanionState): boolean {
   return Boolean(resolvePose(state)?.blink);
 }
 
 export const ALL_POSE_SOURCES = Array.from(
   new Set(
-    Object.keys(COMPANION_POSES).flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true)]).filter(Boolean) as string[]
+    Object.keys(COMPANION_POSES)
+      .flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true), resolveWaveSrc(s as CompanionState)])
+      .filter(Boolean) as string[]
   )
 );
