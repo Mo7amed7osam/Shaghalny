@@ -7,6 +7,7 @@ const Skill = require("../models/Skill");
 const Contract = require("../models/Contract");
 const { acceptProposalWithEscrow } = require("../services/contractService");
 const { paymentsEnabled, PAYMENTS_DISABLED_MESSAGE } = require("../middleware/payments");
+const { notifyNewJob } = require("../services/jobAlertService");
 const {
   matchStudentsToJob,
   notifyMatchedStudents,
@@ -106,6 +107,9 @@ const createJob = async (req, res) => {
     const populatedJob = await Job.findById(newJob._id)
       .populate("employer", "name email website companyLogoUrl isVerified")
       .populate("requiredSkills", "name category");
+    // Job alerts are best-effort; a failure must not fail job creation.
+    notifyNewJob(populatedJob.toObject()).catch((alertError) =>
+      console.warn("Job alert error:", alertError?.message || "Unknown error"));
     res.status(201).json(populatedJob);
   } catch (error) {
     res.status(500).json({ message: "Error creating job", error });

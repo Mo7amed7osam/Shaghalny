@@ -10,11 +10,19 @@ const {
     uploadStudentPhoto,
     getStudentProposals,
 } = require('../controllers/studentController');
+const { getSavedJobs, saveJob, unsaveJob, getJobAlerts, updateJobAlerts } = require('../controllers/jobPreferenceController');
 const { authenticate } = require('../middleware/auth');
 const { checkRole } = require('../middleware/roleCheck');
 const { upload, imageUpload, handleUpload } = require('../middleware/uploadMiddleware');
 
 router.use(userLimiter);
+
+// Saved jobs and job alerts for the signed-in student
+router.get('/me/saved-jobs', authenticate, checkRole('Student'), getSavedJobs);
+router.put('/me/saved-jobs/:jobId', authenticate, checkRole('Student'), saveJob);
+router.delete('/me/saved-jobs/:jobId', authenticate, checkRole('Student'), unsaveJob);
+router.get('/me/job-alerts', authenticate, checkRole('Student'), getJobAlerts);
+router.put('/me/job-alerts', authenticate, checkRole('Student'), updateJobAlerts);
 
 // Route to get student profile
 router.get('/:id/profile', authenticate, checkRole(['Student', 'Client', 'Admin']), getStudentProfile);

@@ -6,6 +6,7 @@ const Escrow = require("../models/Escrow");
 const Transaction = require("../models/Transaction");
 const Job = require("../models/Job");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 
 const getContract = async (req, res) => {
   try {
@@ -341,8 +342,11 @@ const submitReview = async (req, res) => {
 const sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
-    if (!message || !message.trim()) {
+    if (typeof message !== "string" || !message.trim()) {
       return res.status(400).json({ message: "Message text is required" });
+    }
+    if (message.trim().length > 2000) {
+      return res.status(400).json({ message: "Message is too long (2,000 characters max)." });
     }
 
     const contract = await Contract.findById(req.params.id);
@@ -365,6 +369,20 @@ const sendMessage = async (req, res) => {
       message: message.trim(),
     });
     await newMessage.save();
+
+    // Tell the other party, collapsing repeats into one unread notice per contract.
+    try {
+      const recipientId = isClientOnContract ? contract.studentId : contract.clientId;
+      const link = `/contracts/${contract._id}`;
+      const sender = await User.findById(req.user?.id).select("name").lean();
+      await Notification.findOneAndUpdate(
+        { userId: recipientId, type: "contract_message", link, isRead: false },
+        { $set: { title: `New message from ${sender?.name || "your contract partner"}`, message: newMessage.message.slice(0, 140), createdAt: new Date() } },
+        { upsert: true },
+      );
+    } catch (notifyError) {
+      console.warn("Message notification error:", notifyError?.message || "Unknown error");
+    }
 
     res.status(201).json({ message: "Message sent", data: newMessage });
   } catch (error) {

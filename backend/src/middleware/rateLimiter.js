@@ -40,6 +40,19 @@ const userLimiter = rateLimit({
   },
 });
 
+// Paid model calls: a tight per-user budget so one account can't run up costs.
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKey,
+  message: {
+    message: "Too many AI requests. Please wait a few minutes and try again.",
+  },
+});
+
 module.exports = apiLimiter;
+module.exports.aiLimiter = aiLimiter;
 module.exports.userLimiter = userLimiter;
 module.exports.userKey = userKey;

@@ -22,6 +22,8 @@ import {
 
 import { Logo } from '@/components/brand/Logo';
 import useAuth from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -310,6 +312,7 @@ const aiPoints = [
 
 const LandingPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { t } = useI18n();
   const [theme, setThemeState] = useState<'light' | 'dark'>(getTheme());
   const dashboardPath = user ? dashboardPathByRole[user.role as keyof typeof dashboardPathByRole] : null;
   const ctaPath = isAuthenticated && dashboardPath ? dashboardPath : '/register';
@@ -335,14 +338,15 @@ const LandingPage: React.FC = () => {
             <Logo />
           </Link>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/login">Sign in</Link>
+              <Link to="/login">{t('Sign in')}</Link>
             </Button>
             <Button asChild size="sm">
-              <Link to={ctaPath}>{ctaLabel}</Link>
+              <Link to={ctaPath}>{t(ctaLabel)}</Link>
             </Button>
           </div>
         </div>
@@ -365,7 +369,7 @@ const LandingPage: React.FC = () => {
         <div className="page-container relative py-12 sm:py-16">
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-12">
             {/* Left: text */}
-            <div className="mx-auto max-w-2xl space-y-5 text-center lg:mx-0 lg:text-left">
+            <div className="mx-auto max-w-2xl space-y-5 text-center lg:mx-0 lg:text-start">
               <motion.div
                 custom={0}
                 variants={fadeIn}
@@ -374,7 +378,7 @@ const LandingPage: React.FC = () => {
                 className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 dark:border-white/20 dark:bg-white/10 dark:text-brand-200"
               >
                 <Sparkles size={12} />
-                Student freelancing marketplace
+                {t('Student freelancing marketplace')}
               </motion.div>
 
               <motion.h1
@@ -384,9 +388,9 @@ const LandingPage: React.FC = () => {
                 animate="visible"
                 className="text-balance text-4xl font-semibold leading-tight text-ink-950 dark:text-white sm:text-5xl"
               >
-                Hire verified student talent.{' '}
+                {t('Hire verified student talent.')}{' '}
                 <span className="bg-gradient-to-r from-brand-500 to-sky-500 bg-clip-text text-transparent">
-                  Without the trust gap.
+                  {t('Without the trust gap.')}
                 </span>
               </motion.h1>
 
@@ -397,8 +401,8 @@ const LandingPage: React.FC = () => {
                 animate="visible"
                 className="max-w-xl text-base leading-7 text-ink-600 dark:text-ink-300 lg:max-w-none"
               >
-                Shaghalny connects clients with early-career freelancers who have completed structured AI interviews.
-                Real verification, clean workflows, one platform.
+                {t('Shaghalny connects clients with early-career freelancers who have completed structured AI interviews.')}{' '}
+                {t('Real verification, clean workflows, one platform.')}
               </motion.p>
 
               <motion.div
@@ -411,8 +415,8 @@ const LandingPage: React.FC = () => {
                 <motion.div whileTap={shouldReduce ? {} : { scale: 0.97 }} transition={{ duration: 0.1 }}>
                   <Button asChild size="xl">
                     <Link to={ctaPath}>
-                      {ctaLabel}
-                      <ArrowRight size={18} />
+                      {t(ctaLabel)}
+                      <ArrowRight size={18} className="rtl:-scale-x-100" />
                     </Link>
                   </Button>
                 </motion.div>
@@ -421,7 +425,7 @@ const LandingPage: React.FC = () => {
                     to="/login"
                     className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-ink-200 bg-white px-4 text-sm font-semibold text-ink-900 transition-colors duration-150 hover:border-brand-300 hover:bg-brand-50 active:scale-[0.97] dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/20"
                   >
-                    Sign in
+                    {t('Sign in')}
                   </Link>
                 </motion.div>
               </motion.div>
@@ -441,7 +445,7 @@ const LandingPage: React.FC = () => {
                 ].map(({ icon: Icon, label }) => (
                   <span key={label} className="flex items-center gap-1.5 text-sm text-ink-500 dark:text-ink-400">
                     <Icon size={15} className="text-brand-500" />
-                    {label}
+                    {t(label)}
                   </span>
                 ))}
               </motion.div>
@@ -455,7 +459,7 @@ const LandingPage: React.FC = () => {
               className="mx-auto lg:mx-0"
             >
               <ProductPreview />
-              <p className="mt-2 text-center text-xs text-ink-500 dark:text-ink-dark-muted">Illustrative interface example, not a real profile or listing.</p>
+              <p className="mt-2 text-center text-xs text-ink-500 dark:text-ink-dark-muted">{t('Illustrative interface example, not a real profile or listing.')}</p>
             </motion.div>
           </div>
         </div>
@@ -471,9 +475,9 @@ const LandingPage: React.FC = () => {
             animate={featuresSection.inView ? 'visible' : 'hidden'}
             className="mb-8 text-center"
           >
-            <p className="page-eyebrow mb-2">Platform</p>
+            <p className="page-eyebrow mb-2">{t('Platform')}</p>
             <h2 className="text-2xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-3xl">
-              What makes Shaghalny different
+              {t('What makes Shaghalny different')}
             </h2>
           </motion.div>
 
@@ -491,8 +495,8 @@ const LandingPage: React.FC = () => {
                 <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${f.accent}`}>
                   <f.icon size={20} />
                 </div>
-                <h3 className="mb-2 text-base font-semibold text-ink-900 dark:text-ink-dark-text">{f.title}</h3>
-                <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">{f.description}</p>
+                <h3 className="mb-2 text-base font-semibold text-ink-900 dark:text-ink-dark-text">{t(f.title)}</h3>
+                <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">{t(f.description)}</p>
               </motion.div>
             ))}
           </div>
@@ -509,9 +513,9 @@ const LandingPage: React.FC = () => {
             animate={rolesSection.inView ? 'visible' : 'hidden'}
             className="mb-8 text-center"
           >
-            <p className="page-eyebrow mb-2">For every role</p>
+            <p className="page-eyebrow mb-2">{t('For every role')}</p>
             <h2 className="text-2xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-3xl">
-              One platform, two sides of hiring
+              {t('One platform, two sides of hiring')}
             </h2>
           </motion.div>
 
@@ -532,16 +536,16 @@ const LandingPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-500 dark:text-ink-dark-muted">
-                      {role.label}
+                      {t(role.label)}
                     </p>
                     <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">
-                      {role.heading}
+                      {t(role.heading)}
                     </h3>
-                    <p className="text-sm leading-6 text-ink-600 dark:text-ink-dark-muted">{role.body}</p>
+                    <p className="text-sm leading-6 text-ink-600 dark:text-ink-dark-muted">{t(role.body)}</p>
                   </div>
                 </div>
                 <Button asChild variant="outline" size="sm" className="w-fit bg-white/80 dark:bg-ink-dark-bg/60">
-                  <Link to={role.to}>{role.cta}</Link>
+                  <Link to={role.to}>{t(role.cta)}</Link>
                 </Button>
               </motion.div>
             ))}
@@ -560,13 +564,13 @@ const LandingPage: React.FC = () => {
               </div>
               <div>
                 <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-ink-500 dark:text-ink-dark-muted">
-                  Admins
+                  {t('Admins')}
                 </p>
                 <h3 className="mb-2 text-xl font-semibold text-ink-900 dark:text-ink-dark-text">
-                  Manage the whole marketplace from one control center.
+                  {t('Manage the whole marketplace from one control center.')}
                 </h3>
                 <p className="text-sm leading-6 text-ink-500 dark:text-ink-dark-muted">
-                  Review payment approvals, manage events, and oversee verification status without switching tools.
+                  {t('Review payment approvals, manage events, and oversee verification status without switching tools.')}
                 </p>
               </div>
             </div>
@@ -587,9 +591,9 @@ const LandingPage: React.FC = () => {
             animate={stepsSection.inView ? 'visible' : 'hidden'}
             className="mb-8"
           >
-            <p className="page-eyebrow mb-2">How it works</p>
+            <p className="page-eyebrow mb-2">{t('How it works')}</p>
             <h2 className="text-2xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-3xl">
-              Structured hiring, start to finish.
+              {t('Structured hiring, start to finish.')}
             </h2>
           </motion.div>
 
@@ -609,8 +613,8 @@ const LandingPage: React.FC = () => {
                     <step.icon size={15} />
                   </div>
                 </div>
-                <h3 className="mb-2 text-sm font-semibold text-ink-900 dark:text-ink-dark-text">{step.title}</h3>
-                <p className="text-sm leading-5 text-ink-500 dark:text-ink-dark-muted">{step.body}</p>
+                <h3 className="mb-2 text-sm font-semibold text-ink-900 dark:text-ink-dark-text">{t(step.title)}</h3>
+                <p className="text-sm leading-5 text-ink-500 dark:text-ink-dark-muted">{t(step.body)}</p>
               </motion.div>
             ))}
           </div>
@@ -631,14 +635,14 @@ const LandingPage: React.FC = () => {
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
                 <BadgeCheck size={12} />
-                Shaghalny AI verification
+                {t('Shaghalny AI verification')}
               </div>
               <h2 className="text-2xl font-semibold text-white sm:text-3xl">
-                Skills that are proven, not promised.
+                {t('Skills that are proven, not promised.')}
               </h2>
               <p className="max-w-xl text-sm leading-6 text-brand-100">
-                Every student on Shaghalny has completed a structured AI interview with Shaghalny AI before their proposals
-                reach clients. No unverified claims, no noise in your candidate shortlist.
+                {t('Every student on Shaghalny has completed a structured AI interview with Shaghalny AI before their proposals reach clients. No unverified claims, no noise in your candidate shortlist.')}
+
               </p>
               <div className="flex flex-col gap-3 pt-1">
                 {aiPoints.map((point, i) => (
@@ -646,7 +650,7 @@ const LandingPage: React.FC = () => {
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20">
                       <CheckCircle2 size={12} className="text-brand-100" />
                     </div>
-                    {point}
+                    {t(point)}
                   </div>
                 ))}
               </div>
@@ -660,8 +664,8 @@ const LandingPage: React.FC = () => {
                     <Zap size={16} className="text-brand-100" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-brand-100">Shaghalny AI Score</p>
-                    <p className="text-[10px] text-brand-200">Illustrative example</p>
+                    <p className="text-xs font-semibold text-brand-100">{t('Shaghalny AI Score')}</p>
+                    <p className="text-[10px] text-brand-200">{t('Illustrative example')}</p>
                   </div>
                 </div>
                 <Separator className="mb-4 bg-white/20" />
@@ -687,7 +691,7 @@ const LandingPage: React.FC = () => {
                 ))}
                 <div className="mt-4 flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2">
                   <BadgeCheck size={14} className="text-accent-300" />
-                  <span className="text-xs font-semibold text-white">Verified — Ready to hire</span>
+                  <span className="text-xs font-semibold text-white">{t('Verified — Ready to hire')}</span>
                 </div>
               </div>
             </div>
@@ -701,23 +705,23 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col items-start justify-between gap-5 lg:flex-row lg:items-center">
             <div className="space-y-3">
               <h2 className="text-2xl font-semibold text-ink-900 dark:text-ink-dark-text sm:text-3xl">
-                Ready to get started?
+                {t('Ready to get started?')}
               </h2>
               <p className="max-w-lg text-base text-ink-500 dark:text-ink-dark-muted">
-                Create an account to verify your skills and browse sourced freelance projects and student opportunities.
+                {t('Create an account to verify your skills and browse sourced freelance projects and student opportunities.')}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <motion.div whileTap={shouldReduce ? {} : { scale: 0.97 }} transition={{ duration: 0.1 }}>
                 <Button asChild size="lg">
                   <Link to={ctaPath}>
-                    {ctaLabel}
-                    <ArrowRight size={18} />
+                    {t(ctaLabel)}
+                    <ArrowRight size={18} className="rtl:-scale-x-100" />
                   </Link>
                 </Button>
               </motion.div>
               <Button asChild variant="outline" size="lg">
-                <Link to="/login">Sign in</Link>
+                <Link to="/login">{t('Sign in')}</Link>
               </Button>
             </div>
           </div>
@@ -734,10 +738,10 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-5">
             <Link to="/login" className="hover:text-ink-600 dark:hover:text-ink-dark-text">
-              Sign in
+              {t('Sign in')}
             </Link>
             <Link to="/register" className="hover:text-ink-600 dark:hover:text-ink-dark-text">
-              Create account
+              {t('Create account')}
             </Link>
           </div>
         </div>

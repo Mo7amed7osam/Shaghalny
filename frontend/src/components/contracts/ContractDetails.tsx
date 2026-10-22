@@ -9,7 +9,6 @@ import {
   acceptContractWork,
   getContractDetails,
   requestContractChanges,
-  sendContractMessage,
   submitContractReview,
   submitContractWork,
 } from '@/services/api';
@@ -21,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { ContractChat } from './ContractChat';
 
 const ContractDetails: React.FC = () => {
   const { id } = useParams();
@@ -31,7 +31,6 @@ const ContractDetails: React.FC = () => {
 
   const [submissionMessage, setSubmissionMessage] = useState('');
   const [submissionLinks, setSubmissionLinks] = useState('');
-    const [newMessage, setNewMessage] = useState('');
   const [reviewRating, setReviewRating] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -40,6 +39,8 @@ const ContractDetails: React.FC = () => {
     queryKey: ['contracts', id],
     queryFn: () => getContractDetails(id as string),
     enabled: !!id,
+    // Poll so chat messages and status changes appear without reloading.
+    refetchInterval: 5000,
   });
 
   const submitMutation = useMutation({
@@ -63,16 +64,6 @@ const ContractDetails: React.FC = () => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to accept work.');
-    },
-  });
-  const messageMutation = useMutation({
-    mutationFn: (message: string) => sendContractMessage(id as string, message),
-    onSuccess: () => {
-      setNewMessage('');
-      queryClient.invalidateQueries({ queryKey: ['contracts', id] });
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to send message.');
     },
   });
   const requestChangesMutation = useMutation({
@@ -196,48 +187,13 @@ const ContractDetails: React.FC = () => {
         </CardContent>
       </Card>
 
-           <Card>
-        <CardContent className="space-y-3 p-4">
-          <h2 className="text-xl font-semibold">Messages</h2>
-          <p className="text-sm text-ink-500 dark:text-ink-300">
-            Coordinate meeting links, schedule, or on-site details here.
-          </p>
-          {(data.messages || []).length ? (
-            <div className="space-y-3">
-              {(data.messages || []).map((msg: any) => (
-                <div key={msg._id} className="muted-panel rounded-lg p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-300">
-                      {msg.senderRole}
-                    </span>
-                    <span className="text-xs text-ink-500 dark:text-ink-400">
-                      {msg.createdAt ? new Date(msg.createdAt).toLocaleString() : ''}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-ink-700 dark:text-ink-200">{msg.message}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState title="No messages yet" description="Send meeting links or coordination details to get started." />
-          )}
-          <div className="flex gap-2">
-            <Input
-              placeholder="e.g. Let's meet on WhatsApp: https://wa.me/..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              disabled={messageMutation.isPending}
-            />
-            <Button
-              type="button"
-              disabled={messageMutation.isPending || !newMessage.trim()}
-              onClick={() => messageMutation.mutate(newMessage.trim())}
-            >
-              {messageMutation.isPending ? 'Sending...' : 'Send'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ContractChat
+        contractId={id as string}
+        currentUserId={user?.id || (user as any)?._id}
+        client={data.contract?.clientId}
+        student={data.contract?.studentId}
+        messages={data.messages || []}
+      />
 
       {isStudent ? (
         <Card>
