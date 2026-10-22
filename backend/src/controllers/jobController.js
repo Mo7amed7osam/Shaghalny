@@ -14,6 +14,7 @@ const {
 const {
   studentHasRequiredVerifiedSkills,
 } = require("../utils/proposalEligibility");
+const { visibleJobConditions } = require("../utils/jobVisibility");
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -219,13 +220,7 @@ const getJobs = async (req, res) => {
 
     const jobs = await Job.find({
       $and: [
-        { status: "open" },
-        { $or: [
-          { sourceType: { $ne: "external" } },
-          { sourceLastSeenAt: { $gte: new Date(Date.now() - 14 * 86400000) } },
-        ] },
-        // Sources such as Himalayas require expired listings to be removed.
-        { $or: [{ sourceExpiresAt: null }, { sourceExpiresAt: { $gt: new Date() } }] },
+        ...visibleJobConditions(),
         ...(query.type ? [{ type: query.type }] : []),
         ...(query.$or ? [{ $or: query.$or }] : []),
         ...(query.duration ? [{ duration: query.duration }] : []),

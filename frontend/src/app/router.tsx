@@ -29,9 +29,11 @@ import AdminEvents from '@/components/events/AdminEvents';
 import EventDetails from '@/components/events/EventDetails';
 import EventsPage from '@/components/events/EventsPage';
 import InterviewHistory from '@/components/student/InterviewHistory';
+import { CompanionWidget } from '@/features/companion/CompanionWidget';
 export const AppRouter = () => (
   <BrowserRouter>
     <RouteAccessibility />
+    <CompanionWidget />
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />

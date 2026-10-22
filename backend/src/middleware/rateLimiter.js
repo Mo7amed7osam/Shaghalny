@@ -42,3 +42,4 @@ const userLimiter = rateLimit({
 
 module.exports = apiLimiter;
 module.exports.userLimiter = userLimiter;
+module.exports.userKey = userKey;

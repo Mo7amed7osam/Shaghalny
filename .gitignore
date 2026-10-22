@@ -17,3 +17,5 @@ backend/.DS_Store
 # Raw third-party job feed snapshots: keep outside the public repo (source terms)
 output/job-import/sources-*.json
 output/job-import/superseded/
+!.env.example
+!**/.env.example
