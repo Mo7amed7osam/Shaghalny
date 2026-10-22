@@ -29,7 +29,6 @@
 }
 .shaghol-char[data-state='error'] .shaghol-char__body {
   animation: shaghol-shake 420ms ease-in-out 1;
-  filter: saturate(0.55);
 }
 
 @keyframes shaghol-fade { from { opacity: 0.4; } to { opacity: 1; } }

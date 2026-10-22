@@ -51,7 +51,11 @@ export function CompanionCharacter({ state, size = 56, className, label }: Compa
     <span
       className={cn(
         'shaghol-char relative inline-flex shrink-0 items-center justify-center overflow-hidden',
-        COMPANION_ART.framed && showArt ? 'rounded-[28%] bg-[#160f2e] ring-1 ring-brand-500/30' : 'rounded-[28%] bg-brand-50 dark:bg-brand-500/15',
+        showArt
+          ? COMPANION_ART.framed
+            ? 'rounded-[28%] bg-[#160f2e] ring-1 ring-brand-500/30'
+            : 'overflow-visible'
+          : 'rounded-[28%] bg-brand-50 dark:bg-brand-500/15',
         className
       )}
       data-state={state}
@@ -62,7 +66,13 @@ export function CompanionCharacter({ state, size = 56, className, label }: Compa
     >
       <span className="shaghol-char__body block h-full w-full">
         {showArt ? (
-          <img key={src} src={src!} alt="" draggable={false} className="shaghol-char__img h-full w-full object-cover" />
+          <img
+            key={src}
+            src={src!}
+            alt=""
+            draggable={false}
+            className={cn('shaghol-char__img h-full w-full', COMPANION_ART.framed ? 'object-cover' : 'object-contain')}
+          />
         ) : (
           <span className="block h-full w-full p-[14%]">
             <PlaceholderRobot />
