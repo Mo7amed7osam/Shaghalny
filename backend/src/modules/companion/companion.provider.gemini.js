@@ -1,9 +1,10 @@
 // Direct Gemini support through the official Google Gen AI SDK (@google/genai).
 // Selected with COMPANION_PROVIDER=gemini (the default). Uses GEMINI_API_KEY
 // from the server environment only; the model is COMPANION_GEMINI_MODEL
-// (default gemini-3.5-flash-lite: free tier, supports function calling).
+// (default gemini-3.6-flash: free tier, function calling; in production
+// gemini-3.5-flash-lite was too slow/overloaded for multi-step tool calls).
 
-const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+const DEFAULT_MODEL = "gemini-3.6-flash";
 
 const apiKey = () => process.env.GEMINI_API_KEY || "";
 const model = () => process.env.COMPANION_GEMINI_MODEL || DEFAULT_MODEL;
