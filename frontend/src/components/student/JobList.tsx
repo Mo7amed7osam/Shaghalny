@@ -23,7 +23,9 @@ import { SKILL_CATEGORIES, getCategoryMeta, getSkillCategory } from '@/lib/skill
 import { toast } from 'sonner';
 
 import { getExternalApplyUrl, getExternalJobUrl } from '@/lib/externalJobs';
-import { fetchJobs, getStudentProfile, getStudentProposals, improveCoverLetter, submitProposal } from '@/services/api';
+import { fetchJobs, getSavedJobs, getStudentProfile, getStudentProposals, improveCoverLetter, setJobSaved, submitProposal } from '@/services/api';
+import { JobAlertsDialog } from './JobAlertsDialog';
+import { useI18n } from '@/lib/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CompanyLogo, getCompanyName, isCompanyVerified } from '@/components/ui/company-logo';
@@ -125,7 +127,12 @@ function postedLabel(job: any) {
   const days = Math.max(0, Math.round((Date.now() - new Date(source).getTime()) / 86400000));
   if (days === 0) return 'Today';
   if (days === 1) return '1d ago';
-  return `${days}d ago`;
+  return '{days}d ago';
+}
+
+function postedDays(job: any) {
+  const source = job?.createdAt || job?.updatedAt;
+  return source ? Math.max(0, Math.round((Date.now() - new Date(source).getTime()) / 86400000)) : 0;
 }
 
 function matchScore(job: any, verifiedSkillIds: Set<string>) {
@@ -150,6 +157,9 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
   const [readyOnly, setReadyOnly] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [notAppliedOnly, setNotAppliedOnly] = useState(false);
+  const [savedOnly, setSavedOnly] = useState(false);
+  const { t, lang } = useI18n();
+  const dateLocale = lang === 'ar' ? 'ar-EG' : 'en-GB';
   const queryClient = useQueryClient();
   const { user } = useAuthContext();
   const userId = user?._id || user?.id;
@@ -196,6 +206,31 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     enabled: !!userId,
   });
 
+  const { data: savedData } = useQuery({
+    queryKey: ['student', 'saved-jobs'],
+    queryFn: getSavedJobs,
+    enabled: !!userId && !embedded,
+  });
+  const savedJobIds = useMemo(() => new Set<string>(savedData?.ids || []), [savedData]);
+
+  const saveMutation = useMutation({
+    mutationFn: ({ jobId, saved }: { jobId: string; saved: boolean }) => setJobSaved(jobId, saved),
+    onMutate: async ({ jobId, saved }) => {
+      await queryClient.cancelQueries({ queryKey: ['student', 'saved-jobs'] });
+      const previous = queryClient.getQueryData<{ ids: string[]; jobs: any[] }>(['student', 'saved-jobs']);
+      const ids = new Set(previous?.ids || []);
+      if (saved) ids.add(jobId); else ids.delete(jobId);
+      queryClient.setQueryData(['student', 'saved-jobs'], { ids: [...ids], jobs: previous?.jobs || [] });
+      return { previous };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['student', 'saved-jobs'], context.previous);
+      toast.error(t('Could not update saved jobs.'));
+    },
+    onSuccess: (_data, { saved }) => toast.success(t(saved ? 'Job saved' : 'Removed from saved jobs')),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['student', 'saved-jobs'] }),
+  });
+
   const submittedJobIds = useMemo(() => {
     const ids = (proposals || []).map((p: any) => p.jobId?._id || p.jobId);
     return new Set(ids);
@@ -235,9 +270,10 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
         if (readyOnly && !isReady) return false;
         if (verifiedOnly && !isVerified) return false;
         if (notAppliedOnly && hasSubmitted) return false;
+        if (savedOnly && !savedJobIds.has(jobKey)) return false;
         return true;
       }),
-    [allJobs, notAppliedOnly, readyOnly, selectedBudget, selectedCategory, selectedWorkType, submittedJobIds, verifiedOnly, verifiedSkillIds]
+    [allJobs, notAppliedOnly, readyOnly, savedJobIds, savedOnly, selectedBudget, selectedCategory, selectedWorkType, submittedJobIds, verifiedOnly, verifiedSkillIds]
   );
 
   const proposalMutation = useMutation({
@@ -337,7 +373,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     selectedBudget !== 'any' ||
     readyOnly ||
     verifiedOnly ||
-    notAppliedOnly;
+    notAppliedOnly ||
+    savedOnly;
 
   const resetFilters = () => {
     setSearch('');
@@ -347,6 +384,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
     setReadyOnly(false);
     setVerifiedOnly(false);
     setNotAppliedOnly(false);
+    setSavedOnly(false);
   };
 
   const handleSubmit = async () => {
@@ -386,12 +424,13 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
       {!embedded && (
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <PageHeader
-            title="Find work"
-            description="Roles matched to your verified skills and availability."
+            title={t("Find work")}
+            description={t("Roles matched to your verified skills and availability.")}
           />
           <div className="flex items-center gap-2">
-            <span className="sh-chip font-mono">{filteredJobs.length || 0} shown</span>
-            <Button variant="outline" size="sm"><SlidersHorizontal size={14} /> Sort: Best match</Button>
+            <span className="sh-chip font-mono">{t("{count} shown", { count: filteredJobs.length || 0 })}</span>
+            <JobAlertsDialog />
+            <Button variant="outline" size="sm"><SlidersHorizontal size={14} /> {t('Sort: Best match')}</Button>
           </div>
         </div>
       )}
@@ -399,15 +438,15 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
       <div className="grid items-start gap-6 lg:grid-cols-[248px_minmax(0,1fr)]">
         <aside className="sh-panel hidden p-[18px] lg:sticky lg:top-[88px] lg:block">
           <div className="mb-4 flex items-center justify-between">
-            <span className="text-sm font-semibold text-ink-900 dark:text-white">Filters</span>
+            <span className="text-sm font-semibold text-ink-900 dark:text-white">{t("Filters")}</span>
             {hasActiveFilters ? (
-              <button type="button" onClick={resetFilters} className="text-xs font-semibold text-brand-600 transition hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200">Reset</button>
+              <button type="button" onClick={resetFilters} className="text-xs font-semibold text-brand-600 transition hover:text-brand-700 dark:text-brand-300 dark:hover:text-brand-200">{t("Reset")}</button>
             ) : null}
           </div>
 
           <div className="space-y-[18px]">
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Category</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">{t("Category")}</div>
               <div className="flex flex-wrap gap-2">
                 {categoryOptions.map((item) => {
                   const active = selectedCategory === item.label;
@@ -423,7 +462,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           : 'border-ink-200 bg-ink-50 text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 hover:text-brand-700 dark:hover:text-brand-300 dark:border-ink-dark-border dark:bg-white/[0.045] dark:text-ink-300'
                       }`}
                     >
-                      {item.label}
+                      {t(item.label)}
                     </button>
                   );
                 })}
@@ -431,7 +470,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Job type</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">{t("Job type")}</div>
               <div className="space-y-2.5">
                 {workTypeFilters.map((type) => {
                   const active = selectedWorkType === type;
@@ -441,12 +480,12 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       type="button"
                       aria-pressed={active}
                       onClick={() => setSelectedWorkType(type)}
-                      className="flex w-full items-center gap-2 text-left text-[13.5px] text-ink-600 transition hover:text-brand-700 dark:text-ink-300"
+                      className="flex w-full items-center gap-2 text-start text-[13.5px] text-ink-600 transition hover:text-brand-700 dark:text-ink-300"
                     >
                       <span className={`flex h-[17px] w-[17px] items-center justify-center rounded-[5px] border ${active ? 'border-brand-500 bg-brand-500' : 'border-ink-300 dark:border-ink-600'}`}>
                         {active ? <CheckCircle2 size={11} className="text-white" /> : null}
                       </span>
-                      {type}
+                      {t(type)}
                     </button>
                   );
                 })}
@@ -454,7 +493,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
             </div>
 
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">Budget range</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-500 dark:text-ink-dark-muted">{t("Budget range")}</div>
               <div className="space-y-2">
                 {budgetFilters.map((item) => {
                   const active = selectedBudget === item.value;
@@ -470,7 +509,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 hover:text-brand-700 dark:hover:text-brand-300 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
                       }`}
                     >
-                      {item.label}
+                      {t(item.label)}
                     </button>
                   );
                 })}
@@ -482,21 +521,22 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                 { label: 'Ready to apply', checked: readyOnly, setChecked: setReadyOnly },
                 { label: 'Verified clients only', checked: verifiedOnly, setChecked: setVerifiedOnly },
                 { label: 'Not applied yet', checked: notAppliedOnly, setChecked: setNotAppliedOnly },
+                { label: t('Saved jobs ({count})', { count: savedJobIds.size }), checked: savedOnly, setChecked: setSavedOnly },
               ].map((item) => (
                 <button
                   key={item.label}
                   type="button"
                   aria-pressed={item.checked}
                   onClick={() => item.setChecked((value) => !value)}
-                  className={`flex w-full items-center justify-between rounded-[11px] border px-3 py-2.5 text-left text-[13px] font-semibold transition ${
+                  className={`flex w-full items-center justify-between rounded-[11px] border px-3 py-2.5 text-start text-[13px] font-semibold transition ${
                     item.checked
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300'
                       : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200 dark:hover:border-brand-500/40 dark:border-ink-dark-border dark:bg-white/[0.04] dark:text-ink-300'
                   }`}
                 >
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                   <span className={`h-[19px] w-[34px] rounded-full p-0.5 transition ${item.checked ? 'bg-emerald-500' : 'bg-ink-200 dark:bg-ink-700'}`}>
-                    <span className={`block h-[15px] w-[15px] rounded-full bg-white transition ${item.checked ? 'translate-x-[15px]' : ''}`} />
+                    <span className={`block h-[15px] w-[15px] rounded-full bg-white transition ${item.checked ? 'translate-x-[15px] rtl:-translate-x-[15px]' : ''}`} />
                   </span>
                 </button>
               ))}
@@ -510,7 +550,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
               ].map((item) => (
                 <div key={item.label} className="rounded-[10px] bg-ink-50 px-2 py-2 text-center dark:bg-white/[0.04]">
                   <div className="sh-number text-sm text-ink-900 dark:text-white">{item.value}</div>
-                  <div className="mt-0.5 text-[10.5px] font-semibold text-ink-500">{item.label}</div>
+                  <div className="mt-0.5 text-[10.5px] font-semibold text-ink-500">{t(item.label)}</div>
                 </div>
               ))}
             </div>
@@ -520,8 +560,8 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
         <main className="min-w-0 space-y-3">
           <div className="sh-panel flex min-w-0 items-center gap-3 px-4 py-3">
             <Search size={16} className="shrink-0 text-ink-500" />
-            <Input aria-label="Search by title, skill, or keyword"
-              placeholder="Search by title, skill, or keyword..."
+            <Input aria-label={t("Search by title, skill, or keyword")}
+              placeholder={t("Search by title, skill, or keyword...")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="min-h-0 border-0 bg-transparent p-0 text-sm shadow-none focus:ring-0 dark:bg-transparent"
@@ -539,10 +579,10 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                 <Sparkles size={17} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-ink-900 dark:text-white">{readyJobCount} job{readyJobCount === 1 ? '' : 's'} ready for your verified skills</div>
-                <div className="mt-0.5 text-[12.5px] text-ink-600 dark:text-ink-300">Based on your verified skill profile and current applications.</div>
+                <div className="text-sm font-semibold text-ink-900 dark:text-white">{t(readyJobCount === 1 ? '{count} job ready for your verified skills' : '{count} jobs ready for your verified skills', { count: readyJobCount })}</div>
+                <div className="mt-0.5 text-[12.5px] text-ink-600 dark:text-ink-300">{t('Based on your verified skill profile and current applications.')}</div>
               </div>
-              <Button variant="outline" size="sm" className="hidden border-brand-100 text-brand-600 md:inline-flex">View matches</Button>
+              <Button variant="outline" size="sm" className="hidden border-brand-100 text-brand-600 md:inline-flex">{t('View matches')}</Button>
             </div>
           ) : null}
 
@@ -553,13 +593,13 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
           ) : null}
 
           {isError ? (
-            <EmptyState title="Unable to load jobs" description="The job board could not be loaded. Please try again." />
+            <EmptyState title={t("Unable to load jobs")} description={t("The job board could not be loaded. Please try again.")} />
           ) : null}
 
           {!isLoading && !isError && filteredJobs.length === 0 ? (
             <EmptyState
-              title={debouncedSearch || hasActiveFilters ? 'No jobs match these filters' : 'No jobs available yet'}
-              description={debouncedSearch || hasActiveFilters ? 'Try a broader keyword or reset the filters.' : 'New jobs will appear here as clients publish them.'}
+              title={t(debouncedSearch || hasActiveFilters ? 'No jobs match these filters' : 'No jobs available yet')}
+              description={t(debouncedSearch || hasActiveFilters ? 'Try a broader keyword or reset the filters.' : 'New jobs will appear here as clients publish them.')}
             />
           ) : null}
 
@@ -588,14 +628,14 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       <CompanyLogo job={job} className="h-[46px] w-[46px]" />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="m-0 min-w-0 max-w-full text-[16px] font-semibold tracking-[-0.01em] text-ink-900 [overflow-wrap:anywhere] dark:text-white">{job.title}</h3>
-                          {job.isDemo ? <Badge variant="subtle">Demo project</Badge> : null}
+                          <h3 className="m-0 min-w-0 max-w-full text-[16px] font-semibold tracking-[-0.01em] text-ink-900 [overflow-wrap:anywhere] dark:text-white" dir="auto">{job.title}</h3>
+                          {job.isDemo ? <Badge variant="subtle">{t("Demo project")}</Badge> : null}
                                                     {getJobCategories(job).slice(0, 2).map((categoryKey) => {
                             const meta = getCategoryMeta(categoryKey);
                             return (
                               <span key={categoryKey} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${meta.badge}`}>
                                 <meta.icon size={11} />
-                                {meta.label}
+                                {t(meta.label)}
                               </span>
                             );
                           })}
@@ -611,7 +651,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           ) : null}
                           {job.workMode ? (
                             <span className="inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 text-[11.5px] font-semibold text-ink-600 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-300">
-                              {job.workMode === 'onsite' ? 'On-site' : job.workMode === 'online' ? 'Online' : 'Hybrid'}
+                              {t(job.workMode === 'onsite' ? 'On-site' : job.workMode === 'online' ? 'Online' : 'Hybrid')}
                             </span>
                           ) : null}
                           {clientVerified ? (
@@ -623,36 +663,36 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                         <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-ink-500 dark:text-ink-dark-muted">
                           <span className="inline-flex items-center gap-1.5 font-semibold text-ink-600 dark:text-ink-300">
                             <CompanyLogo job={job} className="h-5 w-5 rounded-[6px] border-ink-100 shadow-none dark:border-white/10 [&_img]:p-0.5" />
-                            {getCompanyName(job)}
+                            <bdi>{getCompanyName(job)}</bdi>
                           </span>
                           <span>·</span>
-                          <span className="inline-flex items-center gap-1"><MapPin size={12} /> {job.sourceLocation || job.location || 'Remote'}</span>
+                          <span className="inline-flex items-center gap-1"><MapPin size={12} /> <bdi>{job.sourceLocation || job.location || t('Remote')}</bdi></span>
                           <span>·</span>
-                          <span>{postedLabel(job)}</span>
+                          <span>{t(postedLabel(job), { days: postedDays(job) })}</span>
                         </div>
                         {isExternal ? (
                           <p className="mt-2 text-xs text-ink-600 dark:text-ink-300">
-                            External listing from{' '}
+                            {t('External listing from')}{' '}
                             {externalUrl ? <a href={externalUrl} target="_blank" rel="noopener" className="underline">{job.sourceName}</a> : job.sourceName}
-                            {job.sourceEmploymentType ? <> · Listed as “{job.sourceEmploymentType}”</> : null}
-                            {job.sourcePublishedAt ? <> · Published {new Date(job.sourcePublishedAt).toLocaleDateString('en-GB')}</> : null}
-                            {' '}· Checked {new Date(job.sourceLastSeenAt).toLocaleDateString('en-GB')}. {job.sourceCompanyName} does not post on Shaghalny; applications are handled by the original source.
+                            {job.sourceEmploymentType ? <> · {t('Listed as')} “{job.sourceEmploymentType}”</> : null}
+                            {job.sourcePublishedAt ? <> · {t('Published')} {new Date(job.sourcePublishedAt).toLocaleDateString(dateLocale)}</> : null}
+                            {' '}· {t('Checked')} {new Date(job.sourceLastSeenAt).toLocaleDateString(dateLocale)}. {t('{company} does not post on Shaghalny; applications are handled by the original source.', { company: job.sourceCompanyName })}
                           </p>
                         ) : null}
-                        <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300">{job.description}</p>
+                        <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300" dir="auto">{job.description}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {skills.slice(0, 4).map((skill: any) => (
                             <span key={skill._id || skill} className="rounded-[7px] border border-ink-200 bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-600 dark:border-ink-dark-border dark:bg-white/[0.055] dark:text-ink-300">
                               {skill.name || skill}
                             </span>
                           ))}
-                          <span className="px-1 py-1 text-xs font-semibold text-ink-500">{job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price')}</span>
+                          <span className="px-1 py-1 text-xs font-semibold text-ink-500"><bdi>{t(job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price'))}</bdi></span>
                         </div>
                         {!isExternal && !canApply ? (
                           <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-500/25 dark:bg-amber-500/10">
                             <ShieldAlert size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-300" />
                             <p className="min-w-0 break-words text-sm text-amber-700 dark:text-amber-200">
-                              Verify these skills first: {missingSkills.map((skill: any) => skill.name || skill).join(', ')}
+                              {t('Verify these skills first:')} {missingSkills.map((skill: any) => skill.name || skill).join(', ')}
                             </p>
                           </div>
                         ) : null}
@@ -660,12 +700,23 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
                       <div className="flex shrink-0 flex-col justify-between gap-3 border-t border-ink-100 pt-3 xl:w-[158px] xl:border-l xl:border-t-0 xl:pl-4 xl:pt-0 dark:border-ink-dark-border">
                         <div className="flex items-start justify-between gap-3 xl:flex-col xl:items-end">
-                          <button type="button" className="flex h-8 w-8 items-center justify-center rounded-[9px] border border-ink-200 bg-white text-ink-500 dark:border-ink-dark-border dark:bg-white/[0.055]">
-                            <Bookmark size={15} />
+                          <button
+                            type="button"
+                            aria-pressed={savedJobIds.has(jobKey)}
+                            aria-label={savedJobIds.has(jobKey) ? `Remove ${job.title} from saved jobs` : `Save ${job.title}`}
+                            title={t(savedJobIds.has(jobKey) ? 'Saved' : 'Save job')}
+                            onClick={() => saveMutation.mutate({ jobId: jobKey, saved: !savedJobIds.has(jobKey) })}
+                            className={`flex h-8 w-8 items-center justify-center rounded-[9px] border transition ${
+                              savedJobIds.has(jobKey)
+                                ? 'border-brand-200 bg-brand-50 text-brand-600 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-300'
+                                : 'border-ink-200 bg-white text-ink-500 hover:border-brand-200 hover:text-brand-600 dark:border-ink-dark-border dark:bg-white/[0.055]'
+                            }`}
+                          >
+                            <Bookmark size={15} className={savedJobIds.has(jobKey) ? 'fill-current' : undefined} />
                           </button>
                           <div className="text-right">
-                            <div className="sh-number text-[17px] text-ink-900 dark:text-white">{budgetLabel(job)}</div>
-                            <div className="text-[11.5px] text-ink-500">{job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price')}</div>
+                            <div className="sh-number text-[17px] text-ink-900 dark:text-white"><span dir="ltr">{t(budgetLabel(job))}</span></div>
+                            <div className="text-[11.5px] text-ink-500"><bdi>{t(job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price'))}</bdi></div>
                             {score !== null ? (
                               <div className="mt-2 flex items-center justify-end gap-2">
                                 <div
@@ -674,22 +725,22 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                                 >
                                   <span className="h-[18px] w-[18px] rounded-full bg-white dark:bg-ink-dark-surface" />
                                 </div>
-                                <span className="text-xs text-ink-600 dark:text-ink-300"><b className="text-ink-900 dark:text-white">{score}%</b> match</span>
+                                <span className="text-xs text-ink-600 dark:text-ink-300"><b className="text-ink-900 dark:text-white">{score}%</b> {t('match')}</span>
                               </div>
                             ) : null}
                           </div>
                         </div>
                         {isExternal ? (
                           applyUrl ? <Button asChild className="w-full">
-                            <a href={applyUrl} target="_blank" rel="noopener" aria-label={`Apply for ${job.title} via ${job.sourceName} (opens in a new tab)`}>Apply on source</a>
-                          </Button> : <p className="text-sm">Original listing unavailable</p>
+                            <a href={applyUrl} target="_blank" rel="noopener" aria-label={`Apply for ${job.title} via ${job.sourceName} (opens in a new tab)`}>{t('Apply on source')}</a>
+                          </Button> : <p className="text-sm">{t('Original listing unavailable')}</p>
                         ) : hasSubmitted ? (
                           <div className="rounded-[10px] border border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-sm font-semibold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300">
-                            Applied
+                            {t('Applied')}
                           </div>
                         ) : (
                           <Button className="w-full" onClick={() => setActiveJobId(jobKey)} disabled={isFetching || !canApply}>
-                            Apply now
+                            {t('Apply now')}
                           </Button>
                         )}
                       </div>

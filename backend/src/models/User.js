@@ -41,6 +41,13 @@ const UserSchema = new Schema({
   jobsCompleted: { type: Number, default: 0, min: 0 },
   reviews: { type: [ReviewSchema], default: [] },
   balance: { type: Number, default: 0, min: 0 },
+  savedJobs: { type: [{ type: Schema.Types.ObjectId, ref: "Job" }], default: [] },
+  jobAlerts: {
+    enabled: { type: Boolean, default: false },
+    categories: { type: [String], default: [] },
+    keywords: { type: [String], default: [] },
+    lastNotifiedAt: { type: Date },
+  },
 });
 
 // Export the User model

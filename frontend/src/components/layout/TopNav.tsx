@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useI18n } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { ChevronDown, LogOut, Menu, Moon, Sun, User } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -27,6 +29,7 @@ function getInitials(name?: string) {
 
 export const TopNav = () => {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [theme, setThemeState] = useState<'light' | 'dark'>(getTheme());
@@ -119,7 +122,7 @@ export const TopNav = () => {
                       <span className="absolute inset-0 -z-10 rounded-full opacity-0 transition-opacity duration-150 hover:opacity-100 hover:bg-ink-200/50 dark:hover:bg-white/10" />
                     )}
                     <span className="whitespace-nowrap">
-                      {item.label === 'Skill Verification' ? 'Verify' : item.label === 'Career Roadmap' ? 'Roadmap' : item.label}
+                      {t(item.label === 'Skill Verification' ? 'Verify' : item.label === 'Career Roadmap' ? 'Roadmap' : item.label)}
                     </span>
                   </>
                 )}
@@ -129,7 +132,8 @@ export const TopNav = () => {
 
           <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5">
             {user?.role === 'Student' ? <StudentPwaInstallButton /> : null}
-            {user?.role === 'Student' ? <NotificationBell /> : null}
+            {user?.role === 'Student' || user?.role === 'Client' ? <NotificationBell /> : null}
+            <LanguageToggle className="px-2" />
 
             <Button variant="outline" size="icon" className="h-[38px] w-[38px] rounded-[10px] p-0" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
@@ -153,19 +157,19 @@ export const TopNav = () => {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate font-semibold text-ink-900 dark:text-white">{user?.name}</p>
-                    <Badge variant="brand">{roleCopy}</Badge>
+                    <Badge variant="brand">{t(roleCopy)}</Badge>
                   </div>
                   <p className="truncate text-xs text-ink-500 dark:text-ink-400">{user?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate(profilePath)}>
                   <User size={14} />
-                  Profile
+                  {t('Profile')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem destructive onClick={logout}>
                   <LogOut size={14} />
-                  Sign out
+                  {t('Sign out')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -186,7 +190,7 @@ export const TopNav = () => {
         className="w-[19rem] max-w-[85vw] gap-0 p-0"
       >
         <div className="flex h-14 shrink-0 items-center border-b border-ink-200 px-4 dark:border-ink-dark-border">
-          <SheetTitle>Navigation menu</SheetTitle>
+          <SheetTitle>{t('Navigation menu')}</SheetTitle>
         </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Primary">
         <div className="space-y-0.5">
@@ -212,7 +216,7 @@ export const TopNav = () => {
                   }
                 >
                   <Icon size={16} className="shrink-0" />
-                  {item.label}
+                  {t(item.label)}
                 </NavLink>
               </motion.div>
             );

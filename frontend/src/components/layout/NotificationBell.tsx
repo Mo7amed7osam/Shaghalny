@@ -9,6 +9,7 @@ interface Notification {
   isRead: boolean;
   createdAt: string;
   eventId?: string;
+  link?: string;
 }
 
 export const NotificationBell = () => {
@@ -111,7 +112,9 @@ export const NotificationBell = () => {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-ink-900 dark:text-white">
-                        {n.eventId ? <Link to={`/events/${encodeURIComponent(n.eventId)}`} onClick={() => setOpen(false)} className="underline underline-offset-2">{n.title}</Link> : n.title}
+                        {n.eventId ? <Link to={`/events/${encodeURIComponent(n.eventId)}`} onClick={() => setOpen(false)} className="underline underline-offset-2">{n.title}</Link>
+                          : n.link && n.link.startsWith('/') && !n.link.startsWith('//') ? <Link to={n.link} onClick={() => setOpen(false)} className="underline underline-offset-2">{n.title}</Link>
+                          : n.title}
                         {!n.isRead ? <span className="sr-only"> (Unread)</span> : null}
                       </p>
                       <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">{n.message}</p>

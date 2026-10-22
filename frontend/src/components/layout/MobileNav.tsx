@@ -2,11 +2,13 @@ import { NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 import useAuth from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 
 import { navByRole } from './nav-config';
 
 export const MobileNav = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const items = user ? navByRole[user.role] || [] : [];
   const mobileItems = user?.role === 'Student'
     ? items.filter((item) => ['Dashboard', 'Job Board', 'Skill Verification', 'Career Roadmap', 'Events', 'Contracts', 'Wallet'].includes(item.label))
@@ -24,12 +26,12 @@ export const MobileNav = () => {
       <div className={`grid gap-1 py-1.5 ${mobileItems.length === 7 ? 'grid-cols-7' : mobileItems.length === 6 ? 'grid-cols-6' : mobileItems.length === 5 ? 'grid-cols-5' : 'grid-cols-4'}`}>
         {mobileItems.map((item) => {
           const Icon = item.icon;
-          const displayLabel = item.label === 'Skill Verification' ? 'Verify' : item.label === 'Career Roadmap' ? 'Roadmap' : item.label;
+          const displayLabel = t(item.label === 'Skill Verification' ? 'Verify' : item.label === 'Career Roadmap' ? 'Roadmap' : item.label);
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              aria-label={item.label}
+              aria-label={t(item.label)}
               className={({ isActive }) =>
                 cn(
                   'flex min-h-12 flex-col items-center gap-1 rounded-[10px] px-1.5 py-2 text-center text-[10px] font-semibold transition-colors',

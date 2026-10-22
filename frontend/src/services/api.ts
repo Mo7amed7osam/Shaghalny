@@ -343,3 +343,47 @@ export const deleteEvent = async (id: string) => {
   const response = await http.delete(API.events.delete(id));
   return response.data;
 };
+
+// Saved jobs and job alerts (students)
+export const getSavedJobs = async (): Promise<{ ids: string[]; jobs: any[] }> => {
+  const response = await http.get('/students/me/saved-jobs');
+  return response.data;
+};
+
+export const setJobSaved = async (jobId: string, saved: boolean) => {
+  const url = `/students/me/saved-jobs/${encodeURIComponent(jobId)}`;
+  const response = saved ? await http.put(url) : await http.delete(url);
+  return response.data;
+};
+
+export interface JobAlerts {
+  enabled: boolean;
+  categories: string[];
+  keywords: string[];
+  availableCategories?: string[];
+}
+
+export const getJobAlerts = async (): Promise<JobAlerts> => {
+  const response = await http.get('/students/me/job-alerts');
+  return response.data;
+};
+
+export const updateJobAlerts = async (alerts: JobAlerts): Promise<JobAlerts> => {
+  const response = await http.put('/students/me/job-alerts', alerts);
+  return response.data;
+};
+
+export interface JobBriefDraft {
+  title: string;
+  description: string;
+  skills: Array<{ _id: string; name: string; category?: string }>;
+  type: 'freelance' | 'internship';
+  budgetMin: number | null;
+  budgetMax: number | null;
+  duration: string;
+}
+
+export const draftJobBrief = async (idea: string): Promise<JobBriefDraft> => {
+  const response = await http.post('/ai/job-brief', { idea });
+  return response.data;
+};

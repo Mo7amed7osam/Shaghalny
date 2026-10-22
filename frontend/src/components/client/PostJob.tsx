@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, BriefcaseBusiness, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { getSkills, getJobDetails, getWalletBalance, postJob, updateJob } from '@/services/api';
+import { getSkills, getJobDetails, getWalletBalance, postJob, updateJob, type JobBriefDraft } from '@/services/api';
+import { AiJobBriefCard } from './AiJobBriefCard';
 import { groupSkillsByCategory } from '@/lib/skillCategories';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -129,6 +130,20 @@ const PostJob: React.FC = () => {
       );
     },
   });
+  const applyDraft = (draft: JobBriefDraft) => {
+    const opts = { shouldValidate: true, shouldDirty: true };
+    // Without a payment provider only unpaid internships can be posted.
+    const type = paymentsUnavailable ? 'internship' : draft.type;
+    setValue('title', draft.title, opts);
+    setValue('description', draft.description, opts);
+    setValue('requiredSkills', draft.skills.map((skill) => String(skill._id)), opts);
+    setValue('type', type, opts);
+    setValue('unpaid', paymentsUnavailable || (type === 'internship' && draft.budgetMin === null && draft.budgetMax === null), opts);
+    setValue('minBudget', draft.budgetMin != null ? String(draft.budgetMin) : '', opts);
+    setValue('maxBudget', draft.budgetMax != null ? String(draft.budgetMax) : '', opts);
+    setValue('duration', draft.duration, opts);
+  };
+
   const toggleSkill = (skillId: string) => {
     const next = selectedSkills.includes(skillId) ? selectedSkills.filter((id) => id !== skillId) : [...selectedSkills, skillId];
     setValue('requiredSkills', next, { shouldValidate: true });
@@ -164,6 +179,8 @@ const PostJob: React.FC = () => {
               Payments are not available yet: no payment provider is configured. Only unpaid internships can be posted until payments are set up.
             </p>
           ) : null}
+
+          {!isEditMode ? <AiJobBriefCard onDraft={applyDraft} /> : null}
 
           <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
 
