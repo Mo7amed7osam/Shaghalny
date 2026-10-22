@@ -185,7 +185,8 @@ export function CompanionPanel(props: PanelProps) {
     send(g, 'plan_career', 'plan');
   };
   const followUp = (text: string) => {
-    if (task === 'jobs') send(text, 'find_jobs', 'jobs', { preferences: s.jobPrefs });
+    // After results, follow-ups are questions about them; the model can still search again.
+    if (task === 'jobs') send(text, lastResult ? 'chat' : 'find_jobs', 'jobs', { preferences: s.jobPrefs, jobId: focusJob?.id || null });
     else if (task === 'proposal' && focusJob) send(text, 'write_proposal', 'proposal', { jobId: focusJob.id });
     else if (task === 'plan') send(text, 'plan_career', 'plan');
     else send(text, 'chat', task || 'chat', { jobId: focusJob?.id || null });
@@ -308,17 +309,16 @@ export function CompanionPanel(props: PanelProps) {
 
           {isStudent && (
             <>
-              <div className="mt-4 grid grid-cols-2 gap-2" role="list">
+              <ul className="mt-4 grid grid-cols-2 gap-2">
                 {tasks.map((k) => {
                   const Icon = TASK_ICONS[k];
                   const copy = t.panel.tasks[k];
                   return (
+                    <li key={k} className="flex">
                     <button
-                      key={k}
                       type="button"
-                      role="listitem"
                       onClick={() => openTask(k)}
-                      className="group flex min-h-[124px] flex-col items-start gap-2 rounded-xl border border-ink-200 bg-white p-3 text-start shadow-soft transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-ink-dark-border dark:bg-white/[0.04] dark:hover:border-brand-500/40"
+                      className="group flex min-h-[124px] w-full flex-col items-start gap-2 rounded-xl border border-ink-200 bg-white p-3 text-start shadow-soft transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-ink-dark-border dark:bg-white/[0.04] dark:hover:border-brand-500/40"
                     >
                       <span className={cn('grid h-8 w-8 place-items-center rounded-lg', TASK_TONES[k])}>
                         <Icon className="h-4 w-4" aria-hidden />
@@ -330,9 +330,10 @@ export function CompanionPanel(props: PanelProps) {
                         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" aria-hidden />
                       </span>
                     </button>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
 
               {suggestion && (
                 <button
