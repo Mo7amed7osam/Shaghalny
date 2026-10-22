@@ -26,10 +26,10 @@ export function useLivingPose(state: CompanionState, { greetKey = 0, idleVariety
       open = window.setTimeout(() => {
         if (document.visibilityState === 'visible') {
           setBlink(true);
-          close = window.setTimeout(() => setBlink(false), 140);
+          close = window.setTimeout(() => setBlink(false), 110);
         }
         schedule();
-      }, rand(2800, 6200));
+      }, rand(1500, 3500));
     };
     schedule();
     return () => {
