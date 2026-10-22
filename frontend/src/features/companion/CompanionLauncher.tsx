@@ -3,6 +3,7 @@ import { EyeOff, MessageCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CompanionCharacter } from './CompanionCharacter';
 import { useLivingPose } from './useLivingPose';
+import { useIdleActivity } from './useIdleActivity';
 import type { CompanionStrings } from './companionI18n';
 import type { CompanionState } from './types';
 
@@ -94,13 +95,19 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     return () => window.clearTimeout(timer);
   }, [pinnedControls]);
 
-  const life = useLivingPose(dragging ? 'idle' : state, { greetKey: greetKey + hoverGreet, idleVariety: true });
-  // Dragging always shows the plain idle pose; a wave or glance in progress stops.
-  const pose = dragging ? 'idle' : life.pose;
-  const blink = life.blink;
+  const { pose, blink, frameSrc: waveSrc } = useLivingPose(state, { greetKey: greetKey + hoverGreet, idleVariety: true, paused: dragging });
+  // Idle activities yield to everything: task states, drags, the wave and clicks.
+  const idle = useIdleActivity(!dismissed && state === 'idle' && !dragging);
+  const cancelIdle = idle.cancel;
+  useEffect(() => {
+    if (waveSrc && idle.activity) cancelIdle();
+  }, [waveSrc, idle.activity, cancelIdle]);
+  const frameSrc = waveSrc || idle.frameSrc;
+  const frameBleed = waveSrc ? null : idle.bleed;
 
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
+    cancelIdle();
     const d = { id: e.pointerId, sx: e.clientX, sy: e.clientY, right: pos.right, bottom: pos.bottom, moved: false, long: false, timer: undefined as number | undefined };
     // Touch users get the controls with a long press.
     d.timer = window.setTimeout(() => {
@@ -121,8 +128,12 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     if (!d.moved) {
       d.moved = true;
       window.clearTimeout(d.timer);
-      e.currentTarget.setPointerCapture(e.pointerId);
       setDragging(true);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* pointer already released */
+      }
     }
     setAnchor(clamp({ right: d.right - dx, bottom: d.bottom - dy }));
   };
@@ -144,6 +155,7 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
   };
 
   const onClick = () => {
+    cancelIdle();
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
@@ -159,6 +171,7 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
     const m = moves[e.key];
     if (!m) return;
     e.preventDefault();
+    cancelIdle();
     setAnchor((a) => {
       const cur = clamp(a);
       const next = clamp({ right: cur.right + m[0], bottom: cur.bottom + m[1] });
@@ -240,7 +253,7 @@ export const CompanionLauncher = forwardRef<LauncherHandle, LauncherProps>(funct
         )}
         style={{ touchAction: 'none' }}
       >
-        <CompanionCharacter state={pose} blink={blink} size={size} />
+        <CompanionCharacter state={dragging ? 'idle' : pose} blink={blink && !frameSrc} frameSrc={frameSrc} frameBleed={frameBleed} size={size} />
         <span id={`${panelId}-drag-hint`} className="sr-only">{t.dragHint}</span>
       </button>
 

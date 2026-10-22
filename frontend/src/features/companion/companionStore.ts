@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { CompanionIntent, CompanionLang, CompanionMessage, CompanionState } from './types';
+import type { CompanionIntent, CompanionJobCard, CompanionLang, CompanionMessage, CompanionState, CompanionView, JobPreferences } from './types';
 
 /**
  * Module-level store so the conversation survives route changes. Private
@@ -12,10 +12,16 @@ export interface CompanionStoreState {
   dismissed: boolean;
   messages: CompanionMessage[];
   pending: CompanionIntent | null;
-  selectedJob: { id: string; title: string } | null;
+  selectedJob: { id: string; title: string; card?: CompanionJobCard } | null;
   pageJob: { id: string; title: string } | null;
   composer: 'chat' | 'cv';
   cvDraft: string;
+  view: CompanionView;
+  jobPrefs: JobPreferences;
+  jobQuery: string;
+  planGoal: string;
+  /** Edited proposal text per assistant message (memory only). */
+  proposalEdits: Record<string, string>;
   lang: CompanionLang;
   flash: CompanionState | null;
   greeted: boolean;
@@ -51,6 +57,11 @@ const blank = (lang: CompanionLang, ownerId: string | null): CompanionStoreState
   pageJob: null,
   composer: 'chat',
   cvDraft: '',
+  view: 'home',
+  jobPrefs: { type: null, workMode: null, source: null },
+  jobQuery: '',
+  planGoal: '',
+  proposalEdits: {},
   lang,
   flash: null,
   greeted: false,
@@ -63,9 +74,11 @@ let generation = 0;
 
 const persist = () => {
   if (!state.ownerId) return;
-  // CV drafts are never persisted; only the visible conversation is.
+  // CV text and other drafts are never persisted; only the visible conversation is.
   const snapshot = {
     open: state.open,
+    view: state.view,
+    jobPrefs: state.jobPrefs,
     dismissed: state.dismissed,
     greeted: state.greeted,
     selectedJob: state.selectedJob,
@@ -109,6 +122,8 @@ export const companionStore = {
             greeted: Boolean(restored.greeted),
             selectedJob: restored.selectedJob || null,
             messages: restored.messages,
+            view: restored.view || 'home',
+            jobPrefs: restored.jobPrefs || { type: null, workMode: null, source: null },
           }
         : {}),
     };
@@ -122,7 +137,7 @@ export const companionStore = {
 
   resetConversation() {
     generation += 1;
-    companionStore.set({ messages: [], pending: null, composer: 'chat', cvDraft: '', selectedJob: null, flash: null });
+    companionStore.set({ messages: [], pending: null, composer: 'chat', cvDraft: '', selectedJob: null, flash: null, view: 'home', jobQuery: '', planGoal: '', proposalEdits: {} });
   },
 };
 

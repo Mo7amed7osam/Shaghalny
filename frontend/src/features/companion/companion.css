@@ -8,12 +8,6 @@
 .shaghol-char[data-state='idle'] .shaghol-char__body {
   animation: shaghol-breathe 6s ease-in-out infinite;
 }
-/* Eight-frame hand wave, played once (1.2s = GREET_DURATION_MS). */
-.shaghol-wave {
-  background-repeat: no-repeat;
-  animation: shaghol-wave-frames 1.2s steps(8, jump-none) 1 forwards;
-}
-@keyframes shaghol-wave-frames { from { background-position-x: 0%; } to { background-position-x: 100%; } }
 .shaghol-char[data-state='thinking'] .shaghol-char__body {
   animation: shaghol-tilt 2.6s ease-in-out infinite alternate;
   transform-origin: 50% 90%;
@@ -57,7 +51,6 @@
 @media (prefers-reduced-motion: reduce) {
   .shaghol-char__body,
   .shaghol-char__img,
-  .shaghol-wave,
   .shaghol-panel-enter,
   .shaghol-dots span {
     animation: none !important;

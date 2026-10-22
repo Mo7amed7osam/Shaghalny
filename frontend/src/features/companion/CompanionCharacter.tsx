@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { ALL_POSE_SOURCES, COMPANION_ART, WAVE_FRAMES, resolvePoseSrc, resolveWaveSrc } from './companionAssets';
+import { ALL_POSE_SOURCES, COMPANION_ART, resolvePoseSrc } from './companionAssets';
 import type { CompanionState } from './types';
 
 interface CompanionCharacterProps {
@@ -9,6 +8,10 @@ interface CompanionCharacterProps {
   size?: number;
   /** Show the eyes-closed frame for this pose, when one exists. */
   blink?: boolean;
+  /** An animation frame to show instead of the pose (e.g. the wave). */
+  frameSrc?: string | null;
+  /** Extra transparent margin of `frameSrc` beyond the pose canvas (fractions). */
+  frameBleed?: { x: number; y: number } | null;
   className?: string;
   /** Decorative by default; the surrounding control carries the label. */
   label?: string;
@@ -19,15 +22,24 @@ const loaded = new Set<string>();
 const failed = new Set<string>();
 let preloadStarted = false;
 const listeners = new Set<() => void>();
-function preloadAll() {
-  if (preloadStarted || typeof window === 'undefined') return;
-  preloadStarted = true;
-  ALL_POSE_SOURCES.forEach((src) => {
+const requested = new Set<string>();
+/** Decode frames ahead of time; animations only show frames that are ready. */
+export function preloadFrames(sources: string[]) {
+  if (typeof window === 'undefined') return;
+  sources.forEach((src) => {
+    if (requested.has(src)) return;
+    requested.add(src);
     const img = new Image();
     img.onload = () => { loaded.add(src); listeners.forEach((l) => l()); };
     img.onerror = () => { failed.add(src); listeners.forEach((l) => l()); };
     img.src = src;
   });
+}
+export const framesReady = (sources: string[]) => sources.every((s) => loaded.has(s));
+function preloadAll() {
+  if (preloadStarted) return;
+  preloadStarted = true;
+  preloadFrames(ALL_POSE_SOURCES);
 }
 
 /** Lightweight stand-in used until artwork loads or when a file is missing. */
@@ -51,7 +63,7 @@ function PlaceholderRobot() {
   );
 }
 
-export function CompanionCharacter({ state, size = 56, blink = false, className, label }: CompanionCharacterProps) {
+export function CompanionCharacter({ state, size = 56, blink = false, frameSrc = null, frameBleed = null, className, label }: CompanionCharacterProps) {
   const [, force] = useState(0);
   useEffect(() => {
     preloadAll();
@@ -60,17 +72,11 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
     return () => { listeners.delete(l); };
   }, []);
 
-  const reduce = useReducedMotion();
-  // The animated wave plays over the idle art, which stays mounted underneath
-  // so the hand-back to idle doesn't re-trigger the pose fade. Reduced motion
-  // or a strip that hasn't loaded falls back to the static greeting pose.
-  const waveSrc = reduce ? null : resolveWaveSrc(state);
-  const waving = Boolean(waveSrc && loaded.has(waveSrc) && !failed.has(waveSrc));
-  const shown: CompanionState = waving ? 'idle' : state;
-
-  const base = resolvePoseSrc(shown);
-  const blinkSrc = blink && !waving ? resolvePoseSrc(shown, true) : null;
-  const src = blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
+  const base = resolvePoseSrc(state);
+  const blinkSrc = blink ? resolvePoseSrc(state, true) : null;
+  // Animation frames only show once decoded, so a slow network never flashes.
+  const src = frameSrc && loaded.has(frameSrc) ? frameSrc : blinkSrc && loaded.has(blinkSrc) ? blinkSrc : base;
+  const animating = src === frameSrc;
   const showArt = Boolean(src && loaded.has(src) && !failed.has(src));
   const framed = COMPANION_ART.framed;
 
@@ -87,32 +93,33 @@ export function CompanionCharacter({ state, size = 56, blink = false, className,
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
-      <span className="shaghol-char__body block h-full w-full">
+      <span className="shaghol-char__body relative block h-full w-full">
         {showArt ? (
           <img
-            // Pose changes fade in; blinks swap instantly within the same pose.
-            key={base || undefined}
+            // Pose changes fade in; blinks and wave frames swap instantly.
+            key={animating ? 'frames' : base || undefined}
             src={src!}
             alt=""
             draggable={false}
-            className={cn(
-              'shaghol-char__img pointer-events-none h-full w-full select-none',
-              framed ? 'object-cover' : 'object-contain',
-              waving && 'invisible'
-            )}
+            className={cn('shaghol-char__img pointer-events-none h-full w-full select-none', framed ? 'object-cover' : 'object-contain')}
+            // Bleed frames are drawn larger and offset so the robot itself
+            // lands exactly where the pose art is; extras spill outside.
+            style={
+              animating && frameBleed
+                ? {
+                    position: 'absolute',
+                    left: `${-frameBleed.x * 100}%`,
+                    top: `${-frameBleed.y * 100}%`,
+                    width: `${(1 + 2 * frameBleed.x) * 100}%`,
+                    height: `${(1 + 2 * frameBleed.y) * 100}%`,
+                    maxWidth: 'none',
+                  }
+                : undefined
+            }
           />
         ) : (
           <span className="block h-full w-full p-[14%]">
             <PlaceholderRobot />
-          </span>
-        )}
-        {waving && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            {/* Same 320×316 canvas as the poses, letterboxed like object-contain. */}
-            <span
-              className="shaghol-char__img shaghol-wave pointer-events-none block w-full"
-              style={{ aspectRatio: '320 / 316', backgroundImage: `url(${waveSrc})`, backgroundSize: `${WAVE_FRAMES * 100}% 100%` }}
-            />
           </span>
         )}
       </span>

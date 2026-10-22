@@ -12,8 +12,6 @@ export interface CompanionPose {
   src?: string;
   /** Same pose with eyes closed, used for occasional blinks. */
   blink?: string;
-  /** Horizontal strip of WAVE_FRAMES frames on the same canvas, played once. */
-  wave?: string;
   aliasOf?: CompanionState;
 }
 
@@ -24,7 +22,7 @@ export const COMPANION_ART = {
 
 export const COMPANION_POSES: Record<CompanionState, CompanionPose> = {
   idle: { src: 'shaghol-idle.webp', blink: 'shaghol-idle-blink.webp' },
-  greeting: { src: 'shaghol-greeting.webp', wave: 'shaghol-wave.webp' },
+  greeting: { src: 'shaghol-greeting.webp' },
   thinking: { src: 'shaghol-thinking.webp', blink: 'shaghol-thinking-blink.webp' },
   searching: { src: 'shaghol-searching.webp' },
   reviewing_cv: { src: 'shaghol-reviewing_cv.webp' },
@@ -52,22 +50,43 @@ export function resolvePoseSrc(state: CompanionState, blink = false): string | n
   return `${COMPANION_ART.basePath}${file}`;
 }
 
-/** Frames in a `wave` strip, left to right. */
-export const WAVE_FRAMES = 8;
-
-export function resolveWaveSrc(state: CompanionState): string | null {
-  const file = resolvePose(state)?.wave;
-  return file ? `${COMPANION_ART.basePath}${file}` : null;
-}
-
 export function hasBlink(state: CompanionState): boolean {
   return Boolean(resolvePose(state)?.blink);
 }
 
+/**
+ * Frame-by-frame wave (8 frames from the waving sheet), aligned to the idle
+ * pose on the same 320×316 canvas. Played once over ~1.2s.
+ */
+export const WAVE_FRAMES = Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-wave-${i + 1}.webp`);
+export const WAVE_FRAME_MS = 150;
+
+/**
+ * Idle activities: occasional playful sequences while nobody interacts.
+ * Frames sit on a larger 400×396 canvas (40px transparent bleed on every side
+ * of the 320×316 pose canvas) so mugs, arms and sparkles fit; feet and scale
+ * match the idle pose. `durations` are per-frame (ms), with comedic holds.
+ */
+export const ACTIVITY_BLEED = { x: 40 / 320, y: 40 / 316 };
+export type IdleActivityName = 'sleepy' | 'coffee';
+export const IDLE_ACTIVITIES: Record<IdleActivityName, { frames: string[]; durations: number[] }> = {
+  // Drowsy, nods off (long hold), startles awake, looks around, back to idle.
+  sleepy: {
+    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-sleepy-${i + 1}.webp`),
+    durations: [300, 380, 420, 700, 160, 340, 340, 300],
+  },
+  // Grabs a mug, long contented sip (hold), a happy "ah!", puts it away.
+  coffee: {
+    frames: Array.from({ length: 8 }, (_, i) => `${COMPANION_ART.basePath}shaghol-coffee-${i + 1}.webp`),
+    durations: [200, 300, 300, 450, 650, 500, 300, 250],
+  },
+};
+
 export const ALL_POSE_SOURCES = Array.from(
   new Set(
-    Object.keys(COMPANION_POSES)
-      .flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true), resolveWaveSrc(s as CompanionState)])
-      .filter(Boolean) as string[]
+    [
+      ...Object.keys(COMPANION_POSES).flatMap((s) => [resolvePoseSrc(s as CompanionState), resolvePoseSrc(s as CompanionState, true)]),
+      ...WAVE_FRAMES,
+    ].filter(Boolean) as string[]
   )
 );

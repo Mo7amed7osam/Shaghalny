@@ -8,7 +8,16 @@ export type CompanionState =
   | 'success'
   | 'error';
 
-export type CompanionIntent = 'chat' | 'find_jobs' | 'review_cv' | 'write_proposal';
+export type CompanionIntent = 'chat' | 'find_jobs' | 'review_cv' | 'write_proposal' | 'plan_career';
+/** Panel workspaces. 'chat' is the free conversation thread. */
+export type CompanionTask = 'jobs' | 'cv' | 'proposal' | 'plan' | 'chat';
+export type CompanionView = 'home' | CompanionTask;
+
+export interface JobPreferences {
+  type: 'freelance' | 'internship' | null;
+  workMode: 'online' | 'onsite' | 'hybrid' | null;
+  source: 'internal' | 'external' | null;
+}
 export type CompanionLang = 'en' | 'ar';
 export type CompanionPage =
   | 'jobs'
@@ -57,6 +66,14 @@ export interface CvReview {
   missingFacts: string[];
 }
 
+export interface CareerPlan {
+  example: boolean;
+  goal: string | null;
+  summary: string | null;
+  steps: { title: string; detail: string; page: CompanionPage | null }[];
+  missingFacts: string[];
+}
+
 export interface ProposalDraft {
   jobId: string;
   text: string;
@@ -73,6 +90,7 @@ export interface CompanionResponse {
   actions: CompanionPage[];
   cvReview: CvReview | null;
   proposal: ProposalDraft | null;
+  careerPlan?: CareerPlan | null;
   needs: 'cv_text' | 'job' | null;
 }
 
@@ -81,6 +99,8 @@ export interface CompanionRequestInput {
   intent: CompanionIntent;
   jobId?: string | null;
   cvText?: string | null;
+  preferences?: JobPreferences | null;
+  task?: CompanionTask;
 }
 
 export interface CompanionMessage {
@@ -89,6 +109,7 @@ export interface CompanionMessage {
   content: string;
   createdAt: number;
   intent?: CompanionIntent;
+  task?: CompanionTask;
   response?: Omit<CompanionResponse, 'reply'>;
   /** Set on failed turns so the panel can offer a retry. */
   error?: { message: string; retryable: boolean };
