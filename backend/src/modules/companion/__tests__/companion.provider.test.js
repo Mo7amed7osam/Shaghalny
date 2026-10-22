@@ -59,7 +59,7 @@ describe('Gemini conversation', () => {
     const res = await convo.send({ toolChoice: { name: 'search_jobs' } });
     expect(res).toEqual({ text: 'hello', toolCalls: [] });
     const req = mockGenerate.mock.calls[0][0];
-    expect(req.model).toBe('gemini-3.5-flash-lite');
+    expect(req.model).toBe('gemini-3.6-flash');
     // Leading model turn dropped, consecutive user turns merged.
     expect(req.contents[0]).toEqual({ role: 'user', parts: [{ text: 'a' }, { text: 'b' }] });
     expect(req.config.systemInstruction).toBe('sys');
