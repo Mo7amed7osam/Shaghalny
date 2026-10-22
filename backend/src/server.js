@@ -71,6 +71,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/notifications', notificationRoutes);
 const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
+const companionRoutes = require('./modules/companion/companion.routes');
+app.use('/api/companion', companionRoutes);
 app.use('/uploads', express.static(getUploadsRoot()));
 app.use('/api/uploads', express.static(getUploadsRoot()));
 if (process.env.DEMO_MODE === 'true') {

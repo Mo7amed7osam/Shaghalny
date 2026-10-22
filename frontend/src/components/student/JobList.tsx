@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthContext } from '@/context/AuthContext';
+import { setCompanionPageJob, takeProposalHandoff } from '@/features/companion/companionStore';
 
 interface JobListProps {
   embedded?: boolean;
@@ -294,6 +295,38 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
   const activeJob = allJobs.find((j: any) => (j._id || j.id) === activeJobId);
   const activeDraft = activeJobId ? getDraft(activeJobId) : emptyDraft();
+
+  // Deep link from the Shaghol companion: /student/jobs?apply=<jobId> opens the
+  // regular apply sheet, so eligibility and duplicate checks stay unchanged.
+  const applyParam = embedded ? null : searchParams.get('apply');
+  useEffect(() => {
+    if (!applyParam || isLoading || !jobs) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('apply');
+    setSearchParams(next, { replace: true });
+    const job = allJobs.find((j: any) => (j._id || j.id) === applyParam);
+    if (!job || job.sourceType === 'external') {
+      toast.error('This job is no longer listed.');
+      return;
+    }
+    setActiveJobId(applyParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyParam, isLoading, jobs]);
+
+  // A proposal drafted with the companion pre-fills an empty cover letter only.
+  useEffect(() => {
+    if (!activeJobId) return;
+    const handoff = takeProposalHandoff(activeJobId);
+    if (handoff && !getDraft(activeJobId).details.trim()) setDraftField(activeJobId, 'details', handoff);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeJobId]);
+
+  // Tell the companion which job is open so it can offer contextual help.
+  useEffect(() => {
+    if (embedded) return;
+    setCompanionPageJob(activeJobId && activeJob ? { id: activeJobId, title: activeJob.title } : null);
+  }, [embedded, activeJobId, activeJob]);
+  useEffect(() => () => { if (!embedded) setCompanionPageJob(null); }, [embedded]);
   const coverLetterLength = activeDraft.details.trim().length;
       const isActiveJobUnpaidInternship =
     activeJob?.type === 'internship' && activeJob?.isUnpaid === true;
