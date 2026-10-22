@@ -22,6 +22,7 @@ import { formatCurrency } from '@/lib/currency';
 import { SKILL_CATEGORIES, getCategoryMeta, getSkillCategory } from '@/lib/skillCategories';
 import { toast } from 'sonner';
 
+import { getExternalApplyUrl, getExternalJobUrl } from '@/lib/externalJobs';
 import { fetchJobs, getStudentProfile, getStudentProposals, improveCoverLetter, submitProposal } from '@/services/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,8 @@ const budgetFilters = [
 
 function getJobCategories(job: any): string[] {
   const skills = Array.isArray(job?.requiredSkills) ? job.requiredSkills : [];
-  return Array.from(new Set<string>(skills.map((skill: any) => getCategoryMeta(getSkillCategory(skill)).key)));
+  const fromSkills = skills.map((skill: any) => getCategoryMeta(getSkillCategory(skill)).key);
+  return Array.from(new Set<string>([...(job?.category ? [getCategoryMeta(job.category).key] : []), ...fromSkills]));
 }
 function getWorkType(job: any) {
   if (job?.type === 'internship') return 'Internship';
@@ -109,6 +111,7 @@ function matchesBudget(job: any, budgetBand: string) {
 }
 
 function budgetLabel(job: any) {
+  if (job?.sourceType === 'external') return job.sourceCompensation || 'Pay not disclosed';
   if (job?.type === 'internship' && job?.isUnpaid) return 'Unpaid';
   if (job?.budgetMin !== undefined || job?.budgetMax !== undefined) {
     return `${job.budgetMin !== undefined ? formatCurrency(job.budgetMin) : '-'}-${job.budgetMax !== undefined ? formatCurrency(job.budgetMax) : '-'}`;
@@ -125,6 +128,7 @@ function postedLabel(job: any) {
 }
 
 function matchScore(job: any, verifiedSkillIds: Set<string>) {
+  if (job?.sourceType === 'external') return null;
   if (typeof job?.matchScore === 'number') return Math.round(job.matchScore);
   const requiredSkills = Array.isArray(job?.requiredSkills) ? job.requiredSkills : [];
   if (requiredSkills.length === 0) return null;
@@ -220,7 +224,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
       allJobs.filter((job: any) => {
         const jobKey = job._id || job.id;
         const hasSubmitted = submittedJobIds.has(jobKey);
-        const isReady = getMissingVerifiedSkills(job).length === 0;
+        const isReady = job.sourceType !== 'external' && getMissingVerifiedSkills(job).length === 0;
         const isVerified = isCompanyVerified(job);
         const workType = getWorkType(job);
 
@@ -283,6 +287,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
 
   const openJobCount = allJobs.filter((job: any) => !submittedJobIds.has(job._id || job.id)).length;
   const readyJobCount = allJobs.filter((job: any) => {
+    if (job.sourceType === 'external') return false;
     const jobKey = job._id || job.id;
     return !submittedJobIds.has(jobKey) && getMissingVerifiedSkills(job).length === 0;
   }).length;
@@ -533,7 +538,10 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                   const hasSubmitted = submittedJobIds.has(jobKey);
                   const skills = job.requiredSkills || [];
                   const missingSkills = getMissingVerifiedSkills(job);
-                  const canApply = missingSkills.length === 0;
+                  const externalUrl = getExternalJobUrl(job);
+                  const applyUrl = getExternalApplyUrl(job);
+                  const isExternal = job.sourceType === 'external';
+                  const canApply = !isExternal && missingSkills.length === 0;
                   const score = matchScore(job, verifiedSkillIds);
                   const clientVerified = isCompanyVerified(job);
 
@@ -548,6 +556,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="m-0 min-w-0 max-w-full text-[16px] font-semibold tracking-[-0.01em] text-ink-900 [overflow-wrap:anywhere] dark:text-white">{job.title}</h3>
+                          {job.isDemo ? <Badge variant="subtle">Demo project</Badge> : null}
                                                     {getJobCategories(job).slice(0, 2).map((categoryKey) => {
                             const meta = getCategoryMeta(categoryKey);
                             return (
@@ -584,10 +593,19 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                             {getCompanyName(job)}
                           </span>
                           <span>·</span>
-                          <span className="inline-flex items-center gap-1"><MapPin size={12} /> {job.location || 'Remote'}</span>
+                          <span className="inline-flex items-center gap-1"><MapPin size={12} /> {job.sourceLocation || job.location || 'Remote'}</span>
                           <span>·</span>
                           <span>{postedLabel(job)}</span>
                         </div>
+                        {isExternal ? (
+                          <p className="mt-2 text-xs text-ink-600 dark:text-ink-300">
+                            External listing from{' '}
+                            {externalUrl ? <a href={externalUrl} target="_blank" rel="noopener" className="underline">{job.sourceName}</a> : job.sourceName}
+                            {job.sourceEmploymentType ? <> · Listed as “{job.sourceEmploymentType}”</> : null}
+                            {job.sourcePublishedAt ? <> · Published {new Date(job.sourcePublishedAt).toLocaleDateString('en-GB')}</> : null}
+                            {' '}· Checked {new Date(job.sourceLastSeenAt).toLocaleDateString('en-GB')}. {job.sourceCompanyName} does not post on Shaghalny; applications are handled by the original source.
+                          </p>
+                        ) : null}
                         <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-ink-600 [overflow-wrap:anywhere] dark:text-ink-300">{job.description}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {skills.slice(0, 4).map((skill: any) => (
@@ -595,9 +613,9 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                               {skill.name || skill}
                             </span>
                           ))}
-                          <span className="px-1 py-1 text-xs font-semibold text-ink-500">{job.duration || 'Fixed price'}</span>
+                          <span className="px-1 py-1 text-xs font-semibold text-ink-500">{job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price')}</span>
                         </div>
-                        {!canApply ? (
+                        {!isExternal && !canApply ? (
                           <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-500/25 dark:bg-amber-500/10">
                             <ShieldAlert size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-300" />
                             <p className="min-w-0 break-words text-sm text-amber-700 dark:text-amber-200">
@@ -614,7 +632,7 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                           </button>
                           <div className="text-right">
                             <div className="sh-number text-[17px] text-ink-900 dark:text-white">{budgetLabel(job)}</div>
-                            <div className="text-[11.5px] text-ink-500">{job.duration || 'Fixed price'}</div>
+                            <div className="text-[11.5px] text-ink-500">{job.duration || (job.sourceType === 'external' ? (job.sourceCompensation ? 'As published by source' : 'See original terms') : 'Fixed price')}</div>
                             {score !== null ? (
                               <div className="mt-2 flex items-center justify-end gap-2">
                                 <div
@@ -628,7 +646,11 @@ const JobList: React.FC<JobListProps> = ({ embedded = false }) => {
                             ) : null}
                           </div>
                         </div>
-                        {hasSubmitted ? (
+                        {isExternal ? (
+                          applyUrl ? <Button asChild className="w-full">
+                            <a href={applyUrl} target="_blank" rel="noopener" aria-label={`Apply for ${job.title} via ${job.sourceName} (opens in a new tab)`}>Apply on source</a>
+                          </Button> : <p className="text-sm">Original listing unavailable</p>
+                        ) : hasSubmitted ? (
                           <div className="rounded-[10px] border border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-sm font-semibold text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-300">
                             Applied
                           </div>

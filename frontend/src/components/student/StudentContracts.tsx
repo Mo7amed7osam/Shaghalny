@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -88,7 +89,10 @@ const StudentContracts: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-ink-900 dark:text-white">{contract.jobId?.title || 'Contract'}</p>
-                      <p className="text-xs text-ink-500 dark:text-ink-400">{contract.clientId?.name || 'Client'}</p>
+                      <div className="mt-1 flex min-w-0 items-center gap-1.5">
+                        <UserAvatar user={contract.clientId} className="h-4 w-4" fallbackClassName="text-[8px]" />
+                        <span className="truncate text-xs text-ink-500 dark:text-ink-400">{contract.clientId?.name || 'Client'}</span>
+                      </div>
                     </div>
                   </div>
                   <Badge variant={contract.status === 'completed' ? 'success' : 'brand'} className="shrink-0">{contract.status}</Badge>

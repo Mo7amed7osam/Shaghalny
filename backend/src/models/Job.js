@@ -8,6 +8,8 @@ const JobSchema = new Schema(
       type: String,
       required: true,
     },
+    isDemo: { type: Boolean, default: false },
+    location: { type: String, trim: true, maxlength: 240 },
     description: {
       type: String,
       required: true,
@@ -60,8 +62,24 @@ const JobSchema = new Schema(
     employer: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: function () { return this.sourceType !== "external"; },
     },
+    sourceType: { type: String, enum: ["internal", "external"], default: "internal" },
+    category: { type: String, trim: true, maxlength: 30 },
+    sourceName: { type: String, enum: require("../utils/externalJobs").SOURCE_NAMES },
+    sourceId: { type: String },
+    sourceUrl: { type: String },
+    sourceApplyUrl: { type: String },
+    sourceEmploymentType: { type: String },
+    sourceCompensation: { type: String },
+    sourceExpiresAt: { type: Date },
+    sourceLinkCheckedAt: { type: Date },
+    sourceLinkStatus: { type: Number },
+    sourceCompanyName: { type: String },
+    sourceLocation: { type: String },
+    sourceTags: { type: [String], default: [] },
+    sourcePublishedAt: { type: Date },
+    sourceLastSeenAt: { type: Date },
     selectedStudent: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -84,6 +102,21 @@ const JobSchema = new Schema(
 );
 
 JobSchema.index({ title: "text", description: "text" });
+JobSchema.index(
+  { sourceName: 1, sourceId: 1 },
+  { unique: true, partialFilterExpression: { sourceType: "external" } },
+);
+
+JobSchema.pre("validate", function () {
+  if (this.sourceType !== "external") return;
+  const { isSourceUrl, isApplyUrl } = require("../utils/externalJobs");
+  for (const field of ["sourceName", "sourceId", "sourceCompanyName", "sourceLastSeenAt"]) {
+    if (!this[field]) this.invalidate(field, `${field} is required for imported jobs.`);
+  }
+  if (!isSourceUrl(this.sourceUrl, this.sourceName)) this.invalidate("sourceUrl", "Invalid original listing URL.");
+  if (this.sourceApplyUrl && !isApplyUrl(this.sourceApplyUrl)) this.invalidate("sourceApplyUrl", "Invalid application URL.");
+  if (this.employer) this.invalidate("employer", "External employers are not Shaghalny client accounts.");
+});
 
 // Export the Job model
 const Job = mongoose.model("Job", JobSchema);

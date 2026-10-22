@@ -9,11 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { buildAssetUrl } from '@/lib/assets';
-
-function getInitials(name?: string) {
-  if (!name) return '?';
-  return name.split(' ').map((part) => part[0]).join('').toUpperCase().slice(0, 2);
-}
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 const StudentPublicProfile: React.FC = () => {
   const { id } = useParams();
@@ -29,7 +25,7 @@ const StudentPublicProfile: React.FC = () => {
   if (isLoading) return <Skeleton className="h-80 w-full rounded-xl" />;
   if (isError || !profile) return <EmptyState title="Unable to load student profile" description="This profile could not be loaded right now." />;
 
-  const photoUrl = buildAssetUrl(profile.profilePhotoUrl);
+
   const coverUrl = buildAssetUrl(profile.coverPhotoUrl);
   const coverStyle = coverUrl
     ? {
@@ -46,11 +42,7 @@ const StudentPublicProfile: React.FC = () => {
         />
         <div className="relative grid min-w-0 gap-4 px-4 pb-4 pt-14 sm:gap-5 sm:px-6 sm:pb-5 sm:pt-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-7">
           <div className="absolute left-4 top-0 h-24 w-24 -translate-y-1/2 overflow-hidden rounded-full border-4 border-white bg-brand-50 shadow-elevated ring-1 ring-ink-200 dark:border-ink-dark-surface dark:bg-white/10 dark:ring-white/10 sm:left-6 sm:h-28 sm:w-28 lg:left-7">
-            {photoUrl ? (
-              <img src={photoUrl} alt={`${profile.name} profile`} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-brand-600 dark:text-brand-300 sm:text-3xl">{getInitials(profile.name)}</div>
-            )}
+            <UserAvatar user={profile} className="h-full w-full" fallbackClassName="bg-transparent text-2xl text-brand-600 dark:bg-transparent dark:text-brand-300 sm:text-3xl" />
           </div>
           <div className="min-w-0 sm:pl-36">
             <div className="flex flex-wrap items-center gap-2">

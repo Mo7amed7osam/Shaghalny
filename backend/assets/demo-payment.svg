@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Demo payment record — no real transfer</title>
+  <desc id="desc">Synthetic receipt for testing wallet administration. No bank payment occurred.</desc>
+  <rect width="960" height="540" fill="#eef0ff"/>
+  <rect x="40" y="40" width="880" height="460" rx="24" fill="white" stroke="#4338ca" stroke-width="3"/>
+  <g font-family="sans-serif" text-anchor="middle">
+    <text x="480" y="150" font-size="48" font-weight="700" fill="#312e81">DEMO PAYMENT RECORD</text>
+    <text x="480" y="240" font-size="36" fill="#991b1b">NO REAL MONEY TRANSFERRED</text>
+    <text x="480" y="330" font-size="24" fill="#3b3b44">Synthetic wallet receipt for the hackathon walkthrough.</text>
+    <text x="480" y="385" font-size="24" fill="#3b3b44">Not a bank receipt, proof of revenue, or actual payout.</text>
+  </g>
+</svg>

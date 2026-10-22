@@ -13,3 +13,5 @@ coverage
 *.log
 uploads/*
 !uploads/.gitkeep
+private/topups/*
+!private/topups/.gitkeep

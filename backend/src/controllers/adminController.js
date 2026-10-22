@@ -73,7 +73,7 @@ const getJobs = async (req, res) => {
     const jobs = await Job.find()
       .populate("employer", "name email website companyLogoUrl isVerified")
       .populate("requiredSkills", "name category")
-      .populate("selectedStudent", "name email");
+      .populate("selectedStudent", "name email profilePhotoUrl");
     return res.status(200).json(jobs);
   } catch (error) {
     return res.status(500).json({ message: "Server error", error });

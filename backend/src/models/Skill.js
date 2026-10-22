@@ -7,6 +7,7 @@ const SKILL_CATEGORIES = [
   "Business",
   "Engineering",
   "Media",
+  "Translation",
   "Other",
 ];
 

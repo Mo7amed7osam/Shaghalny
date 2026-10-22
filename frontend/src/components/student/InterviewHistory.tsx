@@ -63,7 +63,7 @@ const InterviewHistory: React.FC = () => {
                     session.finalRecommendation === 'pass' ? 'success' :
                     session.finalRecommendation === 'fail' ? 'danger' : 'warning'
                   }>
-                    {session.finalRecommendation || 'pending'}
+                    {session.isDemo ? 'Sample · ' : ''}{session.finalRecommendation || 'pending'}
                   </Badge>
                 </div>
 
@@ -112,7 +112,7 @@ const InterviewHistory: React.FC = () => {
                         session.finalRecommendation === 'pass' ? 'success' :
                         session.finalRecommendation === 'fail' ? 'danger' : 'warning'
                       }>
-                        {session.finalRecommendation || 'pending'}
+                        {session.isDemo ? 'Sample · ' : ''}{session.finalRecommendation || 'pending'}
                       </Badge>
                     </TableCell>
                     <TableCell>

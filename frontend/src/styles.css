@@ -303,3 +303,16 @@
   /* Muted copy remains readable when a component inherits its dark surface. */
   :where(.dark) .text-ink-500 { color: theme('colors.ink.dark.muted'); }
 }
+
+/* Auth screens: slow drifting gradient mesh */
+@keyframes auth-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(6%, 4%, 0) scale(1.06); }
+  66% { transform: translate3d(-4%, 6%, 0) scale(0.96); }
+}
+.auth-blob { animation: auth-drift 22s ease-in-out infinite; will-change: transform; }
+.auth-blob-2 { animation-duration: 28s; animation-delay: -6s; }
+.auth-blob-3 { animation-duration: 18s; animation-delay: -11s; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-blob { animation: none; }
+}

@@ -50,7 +50,7 @@ const recommendationFromScore = (score) => {
 
 const populateSessionQuery = (query) =>
   query
-    .populate("user", "name email")
+    .populate("user", "name email profilePhotoUrl")
     .populate("skillRef", "name description category")
     .populate("job", "title")
     .populate("proposal", "status");
@@ -86,6 +86,7 @@ const serializeSession = (session) => ({
       : session.proposal
         ? String(session.proposal)
         : null,
+  isDemo: session.isDemo === true,
   status: session.status,
   questions: (session.questions || []).map((question) => ({
     id: question.questionId,
@@ -441,7 +442,8 @@ const getInterviewResult = async (sessionId, user) => {
   return {
     success: true,
     sessionId: String(session._id),
-    status: session.status,
+    isDemo: session.isDemo === true,
+  status: session.status,
     skill: session.skill,
     finalScore: session.finalScore,
     category: session.skillRef?.category || null,

@@ -16,7 +16,7 @@ import {
   AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,10 +42,6 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] } },
 } as const;
 const NEW_CATEGORY_VALUE = '__new__';
-function getInitials(name?: string) {
-  if (!name) return '?';
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-}
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -486,9 +482,7 @@ const filteredStats = useMemo(() => [
                     <TableRow key={u._id}>
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          <Avatar className="h-7 w-7">
-                            <AvatarFallback className="text-[10px]">{getInitials(u.name)}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar user={u} className="h-7 w-7" fallbackClassName="text-[10px]" />
                           <span className="font-semibold">{u.name}</span>
                         </div>
                       </TableCell>

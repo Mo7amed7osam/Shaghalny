@@ -34,7 +34,7 @@ const InterviewAnswerSchema = new Schema(
     },
     evaluationSource: {
       type: String,
-      enum: ['ai', 'manual_review'],
+      enum: ['ai', 'manual_review', 'demo'],
       default: 'manual_review',
     },
   },
@@ -43,6 +43,7 @@ const InterviewAnswerSchema = new Schema(
 
 const InterviewSessionSchema = new Schema(
   {
+    isDemo: { type: Boolean, default: false },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     skill: { type: String, required: true, trim: true },
     skillRef: { type: Schema.Types.ObjectId, ref: 'Skill', default: null },

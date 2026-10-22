@@ -6,6 +6,7 @@ const User = require("../models/User");
 const Skill = require("../models/Skill");
 const Contract = require("../models/Contract");
 const { acceptProposalWithEscrow } = require("../services/contractService");
+const { paymentsEnabled, PAYMENTS_DISABLED_MESSAGE } = require("../middleware/payments");
 const {
   matchStudentsToJob,
   notifyMatchedStudents,
@@ -38,6 +39,9 @@ const createJob = async (req, res) => {
     const parsedPositions =
       jobType === "internship" ? Math.max(1, parseInt(positions, 10) || 1) : 1;
     const unpaidInternship = jobType === "internship" && isUnpaid === true;
+    if (!unpaidInternship && !paymentsEnabled()) {
+      return res.status(503).json({ message: PAYMENTS_DISABLED_MESSAGE, code: "PAYMENTS_DISABLED" });
+    }
     const parsedBudgetMin = unpaidInternship
       ? undefined
       : budgetMin !== undefined
@@ -74,6 +78,7 @@ const createJob = async (req, res) => {
         .json({ message: "budgetMin cannot exceed budgetMax." });
     }
     const newJob = new Job({
+      isDemo: process.env.DEMO_MODE === "true",
       title,
       description,
       requiredSkills,
@@ -135,6 +140,8 @@ const getJobs = async (req, res) => {
         query.$or = [
           { title: searchRegex },
           { description: searchRegex },
+          { sourceCompanyName: searchRegex },
+          { sourceLocation: searchRegex },
           { duration: searchRegex },
           ...(matchedSkills.length
             ? [
@@ -213,6 +220,12 @@ const getJobs = async (req, res) => {
     const jobs = await Job.find({
       $and: [
         { status: "open" },
+        { $or: [
+          { sourceType: { $ne: "external" } },
+          { sourceLastSeenAt: { $gte: new Date(Date.now() - 14 * 86400000) } },
+        ] },
+        // Sources such as Himalayas require expired listings to be removed.
+        { $or: [{ sourceExpiresAt: null }, { sourceExpiresAt: { $gt: new Date() } }] },
         ...(query.type ? [{ type: query.type }] : []),
         ...(query.$or ? [{ $or: query.$or }] : []),
         ...(query.duration ? [{ duration: query.duration }] : []),
@@ -224,7 +237,8 @@ const getJobs = async (req, res) => {
       ],
     })
       .populate("employer", "name website companyLogoUrl isVerified")
-      .populate("requiredSkills", "name category");
+      .populate("requiredSkills", "name category")
+      .sort({ createdAt: -1, _id: -1 });
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching jobs", error });
@@ -236,7 +250,7 @@ const getClientJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ employer: req.user?.id })
       .populate("requiredSkills", "name category")
-      .populate("selectedStudent", "name email")
+      .populate("selectedStudent", "name email profilePhotoUrl")
       .populate("employer", "name website companyLogoUrl isVerified");
     res.status(200).json(jobs);
   } catch (error) {
@@ -257,6 +271,12 @@ const submitProposal = async (req, res) => {
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
+    }
+    if (job.sourceType === "external") {
+      return res.status(409).json({
+        message: "Apply at the original listing. External employers do not receive Shaghalny proposals or contracts.",
+        sourceUrl: job.sourceUrl,
+      });
     }
     if (job.status !== "open") {
       return res.status(400).json({ message: "Job is not open for proposals" });
@@ -327,6 +347,12 @@ const getJobProposals = async (req, res) => {
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
+    if (job.sourceType === "external") {
+      return res.status(409).json({
+        message: "Apply at the original listing. External employers do not receive Shaghalny proposals or contracts.",
+        sourceUrl: job.sourceUrl,
+      });
+    }
     if (job.employer.toString() !== req.user?.id) {
       return res
         .status(403)
@@ -335,7 +361,7 @@ const getJobProposals = async (req, res) => {
     const proposals = await Proposal.find({ jobId: req.params.id })
       .populate({
         path: "studentId",
-        select: "name email verifiedSkills",
+        select: "name email profilePhotoUrl verifiedSkills",
         populate: { path: "verifiedSkills.skill", select: "name" },
       })
       .populate(
@@ -358,6 +384,12 @@ const getMatchedCandidates = async (req, res) => {
     const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
+    }
+    if (job.sourceType === "external") {
+      return res.status(409).json({
+        message: "Apply at the original listing. External employers do not receive Shaghalny proposals or contracts.",
+        sourceUrl: job.sourceUrl,
+      });
     }
     if (job.employer.toString() !== req.user?.id) {
       return res
@@ -414,7 +446,7 @@ const getClientProposals = async (req, res) => {
     const proposals = await Proposal.find({ jobId: { $in: jobIds } })
       .populate({
         path: "studentId",
-        select: "name email verifiedSkills",
+        select: "name email profilePhotoUrl verifiedSkills",
         populate: { path: "verifiedSkills.skill", select: "name" },
       })
       .populate("jobId", "title status activeContract");
@@ -447,6 +479,12 @@ const submitJobReview = async (req, res) => {
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
+    }
+    if (job.sourceType === "external") {
+      return res.status(409).json({
+        message: "Apply at the original listing. External employers do not receive Shaghalny proposals or contracts.",
+        sourceUrl: job.sourceUrl,
+      });
     }
     if (job.employer.toString() !== req.user?.id) {
       return res
@@ -522,7 +560,7 @@ const getJobById = async (req, res) => {
     const job = await Job.findById(req.params.id)
       .populate("employer", "name email website companyLogoUrl isVerified")
       .populate("requiredSkills", "name category")
-      .populate("selectedStudent", "name email");
+      .populate("selectedStudent", "name email profilePhotoUrl");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -547,6 +585,12 @@ const updateJob = async (req, res) => {
       return res.status(404).json({ message: "Job not found." });
     }
 
+    if (existingJob.sourceType === "external") {
+      return res.status(409).json({
+        message: "Apply at the original listing. External employers do not receive Shaghalny proposals or contracts.",
+        sourceUrl: existingJob.sourceUrl,
+      });
+    }
     if (existingJob.employer.toString() !== req.user?.id) {
       return res.status(403).json({
         message: "You are not authorized to edit this job.",
@@ -600,6 +644,9 @@ const updateJob = async (req, res) => {
 
     const jobType = type === "internship" ? "internship" : "freelance";
     const unpaid = jobType === "internship" && isUnpaid === true;
+    if (!unpaid && !paymentsEnabled()) {
+      return res.status(503).json({ message: PAYMENTS_DISABLED_MESSAGE, code: "PAYMENTS_DISABLED" });
+    }
 
     // Budgets are optional, matching createJob; validate only what is provided.
     const parseBudget = (value) =>

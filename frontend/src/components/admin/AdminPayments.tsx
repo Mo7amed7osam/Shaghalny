@@ -20,6 +20,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import {
   Table,
   TableBody,
@@ -142,8 +143,13 @@ const AdminPayments: React.FC = () => {
                 {items.map((item: any) => (
                   <TableRow key={item._id}>
                     <TableCell>
-                      <div className="font-semibold text-ink-900 dark:text-white">{(item.clientId || item.studentId)?.name}</div>
-                      <p className="text-xs text-ink-500 dark:text-ink-300">{(item.clientId || item.studentId)?.email}</p>
+                      <div className="flex items-center gap-2.5">
+                        <UserAvatar user={item.clientId || item.studentId} className="h-8 w-8" fallbackClassName="text-[10px]" />
+                        <div className="min-w-0">
+                          <div className="font-semibold text-ink-900 dark:text-white">{(item.clientId || item.studentId)?.name}</div>
+                          <p className="text-xs text-ink-500 dark:text-ink-300">{(item.clientId || item.studentId)?.email}</p>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="font-semibold">{formatCurrency(item.amount)}</TableCell>
                     {activeTab === 'withdrawals' ? <TableCell>{item.payoutMethod}</TableCell> : null}

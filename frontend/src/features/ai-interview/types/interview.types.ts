@@ -22,10 +22,11 @@ export interface InterviewAnswer {
   strengths: string[];
   weaknesses: string[];
   recommendation: InterviewRecommendation;
-  evaluationSource: 'ai' | 'manual_review';
+  evaluationSource: 'ai' | 'manual_review' | 'demo';
 }
 
 export interface InterviewSession {
+  isDemo?: boolean;
   sessionId: string;
   skill: string;
   status: InterviewStatus;
@@ -67,6 +68,7 @@ export interface SubmitInterviewAnswerResponse {
 }
 
 export interface InterviewResultResponse {
+  isDemo?: boolean;
   success: true;
   sessionId: string;
   status: InterviewStatus;

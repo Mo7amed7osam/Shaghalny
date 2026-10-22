@@ -89,6 +89,11 @@ export const getWalletBalance = async () => {
   return response.data;
 };
 
+export const createDemoTopUpRequest = async (amount: number) => {
+  const response = await http.post(API.wallet.demoTopups, { amount });
+  return response.data;
+};
+
 export const createTopUpRequest = async (payload: { amount: number; screenshot: File; note?: string }) => {
   const formData = new FormData();
   formData.append('amount', String(payload.amount));

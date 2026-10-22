@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, BriefcaseBusiness, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { getSkills, getJobDetails, postJob, updateJob } from '@/services/api';
+import { getSkills, getJobDetails, getWalletBalance, postJob, updateJob } from '@/services/api';
 import { groupSkillsByCategory } from '@/lib/skillCategories';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,8 @@ const PostJob: React.FC = () => {
   const isEditMode = Boolean(editJobId);
   const queryClient = useQueryClient();
 
+  const { data: walletInfo } = useQuery({ queryKey: ['wallet', 'balance', 'post-job'], queryFn: getWalletBalance });
+  const paymentsUnavailable = Boolean(walletInfo) && walletInfo.demoMode !== true && walletInfo.paymentsEnabled !== true;
   const { data: skills, isLoading } = useQuery({
     queryKey: ['skills'],
     queryFn: getSkills,
@@ -157,6 +159,11 @@ const PostJob: React.FC = () => {
             title={isEditMode ? 'Edit job' : 'Post a new job'}
             description="Create a brief that looks professional, sets expectations clearly, and attracts stronger student proposals."
           />
+          {paymentsUnavailable ? (
+            <p role="status" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+              Payments are not available yet: no payment provider is configured. Only unpaid internships can be posted until payments are set up.
+            </p>
+          ) : null}
 
           <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
 
